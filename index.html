@@ -655,11 +655,11 @@
       }
       .measurement-select {
         width: 100%;
-        padding: 10px 12px;
-        border-radius: 10px;
+        padding: 12px 14px;
+        border-radius: 12px;
         border: 1px solid var(--border);
         background: var(--card);
-        font-size: 14px;
+        font-size: 15px;
         color: var(--text);
         appearance: auto;
       }
@@ -1540,7 +1540,7 @@
       </div>
 
       <div class="setting-group">
-        <h3>Vlastní potravina</h3>
+        <h3>Potraviny a porce</h3>
         <div class="setting-collapse-header" id="collapse-custom-food">
           <span class="collapse-title" style="font-weight: 400"
             >Přidat vlastní potravinu</span
@@ -1615,6 +1615,49 @@
           </div>
         </div>
         <div id="custom-foods-list" style="margin-top: 12px"></div>
+
+        <div class="setting-collapse-header" id="collapse-custom-measurements" style="margin-top: 12px">
+          <span class="collapse-title" style="font-weight: 400"
+            >Vlastní porce</span
+          >
+          <span class="collapse-chevron" id="chevron-custom-measurements">&#9662;</span>
+        </div>
+        <div id="custom-measurements-section" style="display: none; margin-top: 8px">
+          <div class="setting-card" style="padding: 14px">
+            <div class="custom-form">
+              <p
+                style="
+                  font-size: 13px;
+                  color: var(--text-secondary);
+                  margin-bottom: 12px;
+                "
+              >
+                Definujte vlastní porce (např. hrnek, lžíce, porce)
+              </p>
+              <div class="form-row">
+                <label>Název</label>
+                <input type="text" id="meas-name" placeholder="Např. Hrnek" />
+              </div>
+              <div class="form-row">
+                <label>Gramáž (g)</label>
+                <input
+                  type="number"
+                  id="meas-grams"
+                  placeholder="Např. 250"
+                  min="1"
+                />
+              </div>
+              <button
+                class="btn-add"
+                id="btn-add-measurement"
+                style="margin-top: 12px"
+              >
+                Přidat porci
+              </button>
+            </div>
+          </div>
+          <div id="measurements-list" style="margin-top: 12px"></div>
+        </div>
       </div>
 
       <div class="setting-group">
@@ -1661,58 +1704,7 @@
         <h3>Přizpůsobení</h3>
         <div class="setting-card" style="padding: 14px">
           <div class="toggle-row">
-            <label>Povolit vlastní porce</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="toggle-custom-measurements" />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-        <div
-          id="custom-measurements-section"
-          style="display: none; margin-top: 12px"
-        >
-          <div class="setting-card" style="padding: 14px">
-            <div class="custom-form">
-              <p
-                style="
-                  font-size: 13px;
-                  color: var(--text-secondary);
-                  margin-bottom: 12px;
-                "
-              >
-                Definujte vlastní porce (např. hrnek, lžíce, porce)
-              </p>
-              <div class="form-row">
-                <label>Název</label>
-                <input type="text" id="meas-name" placeholder="Např. Hrnek" />
-              </div>
-              <div class="form-row">
-                <label>Gramáž (g)</label>
-                <input
-                  type="number"
-                  id="meas-grams"
-                  placeholder="Např. 250"
-                  min="1"
-                />
-              </div>
-              <button
-                class="btn-add"
-                id="btn-add-measurement"
-                style="margin-top: 12px"
-              >
-                Přidat měření
-              </button>
-            </div>
-          </div>
-          <div id="measurements-list" style="margin-top: 12px"></div>
-        </div>
-      </div>
-
-      <div class="setting-group">
-        <div class="setting-card" style="padding: 14px">
-          <div class="toggle-row">
-            <label>Vlastní rychlé gramy</label>
+            <label>Rychlá volba</label>
             <label class="toggle-switch">
               <input type="checkbox" id="toggle-quick-grams" />
               <span class="toggle-slider"></span>
@@ -1728,7 +1720,7 @@
                 margin-bottom: 12px;
               "
             >
-              Upravte tlačítka rychlých mírů v detailu potraviny
+              Upravte tlačítka rychlé volby v detailu potraviny
             </p>
             <div class="chip-list" id="quick-grams-chips"></div>
             <div class="add-chip-row">
@@ -2951,10 +2943,8 @@
       // MODAL
       // ═══════════════════════════════════════════
       function buildQuickGramsHtml(unit) {
-        const grams = state.customQuickGramsEnabled
-          ? state.quickGrams
-          : DEFAULT_QUICK_GRAMS;
-        return grams
+        if (!state.customQuickGramsEnabled) return "";
+        return state.quickGrams
           .map(
             (v) =>
               `<button class="quick-gram" data-g="${v}">${v} ${unit}</button>`,
@@ -2963,11 +2953,7 @@
       }
 
       function buildMeasurementSelectHtml(unit) {
-        if (
-          !state.customMeasurementsEnabled ||
-          state.customMeasurements.length === 0
-        )
-          return "";
+        if (state.customMeasurements.length === 0) return "";
         const options = state.customMeasurements
           .map(
             (m, i) =>
@@ -2990,12 +2976,15 @@
         </div>`;
       }
 
-      function initMeasurementSelect(containerId, gramsInputId, updateMacrosFn) {
+      function initMeasurementSelect(containerId, gramsInputId, quickGramsId, updateMacrosFn) {
         const container = document.getElementById(containerId);
         const select = container.querySelector(".measurement-select");
         if (!select) return;
         const amountRow = container.querySelector(".measurement-amount-row");
         const amountInput = container.querySelector(".measurement-amount");
+        const gramsInput = document.getElementById(gramsInputId);
+        const gramWrap = gramsInput.closest(".gram-input-wrap");
+        const quickGramsEl = document.getElementById(quickGramsId);
 
         function recalc() {
           const idx = parseInt(select.value);
@@ -3004,16 +2993,20 @@
           if (!m) return;
           const amount = parseFloat(amountInput.value) || 1;
           const totalGrams = Math.round(m.grams * amount);
-          document.getElementById(gramsInputId).value = totalGrams;
+          gramsInput.value = totalGrams;
           updateMacrosFn();
         }
 
         select.addEventListener("change", () => {
           if (select.value === "") {
             amountRow.style.display = "none";
+            gramWrap.style.display = "";
+            quickGramsEl.style.display = "";
           } else {
             amountRow.style.display = "flex";
             amountInput.value = 1;
+            gramWrap.style.display = "none";
+            quickGramsEl.style.display = "none";
             recalc();
           }
         });
@@ -3048,7 +3041,7 @@
           buildQuickGramsHtml(unit);
         document.getElementById("modal-measurement-select").innerHTML =
           buildMeasurementSelectHtml(unit);
-        initMeasurementSelect("modal-measurement-select", "modal-grams", updateModalMacros);
+        initMeasurementSelect("modal-measurement-select", "modal-grams", "quick-grams", updateModalMacros);
         // Update favorite button
         const favBtn = document.getElementById("btn-toggle-fav");
         const fav = isFavorite(food.name);
@@ -3084,7 +3077,7 @@
               buildQuickGramsHtml(updatedUnit);
             document.getElementById("modal-measurement-select").innerHTML =
               buildMeasurementSelectHtml(updatedUnit);
-            initMeasurementSelect("modal-measurement-select", "modal-grams", updateModalMacros);
+            initMeasurementSelect("modal-measurement-select", "modal-grams", "quick-grams", updateModalMacros);
           }
 
           document.getElementById("modal-loading").style.display = "none";
@@ -3230,7 +3223,7 @@
           buildQuickGramsHtml(unit);
         document.getElementById("edit-measurement-select").innerHTML =
           buildMeasurementSelectHtml(unit);
-        initMeasurementSelect("edit-measurement-select", "edit-modal-grams", updateEditModalMacros);
+        initMeasurementSelect("edit-measurement-select", "edit-modal-grams", "edit-quick-grams", updateEditModalMacros);
         // Update favorite button
         const editFavBtn = document.getElementById("btn-edit-toggle-fav");
         const fav = isFavorite(entry.name);
@@ -3481,11 +3474,12 @@
         document.getElementById("goal-fat").value = state.goals.fat;
         renderCustomFoodsList();
 
-        // Custom measurements toggle
-        const toggle = document.getElementById("toggle-custom-measurements");
-        toggle.checked = state.customMeasurementsEnabled;
+        // Custom measurements collapse
         document.getElementById("custom-measurements-section").style.display =
           state.customMeasurementsEnabled ? "block" : "none";
+        document
+          .getElementById("chevron-custom-measurements")
+          .classList.toggle("open", state.customMeasurementsEnabled);
         renderMeasurementsList();
 
         // Quick grams toggle
@@ -4155,14 +4149,17 @@
             }
           });
 
-        // Custom measurements toggle
+        // Custom measurements collapse
         document
-          .getElementById("toggle-custom-measurements")
-          .addEventListener("change", (e) => {
-            state.customMeasurementsEnabled = e.target.checked;
-            document.getElementById(
-              "custom-measurements-section",
-            ).style.display = e.target.checked ? "block" : "none";
+          .getElementById("collapse-custom-measurements")
+          .addEventListener("click", () => {
+            const section = document.getElementById("custom-measurements-section");
+            const chevron = document.getElementById("chevron-custom-measurements");
+            const open = section.style.display === "none";
+            section.style.display = open ? "block" : "none";
+            chevron.classList.toggle("open", open);
+            // Enable/disable measurements based on collapse state
+            state.customMeasurementsEnabled = open;
             saveState();
           });
 
