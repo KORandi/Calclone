@@ -2465,7 +2465,7 @@
         expandedHistoryDay: null,
         customMeasurementsEnabled: false,
         customMeasurements: [],
-        customQuickGramsEnabled: false,
+        customQuickGramsEnabled: true,
         quickGrams: [...DEFAULT_QUICK_GRAMS],
         rohlikSearchEnabled: false,
         autoFavEnabled: true,
@@ -2489,7 +2489,7 @@
               parsed.customMeasurementsEnabled || false;
             state.customMeasurements = parsed.customMeasurements || [];
             state.customQuickGramsEnabled =
-              parsed.customQuickGramsEnabled || false;
+              parsed.customQuickGramsEnabled !== undefined ? parsed.customQuickGramsEnabled : true;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
             state.rohlikSearchEnabled =
               parsed.rohlikSearchEnabled || false;
@@ -2558,7 +2558,7 @@
               parsed.customMeasurementsEnabled || false;
             state.customMeasurements = parsed.customMeasurements || [];
             state.customQuickGramsEnabled =
-              parsed.customQuickGramsEnabled || false;
+              parsed.customQuickGramsEnabled !== undefined ? parsed.customQuickGramsEnabled : true;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
             state.rohlikSearchEnabled =
               parsed.rohlikSearchEnabled || false;
@@ -4515,9 +4515,21 @@
           if (e.target === e.currentTarget) closeBarcodeScanner();
         });
 
-      // Register service worker
+      // Register service worker with auto-update
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
+        navigator.serviceWorker.register("sw.js").then((reg) => {
+          reg.addEventListener("updatefound", () => {
+            const newSW = reg.installing;
+            if (!newSW) return;
+            newSW.addEventListener("statechange", () => {
+              if (newSW.state === "activated") {
+                window.location.reload();
+              }
+            });
+          });
+        }).catch(() => {});
+        // Check for updates on every load
+        navigator.serviceWorker.ready.then((reg) => reg.update());
       }
     </script>
   </body>

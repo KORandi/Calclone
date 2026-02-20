@@ -1,5 +1,5 @@
-const CACHE_NAME = "kaltab-v11";
-const API_CACHE = "kaltab-api-v11";
+const CACHE_NAME = "kaltab-v13";
+const API_CACHE = "kaltab-api-v13";
 
 const ASSETS = [
   "./",
@@ -56,10 +56,18 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // App assets: cache-first
+  // App assets: network-first, cache as fallback
   event.respondWith(
-    caches
-      .match(event.request)
-      .then((cached) => cached || fetch(event.request)),
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request)),
   );
 });
