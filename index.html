@@ -1721,6 +1721,27 @@
       </div>
 
       <div class="setting-group">
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
+            <label>Vyhledávání na Rohlik.cz</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-rohlik-search" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Při hledání zobrazí také produkty z Rohlik.cz s nutričními hodnotami
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-group">
         <h3 style="color: var(--red)">Danger zone</h3>
         <button class="btn-danger" id="btn-clear-log">
           Smazat dnešní záznamy
@@ -2394,6 +2415,7 @@
         customMeasurements: [],
         customQuickGramsEnabled: false,
         quickGrams: [...DEFAULT_QUICK_GRAMS],
+        rohlikSearchEnabled: false,
       };
 
       function loadState() {
@@ -2416,6 +2438,8 @@
             state.customQuickGramsEnabled =
               parsed.customQuickGramsEnabled || false;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
+            state.rohlikSearchEnabled =
+              parsed.rohlikSearchEnabled || false;
           }
         } catch (e) {}
       }
@@ -2437,6 +2461,7 @@
             customMeasurements: state.customMeasurements,
             customQuickGramsEnabled: state.customQuickGramsEnabled,
             quickGrams: state.quickGrams,
+            rohlikSearchEnabled: state.rohlikSearchEnabled,
           }),
         );
       }
@@ -2479,6 +2504,8 @@
             state.customQuickGramsEnabled =
               parsed.customQuickGramsEnabled || false;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
+            state.rohlikSearchEnabled =
+              parsed.rohlikSearchEnabled || false;
             saveState();
             loadSettingsUI();
             renderCategories();
@@ -3362,6 +3389,10 @@
         document.getElementById("quick-grams-section").style.display =
           state.customQuickGramsEnabled ? "block" : "none";
         renderQuickGramsChips();
+
+        // Rohlik search toggle
+        document.getElementById("toggle-rohlik-search").checked =
+          state.rohlikSearchEnabled;
       }
 
       function renderMeasurementsList() {
@@ -3683,17 +3714,16 @@
         // Debounce API calls (300ms) — run both in parallel
         setSearchLoading(true);
         searchTimeout = setTimeout(async () => {
-          const [data, rohlikData] = await Promise.all([
-            apiSearch(query),
-            rohlikSearch(query),
-          ]);
+          const searches = [apiSearch(query)];
+          if (state.rohlikSearchEnabled) searches.push(rohlikSearch(query));
+          const results = await Promise.all(searches);
           setSearchLoading(false);
 
-          if (data !== null) {
-            state.apiResults = parseAutoResults(data);
+          if (results[0] !== null) {
+            state.apiResults = parseAutoResults(results[0]);
           }
-          if (rohlikData !== null) {
-            state.rohlikResults = rohlikData;
+          if (state.rohlikSearchEnabled && results[1] !== null) {
+            state.rohlikResults = results[1];
           }
           renderFoodList();
         }, 300);
@@ -4040,6 +4070,18 @@
               .target.checked
               ? "block"
               : "none";
+            saveState();
+          });
+
+        // Rohlik search toggle
+        document
+          .getElementById("toggle-rohlik-search")
+          .addEventListener("change", (e) => {
+            state.rohlikSearchEnabled = e.target.checked;
+            if (!e.target.checked) {
+              state.rohlikResults = [];
+              renderFoodList();
+            }
             saveState();
           });
 
