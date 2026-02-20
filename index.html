@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calclone">
+<meta name="theme-color" content="#22c55e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMjJjNTVlIi8+PHRleHQgeD0iOTAiIHk9IjEyNSIgZm9udC1zaXplPSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0ic3lzdGVtLXVpIj7wn6WXPC90ZXh0Pjwvc3ZnPg==">
+<title>Calclone</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #22c55e;
+  --green-dark: #16a34a;
+  --green-light: #dcfce7;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --red: #ef4444;
+  --orange: #f97316;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Tab bar ── */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.tab-bar button {
+  flex: 1; border: none; background: none;
+  padding: 8px 0 4px;
+  font-size: 10px; color: var(--text-secondary);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; transition: color .15s;
+}
+.tab-bar button.active { color: var(--green); }
+.tab-bar button svg { width: 24px; height: 24px; }
+
+/* ── Pages ── */
+.page { display: none; padding: calc(var(--safe-top) + 16px) 16px calc(70px + var(--safe-bottom) + 16px); min-height: 100vh; min-height: 100dvh; }
+.page.active { display: block; }
+
+/* ── Header ── */
+.page-header { font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+.page-sub { font-size: 14px; color: var(--text-secondary); margin-top: -12px; margin-bottom: 16px; }
+
+/* ── Search ── */
+.search-wrap {
+  position: relative; margin-bottom: 16px;
+}
+.search-wrap input {
+  width: 100%; padding: 12px 44px 12px 40px;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-size: 16px; background: var(--card);
+  outline: none; transition: border-color .15s;
+}
+.search-wrap input:focus { border-color: var(--green); }
+.search-wrap .search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; color: var(--text-secondary);
+}
+.search-wrap .search-spinner {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; display: none;
+}
+.search-wrap .search-spinner.active { display: block; }
+.search-wrap .search-spinner::after {
+  content: ''; display: block; width: 18px; height: 18px;
+  border: 2px solid var(--border); border-top-color: var(--green);
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Category pills ── */
+.cat-pills {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 8px; margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.cat-pills::-webkit-scrollbar { display: none; }
+.cat-pill {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--card);
+  font-size: 13px; cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.cat-pill.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ── Food cards ── */
+.food-list { display: flex; flex-direction: column; gap: 8px; }
+.food-card {
+  background: var(--card); border-radius: 12px; padding: 14px;
+  border: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; transition: border-color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.food-card:active { border-color: var(--green); }
+.food-name { font-weight: 600; font-size: 15px; }
+.food-portion { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.food-kcal { font-weight: 700; font-size: 18px; color: var(--green); white-space: nowrap; }
+.food-kcal span { font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+
+/* ── Macros row ── */
+.macros { display: flex; gap: 12px; margin-top: 6px; }
+.macro { font-size: 11px; color: var(--text-secondary); }
+.macro b { color: var(--text); font-weight: 600; }
+.macro.protein b { color: var(--blue); }
+.macro.carbs b { color: var(--orange); }
+.macro.fat b { color: var(--red); }
+
+/* ── Daily summary ── */
+.daily-ring-wrap { text-align: center; margin-bottom: 20px; }
+.daily-ring-wrap svg { width: 160px; height: 160px; }
+.ring-center { font-size: 28px; font-weight: 700; }
+.ring-label { font-size: 12px; color: var(--text-secondary); }
+
+.macro-bars { display: flex; gap: 12px; margin-bottom: 20px; }
+.macro-bar-item { flex: 1; text-align: center; }
+.macro-bar-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+.macro-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.macro-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+.macro-bar-fill.protein { background: var(--blue); }
+.macro-bar-fill.carbs { background: var(--orange); }
+.macro-bar-fill.fat { background: var(--red); }
+.macro-bar-val { font-size: 13px; font-weight: 600; margin-top: 4px; }
+
+/* ── Log entries ── */
+.log-entry {
+  background: var(--card); border-radius: 12px; padding: 12px 14px;
+  border: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.log-entry-info { flex: 1; }
+.log-entry-name { font-weight: 600; font-size: 14px; }
+.log-entry-detail { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.log-entry-kcal { font-weight: 700; color: var(--green); font-size: 16px; margin-right: 8px; white-space: nowrap; }
+.log-entry .delete-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: #fee2e2; color: var(--red);
+  font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  z-index: 200; display: none; align-items: flex-end; justify-content: center;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--card); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 500px;
+  padding: 24px 20px calc(var(--safe-bottom) + 20px);
+  max-height: 85vh; overflow-y: auto;
+  animation: slideUp .25s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(100%); } }
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+.modal h2 { font-size: 20px; margin-bottom: 4px; }
+.modal .modal-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+
+.modal-macros {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 20px;
+}
+.modal-macro {
+  text-align: center; padding: 10px 4px; background: var(--bg); border-radius: 10px;
+}
+.modal-macro .val { font-size: 18px; font-weight: 700; }
+.modal-macro .label { font-size: 11px; color: var(--text-secondary); }
+.modal-macro.kcal .val { color: var(--green); }
+.modal-macro.protein .val { color: var(--blue); }
+.modal-macro.carbs .val { color: var(--orange); }
+.modal-macro.fat .val { color: var(--red); }
+.modal-macro.fiber .val { color: var(--purple); }
+
+.modal-loading {
+  text-align: center; padding: 20px; color: var(--text-secondary); font-size: 14px;
+}
+
+.gram-input-wrap { margin-bottom: 16px; }
+.gram-input-wrap label { font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+.gram-input-wrap input {
+  width: 100%; padding: 12px; border: 1px solid var(--border);
+  border-radius: 10px; font-size: 18px; text-align: center; outline: none;
+}
+.gram-input-wrap input:focus { border-color: var(--green); }
+
+.quick-grams { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.quick-gram {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--card); font-size: 13px; cursor: pointer;
+}
+.quick-gram:active { background: var(--green-light); }
+
+.btn-add {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: var(--green); color: #fff; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.btn-add:active { background: var(--green-dark); }
+.btn-add:disabled { background: var(--border); color: var(--text-secondary); }
+
+/* ── Settings ── */
+.setting-group { margin-bottom: 20px; }
+.setting-group h3 { font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+.setting-card {
+  background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden;
+}
+.setting-row {
+  padding: 14px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-row label { font-size: 15px; }
+.setting-row input {
+  width: 80px; padding: 8px; border: 1px solid var(--border);
+  border-radius: 8px; text-align: center; font-size: 15px; outline: none;
+}
+.setting-row input:focus { border-color: var(--green); }
+.setting-row .unit { font-size: 13px; color: var(--text-secondary); margin-left: 4px; }
+
+.btn-danger {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: #fee2e2; color: var(--red); font-size: 15px; font-weight: 600;
+  cursor: pointer; margin-top: 8px;
+}
+
+/* ── History ── */
+.history-day { margin-bottom: 16px; }
+.history-date { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.history-summary {
+  background: var(--card); border-radius: 12px; padding: 14px;
+  border: 1px solid var(--border);
+}
+.history-kcal { font-size: 22px; font-weight: 700; color: var(--green); }
+.history-macros { display: flex; gap: 16px; margin-top: 4px; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* ── Custom food form ── */
+.custom-form { margin-top: 16px; }
+.custom-form .form-row { margin-bottom: 12px; }
+.custom-form label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+.custom-form input {
+  width: 100%; padding: 10px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 15px; outline: none;
+}
+.custom-form input:focus { border-color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE: Databáze ===== -->
+<div class="page active" id="page-database">
+  <h1 class="page-header">Calclone</h1>
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="search-input" placeholder="Hledat potravinu..." autocomplete="off">
+    <div class="search-spinner" id="search-spinner"></div>
+  </div>
+  <div class="cat-pills" id="cat-pills"></div>
+  <div class="food-list" id="food-list"></div>
+</div>
+
+<!-- ===== PAGE: Dnešní den ===== -->
+<div class="page" id="page-today">
+  <h1 class="page-header">Dnes</h1>
+  <p class="page-sub" id="today-date"></p>
+
+  <div class="daily-ring-wrap" id="daily-ring"></div>
+
+  <div class="macro-bars" id="macro-bars"></div>
+
+  <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:10px;">Zaznamenané potraviny</h3>
+  <div id="today-log"></div>
+</div>
+
+<!-- ===== PAGE: Historie ===== -->
+<div class="page" id="page-history">
+  <h1 class="page-header">Historie</h1>
+  <div id="history-list"></div>
+</div>
+
+<!-- ===== PAGE: Nastavení ===== -->
+<div class="page" id="page-settings">
+  <h1 class="page-header">Nastavení</h1>
+
+  <div class="setting-group">
+    <h3>Denní cíle</h3>
+    <div class="setting-card">
+      <div class="setting-row">
+        <label>Kalorie</label>
+        <div><input type="number" id="goal-kcal" value="2000"><span class="unit">kcal</span></div>
+      </div>
+      <div class="setting-row">
+        <label>Bílkoviny</label>
+        <div><input type="number" id="goal-protein" value="120"><span class="unit">g</span></div>
+      </div>
+      <div class="setting-row">
+        <label>Sacharidy</label>
+        <div><input type="number" id="goal-carbs" value="250"><span class="unit">g</span></div>
+      </div>
+      <div class="setting-row">
+        <label>Tuky</label>
+        <div><input type="number" id="goal-fat" value="65"><span class="unit">g</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3>Vlastní potravina</h3>
+    <div class="setting-card" style="padding:14px;">
+      <div class="custom-form">
+        <div class="form-row"><label>Název</label><input type="text" id="custom-name" placeholder="Např. Domácí granola"></div>
+        <div class="form-row"><label>Kategorie</label><input type="text" id="custom-cat" placeholder="Např. Snídaně"></div>
+        <div class="form-row"><label>Kalorie (na 100 g)</label><input type="number" id="custom-kcal" placeholder="0"></div>
+        <div class="form-row"><label>Bílkoviny (g na 100 g)</label><input type="number" id="custom-protein" placeholder="0" step="0.1"></div>
+        <div class="form-row"><label>Sacharidy (g na 100 g)</label><input type="number" id="custom-carbs" placeholder="0" step="0.1"></div>
+        <div class="form-row"><label>Tuky (g na 100 g)</label><input type="number" id="custom-fat" placeholder="0" step="0.1"></div>
+        <button class="btn-add" id="btn-add-custom" style="margin-top:12px;">Přidat potravinu</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <h3>Data</h3>
+    <button class="btn-danger" id="btn-clear-log">Smazat dnešní záznamy</button>
+    <button class="btn-danger" id="btn-clear-all" style="margin-top:8px;">Smazat všechna data</button>
+  </div>
+
+  <p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-top:24px;">
+    Calclone v2.2<br>
+    Všechna data uložena lokálně v zařízení
+  </p>
+</div>
+
+<!-- ===== MODAL: Detail potraviny ===== -->
+<div class="modal-overlay" id="food-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modal-food-name"></h2>
+    <p class="modal-sub" id="modal-food-portion"></p>
+    <div id="modal-loading" class="modal-loading" style="display:none;">Načítání detailu...</div>
+    <div id="modal-content">
+      <div class="modal-macros" id="modal-macros"></div>
+      <div class="gram-input-wrap">
+        <label>Množství (g)</label>
+        <input type="number" id="modal-grams" value="100" min="1">
+      </div>
+      <div class="quick-grams" id="quick-grams">
+        <button class="quick-gram" data-g="25">25 g</button>
+        <button class="quick-gram" data-g="50">50 g</button>
+        <button class="quick-gram" data-g="100">100 g</button>
+        <button class="quick-gram" data-g="150">150 g</button>
+        <button class="quick-gram" data-g="200">200 g</button>
+        <button class="quick-gram" data-g="250">250 g</button>
+      </div>
+      <button class="btn-add" id="btn-log-food">Přidat do denního záznamu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB BAR ===== -->
+<nav class="tab-bar">
+  <button class="active" data-page="page-database">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Tabulky
+  </button>
+  <button data-page="page-today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    Dnes
+  </button>
+  <button data-page="page-history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+    Historie
+  </button>
+  <button data-page="page-settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4M1 12h2m18 0h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+    Nastavení
+  </button>
+</nav>
+
+<script>
+// ═══════════════════════════════════════════
+// API CONFIG
+// ═══════════════════════════════════════════
+// CORS proxy wraps the real URL to bypass cross-origin restrictions
+const CORS_PROXY = 'https://corsproxy.io/?url=';
+const _h = s => atob(s);
+const _B = 'aHR0cHM6Ly93d3cua2Fsb3JpY2tldGFidWxreS5jeg==';
+const _P1 = 'L2F1dG9jb21wbGV0ZS9mb29kc3R1ZmYtYWN0aXZpdHktbWVhbA==';
+const _P2 = 'L2Zvb2RzdHVmZi9kZXRhaWwv';
+let apiAvailable = true;
+
+function proxyUrl(path, params) {
+  const qs = new URLSearchParams(params).toString();
+  const realUrl = _h(_B) + path + (qs ? '?' + qs : '');
+  return CORS_PROXY + encodeURIComponent(realUrl);
+}
+
+// ═══════════════════════════════════════════
+// LOCAL FALLBACK DATABASE (values per 100 g)
+// ═══════════════════════════════════════════
+const LOCAL_FOODS = [
+  { name: "Kuřecí prsa", cat: "Maso", kcal: 110, protein: 23, carbs: 0, fat: 1.3 },
+  { name: "Kuřecí stehno", cat: "Maso", kcal: 177, protein: 18, carbs: 0, fat: 11 },
+  { name: "Hovězí svíčková", cat: "Maso", kcal: 121, protein: 21, carbs: 0, fat: 4 },
+  { name: "Hovězí mleté", cat: "Maso", kcal: 254, protein: 17, carbs: 0, fat: 20 },
+  { name: "Vepřová kotleta", cat: "Maso", kcal: 242, protein: 19, carbs: 0, fat: 18 },
+  { name: "Vepřová panenka", cat: "Maso", kcal: 143, protein: 21, carbs: 0, fat: 6 },
+  { name: "Krůtí prsa", cat: "Maso", kcal: 104, protein: 24, carbs: 0, fat: 0.7 },
+  { name: "Losos", cat: "Maso", kcal: 208, protein: 20, carbs: 0, fat: 13 },
+  { name: "Tuňák (konzerva)", cat: "Maso", kcal: 116, protein: 26, carbs: 0, fat: 1 },
+  { name: "Treska", cat: "Maso", kcal: 82, protein: 18, carbs: 0, fat: 0.7 },
+  { name: "Šunka", cat: "Maso", kcal: 145, protein: 18, carbs: 1, fat: 7 },
+  { name: "Mléko 1.5%", cat: "Mléčné", kcal: 47, protein: 3.4, carbs: 4.9, fat: 1.5 },
+  { name: "Jogurt bílý", cat: "Mléčné", kcal: 63, protein: 5, carbs: 4, fat: 3 },
+  { name: "Řecký jogurt", cat: "Mléčné", kcal: 97, protein: 9, carbs: 3.6, fat: 5 },
+  { name: "Skyr", cat: "Mléčné", kcal: 63, protein: 11, carbs: 4, fat: 0.2 },
+  { name: "Tvaroh měkký", cat: "Mléčné", kcal: 98, protein: 13, carbs: 3.5, fat: 4 },
+  { name: "Cottage cheese", cat: "Mléčné", kcal: 98, protein: 11, carbs: 3.4, fat: 4.3 },
+  { name: "Eidam 30%", cat: "Mléčné", kcal: 260, protein: 30, carbs: 0, fat: 15 },
+  { name: "Mozzarella", cat: "Mléčné", kcal: 280, protein: 22, carbs: 2, fat: 20 },
+  { name: "Máslo", cat: "Mléčné", kcal: 717, protein: 0.9, carbs: 0.1, fat: 81 },
+  { name: "Chleba žitný", cat: "Pečivo", kcal: 220, protein: 7, carbs: 43, fat: 1.2 },
+  { name: "Rohlík", cat: "Pečivo", kcal: 280, protein: 8, carbs: 52, fat: 3.5 },
+  { name: "Celozrnný chléb", cat: "Pečivo", kcal: 210, protein: 9, carbs: 38, fat: 2.5 },
+  { name: "Ovesné vločky", cat: "Pečivo", kcal: 367, protein: 13, carbs: 56, fat: 7 },
+  { name: "Rýže bílá (vařená)", cat: "Pečivo", kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 },
+  { name: "Těstoviny (vařené)", cat: "Pečivo", kcal: 131, protein: 5, carbs: 25, fat: 1.1 },
+  { name: "Jablko", cat: "Ovoce", kcal: 52, protein: 0.3, carbs: 14, fat: 0.2 },
+  { name: "Banán", cat: "Ovoce", kcal: 89, protein: 1.1, carbs: 23, fat: 0.3 },
+  { name: "Pomeranč", cat: "Ovoce", kcal: 47, protein: 0.9, carbs: 12, fat: 0.1 },
+  { name: "Jahody", cat: "Ovoce", kcal: 32, protein: 0.7, carbs: 8, fat: 0.3 },
+  { name: "Avokádo", cat: "Ovoce", kcal: 160, protein: 2, carbs: 9, fat: 15 },
+  { name: "Brambory (vařené)", cat: "Zelenina", kcal: 77, protein: 2, carbs: 17, fat: 0.1 },
+  { name: "Rajče", cat: "Zelenina", kcal: 18, protein: 0.9, carbs: 3.9, fat: 0.2 },
+  { name: "Okurka", cat: "Zelenina", kcal: 12, protein: 0.6, carbs: 2, fat: 0.1 },
+  { name: "Paprika", cat: "Zelenina", kcal: 27, protein: 1, carbs: 6, fat: 0.3 },
+  { name: "Brokolice", cat: "Zelenina", kcal: 34, protein: 2.8, carbs: 7, fat: 0.4 },
+  { name: "Čočka (vařená)", cat: "Luštěniny", kcal: 116, protein: 9, carbs: 20, fat: 0.4 },
+  { name: "Cizrna (vařená)", cat: "Luštěniny", kcal: 164, protein: 9, carbs: 27, fat: 2.6 },
+  { name: "Arašídy", cat: "Luštěniny", kcal: 567, protein: 26, carbs: 16, fat: 49 },
+  { name: "Mandle", cat: "Luštěniny", kcal: 579, protein: 21, carbs: 22, fat: 50 },
+  { name: "Čokoláda mléčná", cat: "Sladkosti", kcal: 535, protein: 8, carbs: 56, fat: 30 },
+  { name: "Med", cat: "Sladkosti", kcal: 304, protein: 0.3, carbs: 82, fat: 0 },
+  { name: "Chipsy", cat: "Sladkosti", kcal: 536, protein: 7, carbs: 53, fat: 33 },
+  { name: "Vejce (1 ks)", cat: "Ostatní", kcal: 78, protein: 6.3, carbs: 0.6, fat: 5.3, portion: "1 ks (~55 g)" },
+  { name: "Olivový olej", cat: "Ostatní", kcal: 884, protein: 0, carbs: 0, fat: 100, portion: "1 lžíce = 14 g" },
+  { name: "Protein whey (1 odměrka)", cat: "Ostatní", kcal: 120, protein: 24, carbs: 3, fat: 1.5, portion: "1 odměrka (~30 g)" },
+  { name: "Svíčková na smetaně", cat: "Česká jídla", kcal: 195, protein: 12, carbs: 15, fat: 9 },
+  { name: "Knedlo-vepřo-zelo", cat: "Česká jídla", kcal: 220, protein: 13, carbs: 22, fat: 9 },
+  { name: "Smažený sýr", cat: "Česká jídla", kcal: 320, protein: 16, carbs: 15, fat: 22 },
+  { name: "Guláš hovězí", cat: "Česká jídla", kcal: 135, protein: 14, carbs: 6, fat: 6 },
+  { name: "Řízek vepřový", cat: "Česká jídla", kcal: 265, protein: 17, carbs: 14, fat: 16 },
+  { name: "Palačinky", cat: "Česká jídla", kcal: 227, protein: 6, carbs: 28, fat: 10 },
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let state = {
+  activePage: 'page-database',
+  activeCategory: 'Vše',
+  searchQuery: '',
+  selectedFood: null,
+  goals: { kcal: 2000, protein: 120, carbs: 250, fat: 65 },
+  log: {},
+  customFoods: [],
+  apiResults: [],
+  detailCache: {},
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('kaltab_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.goals = parsed.goals || state.goals;
+      state.log = parsed.log || {};
+      state.customFoods = parsed.customFoods || [];
+      state.detailCache = parsed.detailCache || {};
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('kaltab_state', JSON.stringify({
+    goals: state.goals,
+    log: state.log,
+    customFoods: state.customFoods,
+    detailCache: state.detailCache,
+  }));
+}
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function todayLog() {
+  return state.log[todayKey()] || [];
+}
+
+function localFoods() {
+  return [...LOCAL_FOODS, ...state.customFoods];
+}
+
+// ═══════════════════════════════════════════
+// API search
+// ═══════════════════════════════════════════
+let searchAbort = null;
+let searchTimeout = null;
+
+async function apiSearch(query) {
+  if (searchAbort) searchAbort.abort();
+  searchAbort = new AbortController();
+
+  const url = proxyUrl(_h(_P1), { query, format: 'json' });
+  try {
+    const resp = await fetch(url, { signal: searchAbort.signal });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    apiAvailable = true;
+
+    return data;
+  } catch (e) {
+    if (e.name === 'AbortError') return null;
+    console.warn('API search failed:', e);
+    apiAvailable = false;
+
+    return null;
+  }
+}
+
+// Parse Czech decimal string "1,23" → 1.23
+function czFloat(s) {
+  if (s == null) return 0;
+  return parseFloat(String(s).replace(',', '.')) || 0;
+}
+
+async function apiDetail(food) {
+  const cacheKey = food.guid;
+  if (state.detailCache[cacheKey]) return state.detailCache[cacheKey];
+
+  const url = proxyUrl(_h(_P2) + food.guid + '/100/0000000000000001', { format: 'json' });
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    const fs = data.foodstuff || {};
+    const result = {
+      kcal: czFloat(fs.energy) || food.kcal || 0,
+      protein: czFloat(fs.protein),
+      carbs: czFloat(fs.carbohydrate),
+      fat: czFloat(fs.fat),
+      fiber: czFloat(fs.fiber),
+      sugar: czFloat(fs.sugar),
+    };
+    state.detailCache[cacheKey] = result;
+    saveState();
+    return result;
+  } catch (e) {
+    console.warn('API detail failed:', e);
+    return { kcal: food.kcal || 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0 };
+  }
+}
+
+// Parse autocomplete result into normalized food items
+function parseAutoResults(data) {
+  if (!data) return [];
+  const items = Array.isArray(data) ? data : [];
+
+  return items
+    .filter(item => !item.clazz || item.clazz === 'foodstuff')
+    .slice(0, 30)
+    .map(item => ({
+      name: item.title || '',
+      guid: item.id || null,
+      url: item.url || null,
+      cat: item.brandName || 'API',
+      kcal: parseFloat(item.value) || null,
+      protein: null,
+      carbs: null,
+      fat: null,
+      fiber: null,
+      source: 'api',
+    }));
+}
+
+// ═══════════════════════════════════════════
+// CATEGORIES (local only, API has its own)
+// ═══════════════════════════════════════════
+function getCategories() {
+  const cats = new Set();
+  localFoods().forEach(f => cats.add(f.cat));
+  return ['Vše', ...Array.from(cats)];
+}
+
+function renderCategories() {
+  const el = document.getElementById('cat-pills');
+  // Hide categories when API search is active
+  if (state.searchQuery && apiAvailable) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = getCategories().map(c =>
+    `<button class="cat-pill${state.activeCategory === c ? ' active' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════
+// FOOD LIST RENDERING
+// ═══════════════════════════════════════════
+function renderFoodList() {
+  const el = document.getElementById('food-list');
+
+  // If we have API results from search, show those
+  if (state.searchQuery && state.apiResults.length > 0) {
+    // Also add matching local results
+    const q = state.searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const localMatches = localFoods().filter(f => {
+      const name = f.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return name.includes(q);
+    }).map(f => ({ ...f, source: 'local' }));
+
+    const combined = [...state.apiResults, ...localMatches];
+    renderFoodCards(el, combined);
+    return;
+  }
+
+  // No search or API unavailable -> show local
+  let foods = localFoods().map(f => ({ ...f, source: 'local' }));
+
+  if (state.activeCategory !== 'Vše') {
+    foods = foods.filter(f => f.cat === state.activeCategory);
+  }
+
+  if (state.searchQuery) {
+    const q = state.searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    foods = foods.filter(f => {
+      const name = f.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const cat = f.cat.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return name.includes(q) || cat.includes(q);
+    });
+  }
+
+  renderFoodCards(el, foods);
+}
+
+function renderFoodCards(el, foods) {
+  if (foods.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Nic nenalezeno</p></div>';
+    return;
+  }
+
+  el.innerHTML = foods.map((f, i) => {
+    const kcalText = f.kcal != null ? `${Math.round(f.kcal)} <span>kcal</span>` : '<span>...</span>';
+    const macroHtml = (f.protein != null && f.source === 'local')
+      ? `<div class="macros">
+          <span class="macro protein">B: <b>${f.protein}g</b></span>
+          <span class="macro carbs">S: <b>${f.carbs}g</b></span>
+          <span class="macro fat">T: <b>${f.fat}g</b></span>
+        </div>`
+      : '';
+
+    return `
+      <div class="food-card" data-idx="${i}" data-source="${f.source}" data-guid="${f.guid || ''}" data-name="${f.name.replace(/"/g, '&quot;')}">
+        <div>
+          <div class="food-name">${f.name}</div>
+          <div class="food-portion">${f.portion || (f.cat !== 'API' ? f.cat : 'na 100 g')}</div>
+          ${macroHtml}
+        </div>
+        <div class="food-kcal">${kcalText}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════
+async function openFoodModal(food) {
+  state.selectedFood = food;
+  document.getElementById('modal-food-name').textContent = food.name;
+  document.getElementById('modal-food-portion').textContent = food.source === 'api'
+    ? 'Hodnoty na 100 g'
+    : `Hodnoty na 100 g | ${food.cat}`;
+  document.getElementById('modal-grams').value = food.portion ? '' : '100';
+  document.getElementById('food-modal').classList.add('active');
+
+  // If API food, scrape the food page for full nutrition data
+  if (food.source === 'api' && food.guid) {
+    document.getElementById('modal-loading').style.display = 'block';
+    document.getElementById('modal-content').style.display = 'none';
+    document.getElementById('btn-log-food').disabled = true;
+
+    const nutrition = await apiDetail(food);
+    if (nutrition) {
+      state.selectedFood = {
+        ...food,
+        kcal: nutrition.kcal || food.kcal || 0,
+        protein: nutrition.protein || 0,
+        carbs: nutrition.carbs || 0,
+        fat: nutrition.fat || 0,
+        fiber: nutrition.fiber || 0,
+      };
+    }
+
+    document.getElementById('modal-loading').style.display = 'none';
+    document.getElementById('modal-content').style.display = 'block';
+    document.getElementById('btn-log-food').disabled = false;
+  }
+
+  updateModalMacros();
+}
+
+function closeModal() {
+  document.getElementById('food-modal').classList.remove('active');
+  document.getElementById('modal-loading').style.display = 'none';
+  document.getElementById('modal-content').style.display = 'block';
+  state.selectedFood = null;
+}
+
+function updateModalMacros() {
+  const f = state.selectedFood;
+  if (!f) return;
+  const g = parseFloat(document.getElementById('modal-grams').value) || 100;
+  const ratio = g / 100;
+  const kcal = f.kcal || 0;
+  const protein = f.protein || 0;
+  const carbs = f.carbs || 0;
+  const fat = f.fat || 0;
+  const fiber = f.fiber || 0;
+
+  document.getElementById('modal-macros').innerHTML = `
+    <div class="modal-macro kcal"><div class="val">${Math.round(kcal * ratio)}</div><div class="label">kcal</div></div>
+    <div class="modal-macro protein"><div class="val">${(protein * ratio).toFixed(1)}</div><div class="label">bílkoviny</div></div>
+    <div class="modal-macro carbs"><div class="val">${(carbs * ratio).toFixed(1)}</div><div class="label">sacharidy</div></div>
+    <div class="modal-macro fat"><div class="val">${(fat * ratio).toFixed(1)}</div><div class="label">tuky</div></div>
+    ${fiber ? `<div class="modal-macro fiber"><div class="val">${(fiber * ratio).toFixed(1)}</div><div class="label">vláknina</div></div>` : ''}
+  `;
+}
+
+// ═══════════════════════════════════════════
+// LOG FOOD
+// ═══════════════════════════════════════════
+function logFood() {
+  const f = state.selectedFood;
+  if (!f) return;
+  const g = parseFloat(document.getElementById('modal-grams').value) || 100;
+  const ratio = g / 100;
+  const key = todayKey();
+  if (!state.log[key]) state.log[key] = [];
+  state.log[key].push({
+    name: f.name,
+    grams: g,
+    kcal: Math.round((f.kcal || 0) * ratio),
+    protein: +((f.protein || 0) * ratio).toFixed(1),
+    carbs: +((f.carbs || 0) * ratio).toFixed(1),
+    fat: +((f.fat || 0) * ratio).toFixed(1),
+    fiber: +((f.fiber || 0) * ratio).toFixed(1),
+    time: new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }),
+  });
+  saveState();
+  closeModal();
+  if (state.activePage === 'page-today') renderToday();
+}
+
+function deleteLogEntry(idx) {
+  const key = todayKey();
+  if (state.log[key]) {
+    state.log[key].splice(idx, 1);
+    if (state.log[key].length === 0) delete state.log[key];
+    saveState();
+    renderToday();
+  }
+}
+
+// ═══════════════════════════════════════════
+// TODAY PAGE
+// ═══════════════════════════════════════════
+function renderToday() {
+  const entries = todayLog();
+  const totals = entries.reduce((acc, e) => {
+    acc.kcal += e.kcal; acc.protein += e.protein; acc.carbs += e.carbs; acc.fat += e.fat;
+    return acc;
+  }, { kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
+  const now = new Date();
+  document.getElementById('today-date').textContent = now.toLocaleDateString('cs-CZ', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  const pct = Math.min(totals.kcal / state.goals.kcal, 1);
+  const remaining = Math.max(state.goals.kcal - totals.kcal, 0);
+  const circumference = 2 * Math.PI * 65;
+  const offset = circumference * (1 - pct);
+  const ringColor = totals.kcal > state.goals.kcal ? 'var(--red)' : 'var(--green)';
+
+  document.getElementById('daily-ring').innerHTML = `
+    <svg viewBox="0 0 160 160">
+      <circle cx="80" cy="80" r="65" fill="none" stroke="var(--border)" stroke-width="10"/>
+      <circle cx="80" cy="80" r="65" fill="none" stroke="${ringColor}" stroke-width="10"
+        stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+        transform="rotate(-90 80 80)" style="transition: stroke-dashoffset .5s"/>
+      <text x="80" y="72" text-anchor="middle" fill="var(--text)" font-size="28" font-weight="700">${totals.kcal}</text>
+      <text x="80" y="92" text-anchor="middle" fill="var(--text-secondary)" font-size="12">z ${state.goals.kcal} kcal</text>
+      <text x="80" y="110" text-anchor="middle" fill="var(--text-secondary)" font-size="11">zbývá ${remaining} kcal</text>
+    </svg>
+  `;
+
+  const macroBarData = [
+    { label: 'Bílkoviny', key: 'protein', cls: 'protein', unit: 'g' },
+    { label: 'Sacharidy', key: 'carbs', cls: 'carbs', unit: 'g' },
+    { label: 'Tuky', key: 'fat', cls: 'fat', unit: 'g' },
+  ];
+  document.getElementById('macro-bars').innerHTML = macroBarData.map(m => {
+    const pct = Math.min(totals[m.key] / state.goals[m.key] * 100, 100);
+    return `
+      <div class="macro-bar-item">
+        <div class="macro-bar-label">${m.label}</div>
+        <div class="macro-bar-track"><div class="macro-bar-fill ${m.cls}" style="width:${pct}%"></div></div>
+        <div class="macro-bar-val">${totals[m.key].toFixed(0)} / ${state.goals[m.key]}${m.unit}</div>
+      </div>
+    `;
+  }).join('');
+
+  const logEl = document.getElementById('today-log');
+  if (entries.length === 0) {
+    logEl.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>Zatím žádné záznamy.<br>Přidejte potraviny z tabulek.</p></div>';
+    return;
+  }
+  logEl.innerHTML = entries.map((e, i) => `
+    <div class="log-entry">
+      <div class="log-entry-info">
+        <div class="log-entry-name">${e.name}</div>
+        <div class="log-entry-detail">${e.grams}g · ${e.time}</div>
+      </div>
+      <div class="log-entry-kcal">${e.kcal} kcal</div>
+      <button class="delete-btn" data-log-idx="${i}">&times;</button>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+// HISTORY PAGE
+// ═══════════════════════════════════════════
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  const days = Object.keys(state.log).sort().reverse();
+
+  if (days.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>Zatím žádná historie.</p></div>';
+    return;
+  }
+
+  el.innerHTML = days.map(day => {
+    const entries = state.log[day];
+    const totals = entries.reduce((acc, e) => {
+      acc.kcal += e.kcal; acc.protein += e.protein; acc.carbs += e.carbs; acc.fat += e.fat;
+      return acc;
+    }, { kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
+    const parts = day.split('-');
+    const date = new Date(+parts[0], +parts[1]-1, +parts[2]);
+    const label = date.toLocaleDateString('cs-CZ', { weekday: 'short', day: 'numeric', month: 'long' });
+
+    return `
+      <div class="history-day">
+        <div class="history-date">${label} · ${entries.length} položek</div>
+        <div class="history-summary">
+          <div class="history-kcal">${totals.kcal} kcal</div>
+          <div class="history-macros macros">
+            <span class="macro protein">B: <b>${totals.protein.toFixed(0)}g</b></span>
+            <span class="macro carbs">S: <b>${totals.carbs.toFixed(0)}g</b></span>
+            <span class="macro fat">T: <b>${totals.fat.toFixed(0)}g</b></span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════
+function loadSettingsUI() {
+  document.getElementById('goal-kcal').value = state.goals.kcal;
+  document.getElementById('goal-protein').value = state.goals.protein;
+  document.getElementById('goal-carbs').value = state.goals.carbs;
+  document.getElementById('goal-fat').value = state.goals.fat;
+}
+
+function saveGoals() {
+  state.goals.kcal = parseInt(document.getElementById('goal-kcal').value) || 2000;
+  state.goals.protein = parseInt(document.getElementById('goal-protein').value) || 120;
+  state.goals.carbs = parseInt(document.getElementById('goal-carbs').value) || 250;
+  state.goals.fat = parseInt(document.getElementById('goal-fat').value) || 65;
+  saveState();
+}
+
+function addCustomFood() {
+  const name = document.getElementById('custom-name').value.trim();
+  const cat = document.getElementById('custom-cat').value.trim() || 'Vlastní';
+  const kcal = parseFloat(document.getElementById('custom-kcal').value) || 0;
+  const protein = parseFloat(document.getElementById('custom-protein').value) || 0;
+  const carbs = parseFloat(document.getElementById('custom-carbs').value) || 0;
+  const fat = parseFloat(document.getElementById('custom-fat').value) || 0;
+
+  if (!name) return;
+
+  state.customFoods.push({ name, cat, kcal, protein, carbs, fat });
+  saveState();
+
+  ['custom-name','custom-cat','custom-kcal','custom-protein','custom-carbs','custom-fat']
+    .forEach(id => document.getElementById(id).value = '');
+
+  renderCategories();
+  renderFoodList();
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function navigate(pageId) {
+  state.activePage = pageId;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
+
+  if (pageId === 'page-today') renderToday();
+  if (pageId === 'page-history') renderHistory();
+  if (pageId === 'page-settings') loadSettingsUI();
+}
+
+// ═══════════════════════════════════════════
+// SEARCH WITH API + DEBOUNCE
+// ═══════════════════════════════════════════
+function handleSearch(query) {
+  state.searchQuery = query;
+
+  if (searchTimeout) clearTimeout(searchTimeout);
+
+  if (!query || query.length < 2) {
+    state.apiResults = [];
+    document.getElementById('search-spinner').classList.remove('active');
+    renderCategories();
+    renderFoodList();
+    return;
+  }
+
+  // Show local results immediately
+  renderCategories();
+  renderFoodList();
+
+  // Debounce API call (300ms)
+  if (apiAvailable || true) { // Always try API
+    document.getElementById('search-spinner').classList.add('active');
+    searchTimeout = setTimeout(async () => {
+      const data = await apiSearch(query);
+      document.getElementById('search-spinner').classList.remove('active');
+
+      if (data !== null) {
+        state.apiResults = parseAutoResults(data);
+        renderFoodList();
+      }
+    }, 300);
+  }
+}
+
+// ═══════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderCategories();
+  renderFoodList();
+
+  // Tab bar
+  document.querySelector('.tab-bar').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-page]');
+    if (btn) navigate(btn.dataset.page);
+  });
+
+  // Category pills
+  document.getElementById('cat-pills').addEventListener('click', e => {
+    const pill = e.target.closest('.cat-pill');
+    if (pill) {
+      state.activeCategory = pill.dataset.cat;
+      renderCategories();
+      renderFoodList();
+    }
+  });
+
+  // Search input
+  document.getElementById('search-input').addEventListener('input', e => {
+    handleSearch(e.target.value);
+  });
+
+  // Food card click
+  document.getElementById('food-list').addEventListener('click', e => {
+    const card = e.target.closest('.food-card');
+    if (!card) return;
+
+    const source = card.dataset.source;
+    const name = card.dataset.name;
+
+    if (source === 'api') {
+      const food = state.apiResults.find(f => f.name === name);
+      if (food) openFoodModal(food);
+    } else {
+      const food = localFoods().find(f => f.name === name);
+      if (food) openFoodModal({ ...food, source: 'local' });
+    }
+  });
+
+  // Modal overlay close
+  document.getElementById('food-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // Quick grams
+  document.getElementById('quick-grams').addEventListener('click', e => {
+    const btn = e.target.closest('.quick-gram');
+    if (btn) {
+      document.getElementById('modal-grams').value = btn.dataset.g;
+      updateModalMacros();
+    }
+  });
+
+  // Gram input change
+  document.getElementById('modal-grams').addEventListener('input', updateModalMacros);
+
+  // Log food
+  document.getElementById('btn-log-food').addEventListener('click', logFood);
+
+  // Delete log entry
+  document.getElementById('today-log').addEventListener('click', e => {
+    const btn = e.target.closest('.delete-btn');
+    if (btn) deleteLogEntry(parseInt(btn.dataset.logIdx));
+  });
+
+  // Settings goals
+  ['goal-kcal','goal-protein','goal-carbs','goal-fat'].forEach(id => {
+    document.getElementById(id).addEventListener('change', saveGoals);
+  });
+
+  // Custom food
+  document.getElementById('btn-add-custom').addEventListener('click', addCustomFood);
+
+  // Clear today's log
+  document.getElementById('btn-clear-log').addEventListener('click', () => {
+    if (confirm('Opravdu smazat dnešní záznamy?')) {
+      delete state.log[todayKey()];
+      saveState();
+      renderToday();
+    }
+  });
+
+  // Clear all data
+  document.getElementById('btn-clear-all').addEventListener('click', () => {
+    if (confirm('Opravdu smazat VŠECHNA data? Tato akce je nevratná.')) {
+      state.log = {};
+      state.customFoods = {};
+      state.detailCache = {};
+      state.goals = { kcal: 2000, protein: 120, carbs: 250, fat: 65 };
+      saveState();
+      loadSettingsUI();
+      renderCategories();
+      renderFoodList();
+      renderToday();
+    }
+  });
+});
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
