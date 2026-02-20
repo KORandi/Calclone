@@ -82,6 +82,28 @@ body {
   position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
   width: 20px; height: 20px; color: var(--text-secondary);
 }
+.search-wrap .search-clear {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; border: none; background: none;
+  color: var(--text-secondary); cursor: pointer; padding: 0;
+  display: none; align-items: center; justify-content: center;
+}
+.search-wrap .search-clear.active { display: flex; }
+.search-wrap .search-clear:active { color: var(--red); }
+.search-wrap .search-clear svg { width: 18px; height: 18px; }
+
+.search-wrap .barcode-btn {
+  position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; border: none; background: none;
+  color: var(--text-secondary); cursor: pointer; padding: 4px;
+  border-radius: 6px; transition: color .15s, background .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.search-wrap .barcode-btn:active { background: var(--green-light); color: var(--green); }
+.search-wrap .barcode-btn svg { width: 22px; height: 22px; }
+
+.search-wrap input { padding-right: 72px; }
+
 .search-wrap .search-spinner {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   width: 20px; height: 20px; display: none;
@@ -124,6 +146,12 @@ body {
 .food-portion { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .food-kcal { font-weight: 700; font-size: 18px; color: var(--green); white-space: nowrap; }
 .food-kcal span { font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+.food-card.barcode-match { border-color: var(--green); background: var(--green-light); }
+.barcode-badge {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  background: var(--green); color: #fff; padding: 1px 6px;
+  border-radius: 4px; margin-left: 6px; vertical-align: middle;
+}
 
 /* ── Macros row ── */
 .macros { display: flex; gap: 12px; margin-top: 6px; }
@@ -275,6 +303,31 @@ body {
   border-radius: 8px; font-size: 15px; outline: none;
 }
 .custom-form input:focus { border-color: var(--green); }
+
+/* ── Barcode scanner ── */
+.barcode-scanner-wrap {
+  position: relative; width: 100%; border-radius: 12px; overflow: hidden;
+  background: #000; aspect-ratio: 4/3;
+}
+.barcode-scanner-wrap video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.barcode-scan-line {
+  position: absolute; left: 10%; right: 10%; top: 50%;
+  height: 2px; background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+  animation: scanLine 2s ease-in-out infinite;
+}
+@keyframes scanLine {
+  0%, 100% { transform: translateY(-40px); }
+  50% { transform: translateY(40px); }
+}
+.barcode-status {
+  text-align: center; font-size: 14px; color: var(--text-secondary);
+  margin-top: 12px; min-height: 20px;
+}
+.barcode-status.success { color: var(--green); font-weight: 600; }
+.barcode-status.error { color: var(--red); }
 </style>
 </head>
 <body>
@@ -285,6 +338,12 @@ body {
   <div class="search-wrap">
     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     <input type="text" id="search-input" placeholder="Hledat potravinu..." autocomplete="off">
+    <button class="search-clear" id="search-clear" title="Vymazat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <button class="barcode-btn" id="barcode-btn" title="Skenovat čárový kód">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/><line x1="13" y1="8" x2="13" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg>
+    </button>
     <div class="search-spinner" id="search-spinner"></div>
   </div>
   <div class="cat-pills" id="cat-pills"></div>
@@ -358,7 +417,7 @@ body {
   </div>
 
   <p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-top:24px;">
-    Calclone v2.2<br>
+    Calclone v2.3<br>
     Všechna data uložena lokálně v zařízení
   </p>
 </div>
@@ -386,6 +445,21 @@ body {
       </div>
       <button class="btn-add" id="btn-log-food">Přidat do denního záznamu</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Barcode Scanner ===== -->
+<div class="modal-overlay" id="barcode-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Skenovat kód</h2>
+    <p class="modal-sub">Namiřte fotoaparát na čárový kód</p>
+    <div class="barcode-scanner-wrap">
+      <video id="barcode-video" autoplay playsinline></video>
+      <div class="barcode-scan-line"></div>
+    </div>
+    <p id="barcode-status" class="barcode-status">Spouštění kamery...</p>
+    <button class="btn-add" id="barcode-cancel" style="background:var(--border);color:var(--text);margin-top:12px;">Zrušit</button>
   </div>
 </div>
 
@@ -442,10 +516,10 @@ const LOCAL_FOODS = [
   { name: "Tuňák (konzerva)", cat: "Maso", kcal: 116, protein: 26, carbs: 0, fat: 1 },
   { name: "Treska", cat: "Maso", kcal: 82, protein: 18, carbs: 0, fat: 0.7 },
   { name: "Šunka", cat: "Maso", kcal: 145, protein: 18, carbs: 1, fat: 7 },
-  { name: "Mléko 1.5%", cat: "Mléčné", kcal: 47, protein: 3.4, carbs: 4.9, fat: 1.5 },
-  { name: "Jogurt bílý", cat: "Mléčné", kcal: 63, protein: 5, carbs: 4, fat: 3 },
-  { name: "Řecký jogurt", cat: "Mléčné", kcal: 97, protein: 9, carbs: 3.6, fat: 5 },
-  { name: "Skyr", cat: "Mléčné", kcal: 63, protein: 11, carbs: 4, fat: 0.2 },
+  { name: "Mléko 1.5%", cat: "Mléčné", kcal: 47, protein: 3.4, carbs: 4.9, fat: 1.5, liquid: true },
+  { name: "Jogurt bílý", cat: "Mléčné", kcal: 63, protein: 5, carbs: 4, fat: 3, liquid: true },
+  { name: "Řecký jogurt", cat: "Mléčné", kcal: 97, protein: 9, carbs: 3.6, fat: 5, liquid: true },
+  { name: "Skyr", cat: "Mléčné", kcal: 63, protein: 11, carbs: 4, fat: 0.2, liquid: true },
   { name: "Tvaroh měkký", cat: "Mléčné", kcal: 98, protein: 13, carbs: 3.5, fat: 4 },
   { name: "Cottage cheese", cat: "Mléčné", kcal: 98, protein: 11, carbs: 3.4, fat: 4.3 },
   { name: "Eidam 30%", cat: "Mléčné", kcal: 260, protein: 30, carbs: 0, fat: 15 },
@@ -475,7 +549,7 @@ const LOCAL_FOODS = [
   { name: "Med", cat: "Sladkosti", kcal: 304, protein: 0.3, carbs: 82, fat: 0 },
   { name: "Chipsy", cat: "Sladkosti", kcal: 536, protein: 7, carbs: 53, fat: 33 },
   { name: "Vejce (1 ks)", cat: "Ostatní", kcal: 78, protein: 6.3, carbs: 0.6, fat: 5.3, portion: "1 ks (~55 g)" },
-  { name: "Olivový olej", cat: "Ostatní", kcal: 884, protein: 0, carbs: 0, fat: 100, portion: "1 lžíce = 14 g" },
+  { name: "Olivový olej", cat: "Ostatní", kcal: 884, protein: 0, carbs: 0, fat: 100, portion: "1 lžíce = 14 ml", liquid: true },
   { name: "Protein whey (1 odměrka)", cat: "Ostatní", kcal: 120, protein: 24, carbs: 3, fat: 1.5, portion: "1 odměrka (~30 g)" },
   { name: "Svíčková na smetaně", cat: "Česká jídla", kcal: 195, protein: 12, carbs: 15, fat: 9 },
   { name: "Knedlo-vepřo-zelo", cat: "Česká jídla", kcal: 220, protein: 13, carbs: 22, fat: 9 },
@@ -497,7 +571,10 @@ let state = {
   log: {},
   customFoods: [],
   apiResults: [],
+  barcodeResults: [],
   detailCache: {},
+  searchCache: {},
+  barcodeCache: {},
 };
 
 function loadState() {
@@ -509,6 +586,8 @@ function loadState() {
       state.log = parsed.log || {};
       state.customFoods = parsed.customFoods || [];
       state.detailCache = parsed.detailCache || {};
+      state.searchCache = parsed.searchCache || {};
+      state.barcodeCache = parsed.barcodeCache || {};
     }
   } catch(e) {}
 }
@@ -519,6 +598,8 @@ function saveState() {
     log: state.log,
     customFoods: state.customFoods,
     detailCache: state.detailCache,
+    searchCache: state.searchCache,
+    barcodeCache: state.barcodeCache,
   }));
 }
 
@@ -536,12 +617,45 @@ function localFoods() {
 }
 
 // ═══════════════════════════════════════════
+// API CACHE HELPERS
+// ═══════════════════════════════════════════
+const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+function getCached(cache, key) {
+  const entry = cache[key];
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL) {
+    delete cache[key];
+    return null;
+  }
+  return entry.data;
+}
+
+function setCache(cache, key, data) {
+  // Limit cache size to 200 entries to keep localStorage small
+  const keys = Object.keys(cache);
+  if (keys.length >= 500) {
+    // Remove oldest entries
+    keys.sort((a, b) => cache[a].ts - cache[b].ts);
+    for (let i = 0; i < 100; i++) delete cache[keys[i]];
+  }
+  cache[key] = { data, ts: Date.now() };
+}
+
+// ═══════════════════════════════════════════
 // API search
 // ═══════════════════════════════════════════
 let searchAbort = null;
 let searchTimeout = null;
 
 async function apiSearch(query) {
+  // Check search cache first
+  const cached = getCached(state.searchCache, query.toLowerCase());
+  if (cached) {
+    apiAvailable = true;
+    return cached;
+  }
+
   if (searchAbort) searchAbort.abort();
   searchAbort = new AbortController();
 
@@ -551,6 +665,10 @@ async function apiSearch(query) {
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
     apiAvailable = true;
+
+    // Cache the search result
+    setCache(state.searchCache, query.toLowerCase(), data);
+    saveState();
 
     return data;
   } catch (e) {
@@ -570,7 +688,8 @@ function czFloat(s) {
 
 async function apiDetail(food) {
   const cacheKey = food.guid;
-  if (state.detailCache[cacheKey]) return state.detailCache[cacheKey];
+  const cached = getCached(state.detailCache, cacheKey);
+  if (cached) return cached;
 
   const url = proxyUrl(_h(_P2) + food.guid + '/100/0000000000000001', { format: 'json' });
   try {
@@ -585,8 +704,9 @@ async function apiDetail(food) {
       fat: czFloat(fs.fat),
       fiber: czFloat(fs.fiber),
       sugar: czFloat(fs.sugar),
+      liquid: fs.baseUnit === 'ml',
     };
-    state.detailCache[cacheKey] = result;
+    setCache(state.detailCache, cacheKey, result);
     saveState();
     return result;
   } catch (e) {
@@ -603,18 +723,22 @@ function parseAutoResults(data) {
   return items
     .filter(item => !item.clazz || item.clazz === 'foodstuff')
     .slice(0, 30)
-    .map(item => ({
-      name: item.title || '',
-      guid: item.id || null,
-      url: item.url || null,
-      cat: item.brandName || 'API',
-      kcal: parseFloat(item.value) || null,
-      protein: null,
-      carbs: null,
-      fat: null,
-      fiber: null,
-      source: 'api',
-    }));
+    .map(item => {
+      const cached = item.id ? getCached(state.detailCache, item.id) : null;
+      return {
+        name: item.title || '',
+        guid: item.id || null,
+        url: item.url || null,
+        cat: item.brandName || 'API',
+        kcal: parseFloat(item.value) || null,
+        protein: cached ? cached.protein : null,
+        carbs: cached ? cached.carbs : null,
+        fat: cached ? cached.fat : null,
+        fiber: cached ? cached.fiber : null,
+        liquid: cached ? cached.liquid : false,
+        source: 'api',
+      };
+    });
 }
 
 // ═══════════════════════════════════════════
@@ -645,7 +769,7 @@ function renderFoodList() {
   const el = document.getElementById('food-list');
 
   // If we have API results from search, show those
-  if (state.searchQuery && state.apiResults.length > 0) {
+  if (state.searchQuery && (state.apiResults.length > 0 || state.barcodeResults.length > 0)) {
     // Also add matching local results
     const q = state.searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const localMatches = localFoods().filter(f => {
@@ -653,7 +777,9 @@ function renderFoodList() {
       return name.includes(q);
     }).map(f => ({ ...f, source: 'local' }));
 
-    const combined = [...state.apiResults, ...localMatches];
+    // Barcode results first, then API results, then local matches
+    const barcodeItems = state.barcodeResults.map(f => ({ ...f, source: 'barcode' }));
+    const combined = [...barcodeItems, ...state.apiResults, ...localMatches];
     renderFoodCards(el, combined);
     return;
   }
@@ -685,19 +811,21 @@ function renderFoodCards(el, foods) {
 
   el.innerHTML = foods.map((f, i) => {
     const kcalText = f.kcal != null ? `${Math.round(f.kcal)} <span>kcal</span>` : '<span>...</span>';
-    const macroHtml = (f.protein != null && f.source === 'local')
+    const showMacros = f.protein != null && (f.source === 'local' || f.source === 'barcode');
+    const macroHtml = showMacros
       ? `<div class="macros">
           <span class="macro protein">B: <b>${f.protein}g</b></span>
           <span class="macro carbs">S: <b>${f.carbs}g</b></span>
           <span class="macro fat">T: <b>${f.fat}g</b></span>
         </div>`
       : '';
+    const badgeHtml = f.source === 'barcode' ? '<span class="barcode-badge">Čárový kód</span>' : '';
 
     return `
-      <div class="food-card" data-idx="${i}" data-source="${f.source}" data-guid="${f.guid || ''}" data-name="${f.name.replace(/"/g, '&quot;')}">
+      <div class="food-card${f.source === 'barcode' ? ' barcode-match' : ''}" data-idx="${i}" data-source="${f.source}" data-guid="${f.guid || ''}" data-name="${f.name.replace(/"/g, '&quot;')}">
         <div>
-          <div class="food-name">${f.name}</div>
-          <div class="food-portion">${f.portion || (f.cat !== 'API' ? f.cat : 'na 100 g')}</div>
+          <div class="food-name">${f.name}${badgeHtml}</div>
+          <div class="food-portion">${f.portion || (f.cat !== 'API' ? f.cat : `na 100 ${f.liquid ? 'ml' : 'g'}`)}</div>
           ${macroHtml}
         </div>
         <div class="food-kcal">${kcalText}</div>
@@ -711,11 +839,16 @@ function renderFoodCards(el, foods) {
 // ═══════════════════════════════════════════
 async function openFoodModal(food) {
   state.selectedFood = food;
+  const unit = food.liquid ? 'ml' : 'g';
   document.getElementById('modal-food-name').textContent = food.name;
   document.getElementById('modal-food-portion').textContent = food.source === 'api'
-    ? 'Hodnoty na 100 g'
-    : `Hodnoty na 100 g | ${food.cat}`;
+    ? `Hodnoty na 100 ${unit}`
+    : `Hodnoty na 100 ${unit} | ${food.cat}`;
   document.getElementById('modal-grams').value = food.portion ? '' : '100';
+  document.querySelector('.gram-input-wrap label').textContent = `Množství (${unit})`;
+  document.getElementById('quick-grams').innerHTML = [25,50,100,150,200,250,500].map(v =>
+    `<button class="quick-gram" data-g="${v}">${v} ${unit}</button>`
+  ).join('');
   document.getElementById('food-modal').classList.add('active');
 
   // If API food, scrape the food page for full nutrition data
@@ -733,7 +866,15 @@ async function openFoodModal(food) {
         carbs: nutrition.carbs || 0,
         fat: nutrition.fat || 0,
         fiber: nutrition.fiber || 0,
+        liquid: nutrition.liquid || food.liquid,
       };
+      // Update unit display if API returned baseUnit
+      const updatedUnit = state.selectedFood.liquid ? 'ml' : 'g';
+      document.getElementById('modal-food-portion').textContent = `Hodnoty na 100 ${updatedUnit}`;
+      document.querySelector('.gram-input-wrap label').textContent = `Množství (${updatedUnit})`;
+      document.getElementById('quick-grams').innerHTML = [25,50,100,150,200,250,500].map(v =>
+        `<button class="quick-gram" data-g="${v}">${v} ${updatedUnit}</button>`
+      ).join('');
     }
 
     document.getElementById('modal-loading').style.display = 'none';
@@ -784,6 +925,7 @@ function logFood() {
   state.log[key].push({
     name: f.name,
     grams: g,
+    liquid: !!f.liquid,
     kcal: Math.round((f.kcal || 0) * ratio),
     protein: +((f.protein || 0) * ratio).toFixed(1),
     carbs: +((f.carbs || 0) * ratio).toFixed(1),
@@ -864,7 +1006,7 @@ function renderToday() {
     <div class="log-entry">
       <div class="log-entry-info">
         <div class="log-entry-name">${e.name}</div>
-        <div class="log-entry-detail">${e.grams}g · ${e.time}</div>
+        <div class="log-entry-detail">${e.grams}${e.liquid ? 'ml' : 'g'} · ${e.time}</div>
       </div>
       <div class="log-entry-kcal">${e.kcal} kcal</div>
       <button class="delete-btn" data-log-idx="${i}">&times;</button>
@@ -964,6 +1106,22 @@ function navigate(pageId) {
 }
 
 // ═══════════════════════════════════════════
+// SEARCH SPINNER / CLEAR BUTTON TOGGLE
+// ═══════════════════════════════════════════
+function setSearchLoading(loading) {
+  const spinner = document.getElementById('search-spinner');
+  const clear = document.getElementById('search-clear');
+  const hasText = document.getElementById('search-input').value.length > 0;
+  if (loading) {
+    spinner.classList.add('active');
+    clear.classList.remove('active');
+  } else {
+    spinner.classList.remove('active');
+    clear.classList.toggle('active', hasText);
+  }
+}
+
+// ═══════════════════════════════════════════
 // SEARCH WITH API + DEBOUNCE
 // ═══════════════════════════════════════════
 function handleSearch(query) {
@@ -973,7 +1131,8 @@ function handleSearch(query) {
 
   if (!query || query.length < 2) {
     state.apiResults = [];
-    document.getElementById('search-spinner').classList.remove('active');
+    state.barcodeResults = [];
+    setSearchLoading(false);
     renderCategories();
     renderFoodList();
     return;
@@ -985,10 +1144,10 @@ function handleSearch(query) {
 
   // Debounce API call (300ms)
   if (apiAvailable || true) { // Always try API
-    document.getElementById('search-spinner').classList.add('active');
+    setSearchLoading(true);
     searchTimeout = setTimeout(async () => {
       const data = await apiSearch(query);
-      document.getElementById('search-spinner').classList.remove('active');
+      setSearchLoading(false);
 
       if (data !== null) {
         state.apiResults = parseAutoResults(data);
@@ -1023,8 +1182,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Search input
-  document.getElementById('search-input').addEventListener('input', e => {
+  const searchInput = document.getElementById('search-input');
+  const searchClear = document.getElementById('search-clear');
+  searchInput.addEventListener('input', e => {
+    state.barcodeResults = [];
     handleSearch(e.target.value);
+  });
+
+  // Clear search
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    state.barcodeResults = [];
+    handleSearch('');
+    searchInput.focus();
   });
 
   // Food card click
@@ -1035,7 +1205,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const source = card.dataset.source;
     const name = card.dataset.name;
 
-    if (source === 'api') {
+    if (source === 'barcode') {
+      const food = state.barcodeResults.find(f => f.name === name);
+      if (food) openFoodModal({ ...food, source: 'local' });
+    } else if (source === 'api') {
       const food = state.apiResults.find(f => f.name === name);
       if (food) openFoodModal(food);
     } else {
@@ -1101,6 +1274,166 @@ document.addEventListener('DOMContentLoaded', () => {
       renderToday();
     }
   });
+});
+
+// ═══════════════════════════════════════════
+// BARCODE SCANNER
+// ═══════════════════════════════════════════
+let barcodeStream = null;
+let barcodeDetector = null;
+let barcodeScanInterval = null;
+
+async function openBarcodeScanner() {
+  const modal = document.getElementById('barcode-modal');
+  const video = document.getElementById('barcode-video');
+  const status = document.getElementById('barcode-status');
+
+  modal.classList.add('active');
+  status.textContent = 'Spouštění kamery...';
+  status.className = 'barcode-status';
+
+  try {
+    barcodeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    video.srcObject = barcodeStream;
+    await video.play();
+    status.textContent = 'Hledám čárový kód...';
+
+    // Use BarcodeDetector API if available, otherwise use canvas-based fallback
+    if ('BarcodeDetector' in window) {
+      barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
+    }
+
+    startBarcodeScanning(video, status);
+  } catch (err) {
+    console.error('Camera error:', err);
+    status.textContent = 'Nelze spustit kameru. Povolte přístup ke kameře.';
+    status.className = 'barcode-status error';
+  }
+}
+
+function startBarcodeScanning(video, status) {
+  barcodeScanInterval = setInterval(async () => {
+    if (!video.videoWidth) return;
+
+    try {
+      let barcodes = [];
+
+      if (barcodeDetector) {
+        barcodes = await barcodeDetector.detect(video);
+      }
+
+      if (barcodes.length > 0) {
+        const code = barcodes[0].rawValue;
+        status.textContent = 'Nalezeno: ' + code;
+        status.className = 'barcode-status success';
+        closeBarcodeScanner();
+        handleBarcodeResult(code);
+      }
+    } catch (e) {
+      // Detection failed, keep trying
+    }
+  }, 250);
+}
+
+function closeBarcodeScanner() {
+  clearInterval(barcodeScanInterval);
+  barcodeScanInterval = null;
+
+  if (barcodeStream) {
+    barcodeStream.getTracks().forEach(t => t.stop());
+    barcodeStream = null;
+  }
+
+  const video = document.getElementById('barcode-video');
+  video.srcObject = null;
+  document.getElementById('barcode-modal').classList.remove('active');
+}
+
+function isOffLiquid(p) {
+  const qty = (p.quantity || '').toLowerCase();
+  if (/\d\s*(ml|l|cl|dl)\b/.test(qty)) return true;
+  const cats = (p.categories_tags || []).join(' ').toLowerCase();
+  if (/beverages|drinks|napoje|milk|juice|water|soda|beer|wine/.test(cats)) return true;
+  return false;
+}
+
+function parseBarcodeProduct(code, p) {
+  const n = p.nutriments || {};
+  const name = p.product_name || p.product_name_cs || p.product_name_en || code;
+  const brand = p.brands || '';
+  return {
+    name: brand ? `${name} (${brand})` : name,
+    cat: p.categories_tags?.[0]?.replace('en:', '') || 'Skenováno',
+    kcal: n['energy-kcal_100g'] || Math.round((n['energy_100g'] || 0) / 4.184) || 0,
+    protein: n.proteins_100g || 0,
+    carbs: n.carbohydrates_100g || 0,
+    fat: n.fat_100g || 0,
+    fiber: n.fiber_100g || 0,
+    liquid: isOffLiquid(p),
+    source: 'local',
+  };
+}
+
+async function handleBarcodeResult(code) {
+  const searchInput = document.getElementById('search-input');
+  searchInput.value = code;
+  state.barcodeResults = [];
+
+  setSearchLoading(true);
+
+  // Check barcode cache first
+  const cached = getCached(state.barcodeCache, code);
+  if (cached) {
+    state.barcodeResults = Array.isArray(cached) ? cached : [cached];
+    const productName = state.barcodeResults[0]?.name || code;
+    searchInput.value = productName;
+    setSearchLoading(false);
+    state.searchQuery = productName;
+    renderCategories();
+    renderFoodList();
+    handleSearch(productName);
+    return;
+  }
+
+  // Look up the barcode on Open Food Facts
+  try {
+    const resp = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.status === 1 && data.product) {
+        const food = parseBarcodeProduct(code, data.product);
+        state.barcodeResults = [food];
+
+        setCache(state.barcodeCache, code, state.barcodeResults);
+        saveState();
+
+        const productName = food.name;
+        searchInput.value = productName;
+        setSearchLoading(false);
+        state.searchQuery = productName;
+        renderCategories();
+        renderFoodList();
+        handleSearch(productName);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('Open Food Facts lookup failed:', e);
+  }
+
+  setSearchLoading(false);
+  handleSearch(code);
+}
+
+// ═══════════════════════════════════════════
+// BARCODE EVENT LISTENERS
+// ═══════════════════════════════════════════
+document.getElementById('barcode-btn').addEventListener('click', openBarcodeScanner);
+document.getElementById('barcode-cancel').addEventListener('click', closeBarcodeScanner);
+document.getElementById('barcode-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeBarcodeScanner();
 });
 
 // Register service worker

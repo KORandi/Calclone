@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kaltab-v2';
+const CACHE_NAME = 'kaltab-v3';
 const API_CACHE = 'kaltab-api-v1';
 
 const ASSETS = [
