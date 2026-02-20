@@ -1771,6 +1771,27 @@
       </div>
 
       <div class="setting-group">
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
+            <label>Automatické oblíbené</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-auto-fav" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Potravina se automaticky přidá do oblíbených po 3 záznamech
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-group">
         <h3 style="color: var(--red)">Danger zone</h3>
         <button class="btn-danger" id="btn-clear-log">
           Smazat dnešní záznamy
@@ -2447,6 +2468,7 @@
         customQuickGramsEnabled: false,
         quickGrams: [...DEFAULT_QUICK_GRAMS],
         rohlikSearchEnabled: false,
+        autoFavEnabled: true,
       };
 
       function loadState() {
@@ -2471,6 +2493,8 @@
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
             state.rohlikSearchEnabled =
               parsed.rohlikSearchEnabled || false;
+            state.autoFavEnabled =
+              parsed.autoFavEnabled !== undefined ? parsed.autoFavEnabled : true;
           }
         } catch (e) {}
       }
@@ -2493,6 +2517,7 @@
             customQuickGramsEnabled: state.customQuickGramsEnabled,
             quickGrams: state.quickGrams,
             rohlikSearchEnabled: state.rohlikSearchEnabled,
+            autoFavEnabled: state.autoFavEnabled,
           }),
         );
       }
@@ -2537,6 +2562,8 @@
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
             state.rohlikSearchEnabled =
               parsed.rohlikSearchEnabled || false;
+            state.autoFavEnabled =
+              parsed.autoFavEnabled !== undefined ? parsed.autoFavEnabled : true;
             saveState();
             loadSettingsUI();
             renderCategories();
@@ -3165,12 +3192,14 @@
         state.portionMemory[f.name] = g;
 
         // Track usage and auto-favorite
-        state.foodUsage[f.name] = (state.foodUsage[f.name] || 0) + 1;
-        if (
-          state.foodUsage[f.name] >= AUTO_FAV_THRESHOLD &&
-          !isFavorite(f.name)
-        ) {
-          state.favorites.push(f.name);
+        if (state.autoFavEnabled) {
+          state.foodUsage[f.name] = (state.foodUsage[f.name] || 0) + 1;
+          if (
+            state.foodUsage[f.name] >= AUTO_FAV_THRESHOLD &&
+            !isFavorite(f.name)
+          ) {
+            state.favorites.push(f.name);
+          }
         }
 
         saveState();
@@ -3492,6 +3521,10 @@
         // Rohlik search toggle
         document.getElementById("toggle-rohlik-search").checked =
           state.rohlikSearchEnabled;
+
+        // Auto-favorite toggle
+        document.getElementById("toggle-auto-fav").checked =
+          state.autoFavEnabled;
       }
 
       function renderMeasurementsList() {
@@ -4184,6 +4217,14 @@
               state.rohlikResults = [];
               renderFoodList();
             }
+            saveState();
+          });
+
+        // Auto-favorite toggle
+        document
+          .getElementById("toggle-auto-fav")
+          .addEventListener("change", (e) => {
+            state.autoFavEnabled = e.target.checked;
             saveState();
           });
 
