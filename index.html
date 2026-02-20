@@ -650,6 +650,43 @@
         border-color: var(--green);
       }
 
+      .measurement-select-wrap {
+        margin-bottom: 14px;
+      }
+      .measurement-select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        font-size: 14px;
+        color: var(--text);
+        appearance: auto;
+      }
+      .measurement-amount-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .measurement-amount-row label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+      .measurement-amount-row .gram-stepper {
+        flex: 1;
+      }
+      .measurement-amount {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 600;
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+      }
       .quick-grams {
         display: flex;
         gap: 8px;
@@ -1800,6 +1837,7 @@
               </button>
             </div>
           </div>
+          <div id="modal-measurement-select"></div>
           <div class="quick-grams" id="quick-grams">
             <button class="quick-gram" data-g="25">25 g</button>
             <button class="quick-gram" data-g="50">50 g</button>
@@ -1847,6 +1885,7 @@
             </button>
           </div>
         </div>
+        <div id="edit-measurement-select"></div>
         <div class="quick-grams" id="edit-quick-grams">
           <button class="quick-gram" data-g="25">25 g</button>
           <button class="quick-gram" data-g="50">50 g</button>
@@ -2915,24 +2954,81 @@
         const grams = state.customQuickGramsEnabled
           ? state.quickGrams
           : DEFAULT_QUICK_GRAMS;
-        let html = grams
+        return grams
           .map(
             (v) =>
               `<button class="quick-gram" data-g="${v}">${v} ${unit}</button>`,
           )
           .join("");
+      }
+
+      function buildMeasurementSelectHtml(unit) {
         if (
-          state.customMeasurementsEnabled &&
-          state.customMeasurements.length > 0
-        ) {
-          html += state.customMeasurements
-            .map(
-              (m) =>
-                `<button class="quick-gram" data-g="${m.grams}" title="${m.grams} ${unit}">${m.name}</button>`,
-            )
-            .join("");
+          !state.customMeasurementsEnabled ||
+          state.customMeasurements.length === 0
+        )
+          return "";
+        const options = state.customMeasurements
+          .map(
+            (m, i) =>
+              `<option value="${i}">${m.name} (${m.grams} ${unit})</option>`,
+          )
+          .join("");
+        return `<div class="measurement-select-wrap">
+          <select class="measurement-select">
+            <option value="">— Vlastní porce —</option>
+            ${options}
+          </select>
+          <div class="measurement-amount-row" style="display:none">
+            <label>Počet</label>
+            <div class="gram-stepper">
+              <button class="stepper-btn minus measurement-stepper" data-step="-1">−1</button>
+              <input type="number" class="measurement-amount" value="1" min="0.25" step="0.25" />
+              <button class="stepper-btn plus measurement-stepper" data-step="1">+1</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      function initMeasurementSelect(containerId, gramsInputId, updateMacrosFn) {
+        const container = document.getElementById(containerId);
+        const select = container.querySelector(".measurement-select");
+        if (!select) return;
+        const amountRow = container.querySelector(".measurement-amount-row");
+        const amountInput = container.querySelector(".measurement-amount");
+
+        function recalc() {
+          const idx = parseInt(select.value);
+          if (isNaN(idx)) return;
+          const m = state.customMeasurements[idx];
+          if (!m) return;
+          const amount = parseFloat(amountInput.value) || 1;
+          const totalGrams = Math.round(m.grams * amount);
+          document.getElementById(gramsInputId).value = totalGrams;
+          updateMacrosFn();
         }
-        return html;
+
+        select.addEventListener("change", () => {
+          if (select.value === "") {
+            amountRow.style.display = "none";
+          } else {
+            amountRow.style.display = "flex";
+            amountInput.value = 1;
+            recalc();
+          }
+        });
+
+        amountInput.addEventListener("input", recalc);
+
+        // Stepper buttons for measurement amount
+        container.querySelectorAll(".measurement-stepper").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const step = parseFloat(btn.dataset.step);
+            const val = Math.max(0.25, (parseFloat(amountInput.value) || 1) + step);
+            amountInput.value = val;
+            recalc();
+          });
+        });
       }
 
       async function openFoodModal(food) {
@@ -2950,6 +3046,9 @@
           `Množství (${unit})`;
         document.getElementById("quick-grams").innerHTML =
           buildQuickGramsHtml(unit);
+        document.getElementById("modal-measurement-select").innerHTML =
+          buildMeasurementSelectHtml(unit);
+        initMeasurementSelect("modal-measurement-select", "modal-grams", updateModalMacros);
         // Update favorite button
         const favBtn = document.getElementById("btn-toggle-fav");
         const fav = isFavorite(food.name);
@@ -2983,6 +3082,9 @@
               `Množství (${updatedUnit})`;
             document.getElementById("quick-grams").innerHTML =
               buildQuickGramsHtml(updatedUnit);
+            document.getElementById("modal-measurement-select").innerHTML =
+              buildMeasurementSelectHtml(updatedUnit);
+            initMeasurementSelect("modal-measurement-select", "modal-grams", updateModalMacros);
           }
 
           document.getElementById("modal-loading").style.display = "none";
@@ -3126,6 +3228,9 @@
         document.getElementById("edit-modal-grams").value = entry.grams;
         document.getElementById("edit-quick-grams").innerHTML =
           buildQuickGramsHtml(unit);
+        document.getElementById("edit-measurement-select").innerHTML =
+          buildMeasurementSelectHtml(unit);
+        initMeasurementSelect("edit-measurement-select", "edit-modal-grams", updateEditModalMacros);
         // Update favorite button
         const editFavBtn = document.getElementById("btn-edit-toggle-fav");
         const fav = isFavorite(entry.name);
