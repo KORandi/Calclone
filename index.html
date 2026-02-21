@@ -3555,10 +3555,9 @@
 
         el.innerHTML = foods
           .map((f, i) => {
-            const portionRatio = f.portionGrams ? f.portionGrams / 100 : 1;
             const kcalText =
               f.kcal != null
-                ? `${Math.round(f.kcal * portionRatio)} <span>kcal</span>`
+                ? `${Math.round(f.kcal)} <span>kcal</span>`
                 : "<span>...</span>";
             const showMacros =
               f.protein != null &&
@@ -3567,9 +3566,9 @@
                 f.source === "rohlik");
             const macroHtml = showMacros
               ? `<div class="macros">
-          <span class="macro protein">B: <b>${(f.protein * portionRatio).toFixed(1)}g</b></span>
-          <span class="macro carbs">S: <b>${(f.carbs * portionRatio).toFixed(1)}g</b></span>
-          <span class="macro fat">T: <b>${(f.fat * portionRatio).toFixed(1)}g</b></span>
+          <span class="macro protein">B: <b>${f.protein}g</b></span>
+          <span class="macro carbs">S: <b>${f.carbs}g</b></span>
+          <span class="macro fat">T: <b>${f.fat}g</b></span>
         </div>`
               : "";
             const badgeHtml =
