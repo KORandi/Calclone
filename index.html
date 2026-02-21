@@ -2725,11 +2725,12 @@
         {
           name: "Vejce",
           cat: "Ostatní",
-          kcal: 78,
-          protein: 6.3,
-          carbs: 0.6,
-          fat: 5.3,
+          kcal: 142,
+          protein: 11.5,
+          carbs: 1.1,
+          fat: 9.6,
           portion: "1 ks (~55 g)",
+          portionGrams: 55,
         },
         {
           name: "Olivový olej",
@@ -2738,17 +2739,18 @@
           protein: 0,
           carbs: 0,
           fat: 100,
-          portion: "1 lžíce = 14 ml",
-          liquid: true,
+          portion: "1 lžíce (~13 g)",
+          portionGrams: 13,
         },
         {
           name: "Protein whey",
           cat: "Ostatní",
-          kcal: 120,
-          protein: 24,
-          carbs: 3,
-          fat: 1.5,
+          kcal: 400,
+          protein: 80,
+          carbs: 10,
+          fat: 5,
           portion: "1 odměrka (~30 g)",
+          portionGrams: 30,
         },
         {
           name: "Svíčková na smetaně",
@@ -2804,6 +2806,14 @@
       // STATE
       // ═══════════════════════════════════════════
       const DEFAULT_QUICK_GRAMS = [25, 50, 100, 150, 200, 250, 500];
+      const DEFAULT_MEASUREMENTS = [
+        { name: "Krajíc chleba", grams: 35 },
+        { name: "Vejce (1 ks)", grams: 55 },
+        { name: "Lžíce", grams: 15 },
+        { name: "Lžička", grams: 5 },
+        { name: "Hrnek", grams: 240 },
+        { name: "Odměrka", grams: 30 },
+      ];
 
       let state = {
         activePage: "page-database",
@@ -2823,8 +2833,8 @@
         favorites: [],
         foodUsage: {},
         expandedHistoryDay: null,
-        customMeasurementsEnabled: false,
-        customMeasurements: [],
+        customMeasurementsEnabled: true,
+        customMeasurements: [...DEFAULT_MEASUREMENTS],
         customQuickGramsEnabled: true,
         quickGrams: [...DEFAULT_QUICK_GRAMS],
         rohlikSearchEnabled: false,
@@ -2872,8 +2882,13 @@
             state.favorites = parsed.favorites || [];
             state.foodUsage = parsed.foodUsage || {};
             state.customMeasurementsEnabled =
-              parsed.customMeasurementsEnabled || false;
-            state.customMeasurements = parsed.customMeasurements || [];
+              parsed.customMeasurementsEnabled !== undefined
+                ? parsed.customMeasurementsEnabled
+                : true;
+            state.customMeasurements =
+              parsed.customMeasurements && parsed.customMeasurements.length > 0
+                ? parsed.customMeasurements
+                : [...DEFAULT_MEASUREMENTS];
             state.customQuickGramsEnabled =
               parsed.customQuickGramsEnabled !== undefined
                 ? parsed.customQuickGramsEnabled
@@ -3122,8 +3137,13 @@
             state.favorites = parsed.favorites || [];
             state.foodUsage = parsed.foodUsage || {};
             state.customMeasurementsEnabled =
-              parsed.customMeasurementsEnabled || false;
-            state.customMeasurements = parsed.customMeasurements || [];
+              parsed.customMeasurementsEnabled !== undefined
+                ? parsed.customMeasurementsEnabled
+                : true;
+            state.customMeasurements =
+              parsed.customMeasurements && parsed.customMeasurements.length > 0
+                ? parsed.customMeasurements
+                : [...DEFAULT_MEASUREMENTS];
             state.customQuickGramsEnabled =
               parsed.customQuickGramsEnabled !== undefined
                 ? parsed.customQuickGramsEnabled
@@ -3535,9 +3555,10 @@
 
         el.innerHTML = foods
           .map((f, i) => {
+            const portionRatio = f.portionGrams ? f.portionGrams / 100 : 1;
             const kcalText =
               f.kcal != null
-                ? `${Math.round(f.kcal)} <span>kcal</span>`
+                ? `${Math.round(f.kcal * portionRatio)} <span>kcal</span>`
                 : "<span>...</span>";
             const showMacros =
               f.protein != null &&
@@ -3546,9 +3567,9 @@
                 f.source === "rohlik");
             const macroHtml = showMacros
               ? `<div class="macros">
-          <span class="macro protein">B: <b>${f.protein}g</b></span>
-          <span class="macro carbs">S: <b>${f.carbs}g</b></span>
-          <span class="macro fat">T: <b>${f.fat}g</b></span>
+          <span class="macro protein">B: <b>${(f.protein * portionRatio).toFixed(1)}g</b></span>
+          <span class="macro carbs">S: <b>${(f.carbs * portionRatio).toFixed(1)}g</b></span>
+          <span class="macro fat">T: <b>${(f.fat * portionRatio).toFixed(1)}g</b></span>
         </div>`
               : "";
             const badgeHtml =
@@ -3707,7 +3728,7 @@
             : `Hodnoty na 100 ${unit} | ${food.cat}`;
         const remembered = state.portionMemory[food.name];
         document.getElementById("modal-grams").value =
-          remembered || (food.portion ? "" : "100");
+          remembered || (food.portionGrams ? String(food.portionGrams) : "100");
         document.querySelector(".gram-input-wrap label").textContent =
           `Množství (${unit})`;
         document.getElementById("quick-grams").innerHTML =
