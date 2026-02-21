@@ -2613,7 +2613,7 @@
           fat: 33,
         },
         {
-          name: "Vejce (1 ks)",
+          name: "Vejce",
           cat: "Ostatní",
           kcal: 78,
           protein: 6.3,
@@ -2632,7 +2632,7 @@
           liquid: true,
         },
         {
-          name: "Protein whey (1 odměrka)",
+          name: "Protein whey",
           cat: "Ostatní",
           kcal: 120,
           protein: 24,
@@ -2973,7 +2973,33 @@
           console.warn("API search failed:", e);
           apiAvailable = false;
 
-          return null;
+          // Offline fallback: search through all cached results
+          const q = query
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          const seen = new Set();
+          const offlineResults = [];
+          for (const entry of Object.values(state.searchCache)) {
+            const items = Array.isArray(entry.data) ? entry.data : [];
+            for (const item of items) {
+              if (
+                !item.title ||
+                (item.clazz && item.clazz !== "foodstuff")
+              )
+                continue;
+              if (item.id && seen.has(item.id)) continue;
+              const title = item.title
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+              if (title.includes(q)) {
+                if (item.id) seen.add(item.id);
+                offlineResults.push(item);
+              }
+            }
+          }
+          return offlineResults.length > 0 ? offlineResults : null;
         }
       }
 
@@ -3433,6 +3459,10 @@
           "quick-grams",
           updateModalMacros,
         );
+        // Reset display state (measurement selection hides these)
+        document.querySelector("#food-modal .gram-input-wrap").style.display =
+          "";
+        document.getElementById("quick-grams").style.display = "";
         updateMealSelects("");
         // Update favorite button
         const favBtn = document.getElementById("btn-toggle-fav");
@@ -3635,6 +3665,10 @@
           "edit-quick-grams",
           updateEditModalMacros,
         );
+        // Reset display state (measurement selection hides these)
+        document.querySelector("#edit-modal .gram-input-wrap").style.display =
+          "";
+        document.getElementById("edit-quick-grams").style.display = "";
         // Meal category select
         const editMealWrap = document.getElementById("edit-meal-select-wrap");
         if (state.mealCategoriesEnabled) {
