@@ -725,6 +725,86 @@
         color: var(--text-secondary);
       }
 
+      /* ── Cache usage bar ── */
+      .cache-usage-wrap {
+        margin-top: 10px;
+      }
+      .cache-usage-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+      }
+      .cache-usage-bar {
+        height: 8px;
+        background: var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .cache-usage-fill {
+        height: 100%;
+        background: var(--green);
+        border-radius: 4px;
+        transition: width 0.3s, background 0.3s;
+      }
+      .cache-usage-fill.warning {
+        background: var(--orange);
+      }
+      .cache-usage-fill.danger {
+        background: var(--red);
+      }
+      .cache-limit-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .cache-limit-row label {
+        font-size: 13px;
+        color: var(--text);
+        white-space: nowrap;
+      }
+      .cache-limit-row input {
+        width: 72px;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        text-align: center;
+        font-size: 14px;
+        outline: none;
+      }
+      .cache-limit-row input:focus {
+        border-color: var(--green);
+      }
+      .cache-limit-row input.invalid {
+        border-color: var(--red);
+      }
+      .cache-limit-row .unit {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      .cache-validation-msg {
+        font-size: 11px;
+        color: var(--red);
+        margin-top: 4px;
+        min-height: 16px;
+      }
+      .btn-clear-cache {
+        margin-top: 10px;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--text);
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .btn-clear-cache:active {
+        background: var(--bg);
+      }
+
       /* ── Settings ── */
       .setting-group {
         margin-bottom: 20px;
@@ -2040,6 +2120,36 @@
       </div>
 
       <div class="setting-group">
+        <h3>Mezipaměť</h3>
+        <div class="setting-card" style="padding: 14px">
+          <p style="font-size: 13px; color: var(--text-secondary)">
+            Výsledky vyhledávání se ukládají lokálně a obnovují se jednou za 30
+            dní. Starší záznamy se automaticky mažou při dosažení limitu.
+          </p>
+          <div class="cache-usage-wrap">
+            <div class="cache-usage-label">
+              <span id="cache-usage-text">0 KB</span>
+              <span id="cache-usage-limit-text">/ 4.0 MB</span>
+            </div>
+            <div class="cache-usage-bar">
+              <div class="cache-usage-fill" id="cache-usage-fill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="cache-limit-row">
+            <label>Limit
+              <span class="info-icon" data-tooltip="cache-limit-info">i
+                <span class="tooltip">Prohlížeč umožňuje uložit max. 5 MB dat na doménu (localStorage). Doporučeno ponechat alespoň 0.5 MB pro ostatní data aplikace. Rozmezí: 0.5–4.5 MB.</span>
+              </span>
+            </label>
+            <input type="number" id="cache-limit-input" value="4" min="0.5" max="4.5" step="0.1" />
+            <span class="unit">MB</span>
+          </div>
+          <div class="cache-validation-msg" id="cache-validation-msg"></div>
+          <button class="btn-clear-cache" id="btn-clear-cache">Vymazat mezipaměť</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
         <h3 style="color: var(--red)">Danger zone</h3>
         <button class="btn-danger" id="btn-clear-log">
           Smazat dnešní záznamy
@@ -2057,7 +2167,7 @@
           margin-top: 24px;
         "
       >
-        Calclone v2.4<br />
+        Calclone v2.5<br />
         Všechna data uložena lokálně v zařízení
       </p>
     </div>
@@ -2718,6 +2828,7 @@
         customQuickGramsEnabled: true,
         quickGrams: [...DEFAULT_QUICK_GRAMS],
         rohlikSearchEnabled: false,
+        cacheSizeLimitMB: 4,
         autoFavEnabled: true,
         mealCategoriesEnabled: false,
         mealCategories: ["Snídaně", "Oběd", "Večeře", "Svačina"],
@@ -2757,9 +2868,6 @@
             state.goals = parsed.goals || state.goals;
             state.log = parsed.log || {};
             state.customFoods = parsed.customFoods || [];
-            state.detailCache = parsed.detailCache || {};
-            state.searchCache = parsed.searchCache || {};
-            state.barcodeCache = parsed.barcodeCache || {};
             state.portionMemory = parsed.portionMemory || {};
             state.favorites = parsed.favorites || [];
             state.foodUsage = parsed.foodUsage || {};
@@ -2772,6 +2880,10 @@
                 : true;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
             state.rohlikSearchEnabled = parsed.rohlikSearchEnabled || false;
+            state.cacheSizeLimitMB =
+              parsed.cacheSizeLimitMB !== undefined
+                ? parsed.cacheSizeLimitMB
+                : 4;
             state.autoFavEnabled =
               parsed.autoFavEnabled !== undefined
                 ? parsed.autoFavEnabled
@@ -2793,8 +2905,25 @@
               parsed.copyDayEnabled !== undefined
                 ? parsed.copyDayEnabled
                 : false;
+
+            // Migrate caches from old kaltab_state into separate kaltab_cache
+            if (parsed.searchCache || parsed.detailCache || parsed.barcodeCache) {
+              const existingCache = localStorage.getItem("kaltab_cache");
+              if (!existingCache) {
+                const migrated = {
+                  searchCache: parsed.searchCache || {},
+                  detailCache: parsed.detailCache || {},
+                  barcodeCache: parsed.barcodeCache || {},
+                };
+                try {
+                  localStorage.setItem("kaltab_cache", JSON.stringify(migrated));
+                } catch (e) {}
+              }
+            }
           }
         } catch (e) {}
+        // Load caches from separate storage
+        loadCache();
       }
 
       function saveState() {
@@ -2804,9 +2933,6 @@
             goals: state.goals,
             log: state.log,
             customFoods: state.customFoods,
-            detailCache: state.detailCache,
-            searchCache: state.searchCache,
-            barcodeCache: state.barcodeCache,
             portionMemory: state.portionMemory,
             favorites: state.favorites,
             foodUsage: state.foodUsage,
@@ -2815,6 +2941,7 @@
             customQuickGramsEnabled: state.customQuickGramsEnabled,
             quickGrams: state.quickGrams,
             rohlikSearchEnabled: state.rohlikSearchEnabled,
+            cacheSizeLimitMB: state.cacheSizeLimitMB,
             autoFavEnabled: state.autoFavEnabled,
             mealCategoriesEnabled: state.mealCategoriesEnabled,
             mealCategories: state.mealCategories,
@@ -2825,10 +2952,147 @@
         );
       }
 
+      function loadCache() {
+        try {
+          const saved = localStorage.getItem("kaltab_cache");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            state.searchCache = parsed.searchCache || {};
+            state.detailCache = parsed.detailCache || {};
+            state.barcodeCache = parsed.barcodeCache || {};
+          }
+        } catch (e) {}
+      }
+
+      function saveCache() {
+        const cacheData = {
+          searchCache: state.searchCache,
+          detailCache: state.detailCache,
+          barcodeCache: state.barcodeCache,
+        };
+        const json = JSON.stringify(cacheData);
+        const sizeBytes = new Blob([json]).size;
+        const limitBytes = state.cacheSizeLimitMB * 1024 * 1024;
+
+        // Evict oldest entries if over limit
+        if (sizeBytes > limitBytes) {
+          evictCacheEntries(limitBytes);
+          const trimmed = JSON.stringify({
+            searchCache: state.searchCache,
+            detailCache: state.detailCache,
+            barcodeCache: state.barcodeCache,
+          });
+          try {
+            localStorage.setItem("kaltab_cache", trimmed);
+          } catch (e) {
+            // If still fails, aggressively evict more
+            evictCacheEntries(limitBytes * 0.5);
+            try {
+              localStorage.setItem(
+                "kaltab_cache",
+                JSON.stringify({
+                  searchCache: state.searchCache,
+                  detailCache: state.detailCache,
+                  barcodeCache: state.barcodeCache,
+                }),
+              );
+            } catch (e2) {}
+          }
+        } else {
+          try {
+            localStorage.setItem("kaltab_cache", json);
+          } catch (e) {
+            // QuotaExceededError — evict and retry
+            evictCacheEntries(limitBytes * 0.7);
+            try {
+              localStorage.setItem(
+                "kaltab_cache",
+                JSON.stringify({
+                  searchCache: state.searchCache,
+                  detailCache: state.detailCache,
+                  barcodeCache: state.barcodeCache,
+                }),
+              );
+            } catch (e2) {}
+          }
+        }
+        updateCacheUsageUI();
+      }
+
+      function evictCacheEntries(targetBytes) {
+        // Collect all cache entries with timestamps across all caches
+        const allEntries = [];
+        for (const [cacheName, cache] of [
+          ["searchCache", state.searchCache],
+          ["detailCache", state.detailCache],
+          ["barcodeCache", state.barcodeCache],
+        ]) {
+          for (const key of Object.keys(cache)) {
+            allEntries.push({
+              cacheName,
+              key,
+              ts: cache[key].ts || 0,
+            });
+          }
+        }
+        // Sort oldest first
+        allEntries.sort((a, b) => a.ts - b.ts);
+
+        // Remove oldest entries until under target
+        for (const entry of allEntries) {
+          const currentSize = new Blob([
+            JSON.stringify({
+              searchCache: state.searchCache,
+              detailCache: state.detailCache,
+              barcodeCache: state.barcodeCache,
+            }),
+          ]).size;
+          if (currentSize <= targetBytes) break;
+          delete state[entry.cacheName][entry.key];
+        }
+      }
+
+      function getCacheSizeBytes() {
+        const json =
+          localStorage.getItem("kaltab_cache") || '{"searchCache":{},"detailCache":{},"barcodeCache":{}}';
+        return new Blob([json]).size;
+      }
+
+      function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+      }
+
+      function updateCacheUsageUI() {
+        const usageText = document.getElementById("cache-usage-text");
+        const limitText = document.getElementById("cache-usage-limit-text");
+        const fill = document.getElementById("cache-usage-fill");
+        if (!usageText || !limitText || !fill) return;
+
+        const sizeBytes = getCacheSizeBytes();
+        const limitBytes = state.cacheSizeLimitMB * 1024 * 1024;
+        const pct = Math.min((sizeBytes / limitBytes) * 100, 100);
+
+        usageText.textContent = formatBytes(sizeBytes);
+        limitText.textContent = "/ " + state.cacheSizeLimitMB.toFixed(1) + " MB";
+        fill.style.width = pct.toFixed(1) + "%";
+        fill.classList.remove("warning", "danger");
+        if (pct > 90) fill.classList.add("danger");
+        else if (pct > 70) fill.classList.add("warning");
+      }
+
       function exportData() {
-        const data = localStorage.getItem("kaltab_state");
-        if (!data) return;
-        const blob = new Blob([data], { type: "application/json" });
+        const stateData = localStorage.getItem("kaltab_state");
+        if (!stateData) return;
+        // Merge state + cache into one export file for full backup
+        const merged = JSON.parse(stateData);
+        merged.searchCache = state.searchCache;
+        merged.detailCache = state.detailCache;
+        merged.barcodeCache = state.barcodeCache;
+        const blob = new Blob([JSON.stringify(merged)], {
+          type: "application/json",
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -2866,6 +3130,10 @@
                 : true;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
             state.rohlikSearchEnabled = parsed.rohlikSearchEnabled || false;
+            state.cacheSizeLimitMB =
+              parsed.cacheSizeLimitMB !== undefined
+                ? parsed.cacheSizeLimitMB
+                : 4;
             state.autoFavEnabled =
               parsed.autoFavEnabled !== undefined
                 ? parsed.autoFavEnabled
@@ -2888,6 +3156,7 @@
                 ? parsed.copyDayEnabled
                 : false;
             saveState();
+            saveCache();
             loadSettingsUI();
             renderCategories();
             renderFoodList();
@@ -2929,14 +3198,8 @@
       }
 
       function setCache(cache, key, data) {
-        // Limit cache size to 500 entries to keep localStorage small
-        const keys = Object.keys(cache);
-        if (keys.length >= 500) {
-          // Remove oldest entries
-          keys.sort((a, b) => cache[a].ts - cache[b].ts);
-          for (let i = 0; i < 100; i++) delete cache[keys[i]];
-        }
         cache[key] = { data, ts: Date.now() };
+        saveCache();
       }
 
       // ═══════════════════════════════════════════
@@ -2963,9 +3226,8 @@
           const data = await resp.json();
           apiAvailable = true;
 
-          // Cache the search result
+          // Cache the search result (setCache calls saveCache automatically)
           setCache(state.searchCache, query.toLowerCase(), data);
-          saveState();
 
           return data;
         } catch (e) {
@@ -3032,7 +3294,6 @@
             liquid: fs.baseUnit === "ml",
           };
           setCache(state.detailCache, cacheKey, result);
-          saveState();
           return result;
         } catch (e) {
           console.warn("API detail failed:", e);
@@ -4096,6 +4357,11 @@
         // Copy day toggle
         document.getElementById("toggle-copy-day").checked =
           state.copyDayEnabled;
+
+        // Cache limit
+        document.getElementById("cache-limit-input").value =
+          state.cacheSizeLimitMB;
+        updateCacheUsageUI();
       }
 
       function renderMeasurementsList() {
@@ -4773,6 +5039,7 @@
               state.favorites = [];
               state.goals = { kcal: 2000, protein: 120, carbs: 250, fat: 65 };
               saveState();
+              saveCache();
               loadSettingsUI();
               renderCategories();
               renderFoodList();
@@ -4884,6 +5151,46 @@
             state.copyDayEnabled = e.target.checked;
             saveState();
             if (state.activePage === "page-history") renderHistory();
+          });
+
+        // Cache limit input
+        const cacheLimitInput = document.getElementById("cache-limit-input");
+        cacheLimitInput.addEventListener("input", () => {
+          const val = parseFloat(cacheLimitInput.value);
+          const msgEl = document.getElementById("cache-validation-msg");
+          if (isNaN(val) || val < 0.5 || val > 4.5) {
+            cacheLimitInput.classList.add("invalid");
+            if (isNaN(val) || val === "")
+              msgEl.textContent = "Zadejte platnou hodnotu";
+            else if (val < 0.5)
+              msgEl.textContent = "Minimum je 0.5 MB";
+            else
+              msgEl.textContent = "Maximum je 4.5 MB (limit prohlížeče ~5 MB)";
+            return;
+          }
+          cacheLimitInput.classList.remove("invalid");
+          msgEl.textContent = "";
+          state.cacheSizeLimitMB = val;
+          saveState();
+          updateCacheUsageUI();
+          // If current cache exceeds the new limit, evict
+          const currentSize = getCacheSizeBytes();
+          if (currentSize > val * 1024 * 1024) {
+            evictCacheEntries(val * 1024 * 1024);
+            saveCache();
+          }
+        });
+
+        // Clear cache button
+        document
+          .getElementById("btn-clear-cache")
+          .addEventListener("click", () => {
+            if (!confirm("Vymazat mezipaměť vyhledávání?")) return;
+            state.searchCache = {};
+            state.detailCache = {};
+            state.barcodeCache = {};
+            saveCache();
+            showToast("Mezipaměť vymazána");
           });
 
         // Add measurement
@@ -5138,7 +5445,6 @@
               state.barcodeResults = [food];
 
               setCache(state.barcodeCache, code, state.barcodeResults);
-              saveState();
 
               const productName = food.name;
               searchInput.value = productName;
