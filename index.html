@@ -1319,10 +1319,158 @@
       .barcode-status.error {
         color: var(--red);
       }
+      .toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--text);
+        color: var(--bg);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        opacity: 0;
+        transition:
+          opacity 0.3s,
+          transform 0.3s;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .meal-select-wrap {
+        margin-bottom: 16px;
+      }
+      .meal-select-wrap label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .meal-select-wrap select {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        font-size: 15px;
+        color: var(--text);
+        appearance: auto;
+      }
+      .meal-group-header {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 16px;
+        margin-bottom: 8px;
+        padding-left: 2px;
+      }
+      .meal-group-header:first-child {
+        margin-top: 0;
+      }
+      .trends-section {
+        margin-bottom: 20px;
+      }
+      .trends-period-pills {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .trends-period-pill {
+        flex: 1;
+        padding: 8px 0;
+        text-align: center;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .trends-period-pill.active {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      .trends-card {
+        background: var(--card);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 16px;
+        margin-bottom: 24px;
+      }
+      .trends-avg-kcal {
+        text-align: center;
+        margin-bottom: 12px;
+      }
+      .trends-avg-kcal .val {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .trends-avg-kcal .label {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      .trends-days-info {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+      }
+      .btn-copy-day {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--green);
+        border-radius: 10px;
+        background: var(--green-light);
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-copy-day:active {
+        background: var(--green);
+        color: #fff;
+      }
+      .offline-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--red);
+        color: #fff;
+        text-align: center;
+        padding: 6px 16px;
+        padding-top: calc(var(--safe-top) + 6px);
+        font-size: 13px;
+        font-weight: 600;
+        z-index: 300;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+      }
+      .offline-banner.visible {
+        transform: translateY(0);
+      }
+      .offline-banner.online {
+        background: var(--green);
+      }
     </style>
     <script src="https://fastly.jsdelivr.net/npm/barcode-detector@3/dist/iife/polyfill.min.js"></script>
   </head>
   <body>
+    <div class="offline-banner" id="offline-banner">Jste offline</div>
+
     <!-- ===== PAGE: Databáze ===== -->
     <div class="page active" id="page-database">
       <h1 class="page-header">Calclone</h1>
@@ -1405,6 +1553,7 @@
     <!-- ===== PAGE: Historie ===== -->
     <div class="page" id="page-history">
       <h1 class="page-header">Historie</h1>
+      <div id="trends-section"></div>
       <div id="history-list"></div>
     </div>
 
@@ -1616,13 +1765,22 @@
         </div>
         <div id="custom-foods-list" style="margin-top: 12px"></div>
 
-        <div class="setting-collapse-header" id="collapse-custom-measurements" style="margin-top: 12px">
+        <div
+          class="setting-collapse-header"
+          id="collapse-custom-measurements"
+          style="margin-top: 12px"
+        >
           <span class="collapse-title" style="font-weight: 400"
             >Vlastní porce</span
           >
-          <span class="collapse-chevron" id="chevron-custom-measurements">&#9662;</span>
+          <span class="collapse-chevron" id="chevron-custom-measurements"
+            >&#9662;</span
+          >
         </div>
-        <div id="custom-measurements-section" style="display: none; margin-top: 8px">
+        <div
+          id="custom-measurements-section"
+          style="display: none; margin-top: 8px"
+        >
           <div class="setting-card" style="padding: 14px">
             <div class="custom-form">
               <p
@@ -1792,6 +1950,96 @@
       </div>
 
       <div class="setting-group">
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
+            <label>Kategorie jídel</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-meal-categories" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Rozdělit záznamy podle jídel (snídaně, oběd, večeře...)
+          </p>
+        </div>
+        <div
+          id="meal-categories-section"
+          style="display: none; margin-top: 12px"
+        >
+          <div class="setting-card" style="padding: 14px">
+            <p
+              style="
+                font-size: 13px;
+                color: var(--text-secondary);
+                margin-bottom: 12px;
+              "
+            >
+              Upravte kategorie jídel
+            </p>
+            <div class="chip-list" id="meal-categories-chips"></div>
+            <div class="add-chip-row">
+              <input
+                type="text"
+                id="new-meal-category"
+                placeholder="Např. Druhá večeře"
+              />
+              <button class="btn-add-small" id="btn-add-meal-category">
+                Přidat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
+            <label>Týdenní/měsíční trendy</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-trends" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Zobrazit průměrné hodnoty za 7 nebo 30 dní v historii
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
+            <label>Kopírovat den</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-copy-day" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Umožní kopírovat všechny záznamy z historie do dnešního dne
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-group">
         <h3 style="color: var(--red)">Danger zone</h3>
         <button class="btn-danger" id="btn-clear-log">
           Smazat dnešní záznamy
@@ -1851,13 +2099,14 @@
             </div>
           </div>
           <div id="modal-measurement-select"></div>
-          <div class="quick-grams" id="quick-grams">
-            <button class="quick-gram" data-g="25">25 g</button>
-            <button class="quick-gram" data-g="50">50 g</button>
-            <button class="quick-gram" data-g="100">100 g</button>
-            <button class="quick-gram" data-g="150">150 g</button>
-            <button class="quick-gram" data-g="200">200 g</button>
-            <button class="quick-gram" data-g="250">250 g</button>
+          <div class="quick-grams" id="quick-grams"></div>
+          <div
+            id="modal-meal-select-wrap"
+            class="meal-select-wrap"
+            style="display: none"
+          >
+            <label>Kategorie jídla</label>
+            <select id="modal-meal-select"></select>
           </div>
           <button class="btn-add" id="btn-log-food">
             Přidat do denního záznamu
@@ -1899,13 +2148,14 @@
           </div>
         </div>
         <div id="edit-measurement-select"></div>
-        <div class="quick-grams" id="edit-quick-grams">
-          <button class="quick-gram" data-g="25">25 g</button>
-          <button class="quick-gram" data-g="50">50 g</button>
-          <button class="quick-gram" data-g="100">100 g</button>
-          <button class="quick-gram" data-g="150">150 g</button>
-          <button class="quick-gram" data-g="200">200 g</button>
-          <button class="quick-gram" data-g="250">250 g</button>
+        <div class="quick-grams" id="edit-quick-grams"></div>
+        <div
+          id="edit-meal-select-wrap"
+          class="meal-select-wrap"
+          style="display: none"
+        >
+          <label>Kategorie jídla</label>
+          <select id="edit-meal-select"></select>
         </div>
         <button class="btn-add" id="btn-save-edit">Uložit změny</button>
       </div>
@@ -2469,7 +2719,35 @@
         quickGrams: [...DEFAULT_QUICK_GRAMS],
         rohlikSearchEnabled: false,
         autoFavEnabled: true,
+        mealCategoriesEnabled: false,
+        mealCategories: ["Snídaně", "Oběd", "Večeře", "Svačina"],
+        trendsEnabled: false,
+        trendsPeriod: 7,
+        copyDayEnabled: false,
       };
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function showToast(msg, duration = 2000) {
+        let el = document.getElementById("toast");
+        if (!el) {
+          el = document.createElement("div");
+          el.id = "toast";
+          el.className = "toast";
+          document.body.appendChild(el);
+        }
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => el.classList.remove("show"), duration);
+      }
 
       function loadState() {
         try {
@@ -2489,12 +2767,32 @@
               parsed.customMeasurementsEnabled || false;
             state.customMeasurements = parsed.customMeasurements || [];
             state.customQuickGramsEnabled =
-              parsed.customQuickGramsEnabled !== undefined ? parsed.customQuickGramsEnabled : true;
+              parsed.customQuickGramsEnabled !== undefined
+                ? parsed.customQuickGramsEnabled
+                : true;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
-            state.rohlikSearchEnabled =
-              parsed.rohlikSearchEnabled || false;
+            state.rohlikSearchEnabled = parsed.rohlikSearchEnabled || false;
             state.autoFavEnabled =
-              parsed.autoFavEnabled !== undefined ? parsed.autoFavEnabled : true;
+              parsed.autoFavEnabled !== undefined
+                ? parsed.autoFavEnabled
+                : true;
+            state.mealCategoriesEnabled =
+              parsed.mealCategoriesEnabled !== undefined
+                ? parsed.mealCategoriesEnabled
+                : false;
+            state.mealCategories = parsed.mealCategories || [
+              "Snídaně",
+              "Oběd",
+              "Večeře",
+              "Svačina",
+            ];
+            state.trendsEnabled =
+              parsed.trendsEnabled !== undefined ? parsed.trendsEnabled : false;
+            state.trendsPeriod = parsed.trendsPeriod || 7;
+            state.copyDayEnabled =
+              parsed.copyDayEnabled !== undefined
+                ? parsed.copyDayEnabled
+                : false;
           }
         } catch (e) {}
       }
@@ -2518,6 +2816,11 @@
             quickGrams: state.quickGrams,
             rohlikSearchEnabled: state.rohlikSearchEnabled,
             autoFavEnabled: state.autoFavEnabled,
+            mealCategoriesEnabled: state.mealCategoriesEnabled,
+            mealCategories: state.mealCategories,
+            trendsEnabled: state.trendsEnabled,
+            trendsPeriod: state.trendsPeriod,
+            copyDayEnabled: state.copyDayEnabled,
           }),
         );
       }
@@ -2558,12 +2861,32 @@
               parsed.customMeasurementsEnabled || false;
             state.customMeasurements = parsed.customMeasurements || [];
             state.customQuickGramsEnabled =
-              parsed.customQuickGramsEnabled !== undefined ? parsed.customQuickGramsEnabled : true;
+              parsed.customQuickGramsEnabled !== undefined
+                ? parsed.customQuickGramsEnabled
+                : true;
             state.quickGrams = parsed.quickGrams || [...DEFAULT_QUICK_GRAMS];
-            state.rohlikSearchEnabled =
-              parsed.rohlikSearchEnabled || false;
+            state.rohlikSearchEnabled = parsed.rohlikSearchEnabled || false;
             state.autoFavEnabled =
-              parsed.autoFavEnabled !== undefined ? parsed.autoFavEnabled : true;
+              parsed.autoFavEnabled !== undefined
+                ? parsed.autoFavEnabled
+                : true;
+            state.mealCategoriesEnabled =
+              parsed.mealCategoriesEnabled !== undefined
+                ? parsed.mealCategoriesEnabled
+                : false;
+            state.mealCategories = parsed.mealCategories || [
+              "Snídaně",
+              "Oběd",
+              "Večeře",
+              "Svačina",
+            ];
+            state.trendsEnabled =
+              parsed.trendsEnabled !== undefined ? parsed.trendsEnabled : false;
+            state.trendsPeriod = parsed.trendsPeriod || 7;
+            state.copyDayEnabled =
+              parsed.copyDayEnabled !== undefined
+                ? parsed.copyDayEnabled
+                : false;
             saveState();
             loadSettingsUI();
             renderCategories();
@@ -2606,7 +2929,7 @@
       }
 
       function setCache(cache, key, data) {
-        // Limit cache size to 200 entries to keep localStorage small
+        // Limit cache size to 500 entries to keep localStorage small
         const keys = Object.keys(cache);
         if (keys.length >= 500) {
           // Remove oldest entries
@@ -2744,8 +3067,7 @@
           companyId: "1",
         });
         const url =
-          CORS_PROXY +
-          encodeURIComponent(ROHLIK_URL + "?" + params.toString());
+          CORS_PROXY + encodeURIComponent(ROHLIK_URL + "?" + params.toString());
         try {
           const resp = await fetch(url, {
             signal: rohlikAbort.signal,
@@ -2953,10 +3275,10 @@
               : "";
 
             return `
-      <div class="food-card${f.source === "barcode" ? " barcode-match" : ""}" data-idx="${i}" data-source="${f.source}" data-guid="${f.guid || ""}" data-name="${f.name.replace(/"/g, "&quot;")}">
+      <div class="food-card${f.source === "barcode" ? " barcode-match" : ""}" data-idx="${i}" data-source="${f.source}" data-guid="${f.guid || ""}" data-name="${escapeHtml(f.name)}">
         <div>
-          <div class="food-name">${favHtml}${f.name}${badgeHtml}</div>
-          <div class="food-portion">${f.portion || (f.cat !== "API" ? f.cat : `na 100 ${f.liquid ? "ml" : "g"}`)}</div>
+          <div class="food-name">${favHtml}${escapeHtml(f.name)}${badgeHtml}</div>
+          <div class="food-portion">${escapeHtml(f.portion || (f.cat !== "API" ? f.cat : `na 100 ${f.liquid ? "ml" : "g"}`))}</div>
           ${macroHtml}
         </div>
         <div class="food-kcal">${kcalText}</div>
@@ -2984,7 +3306,7 @@
         const options = state.customMeasurements
           .map(
             (m, i) =>
-              `<option value="${i}">${m.name} (${m.grams} ${unit})</option>`,
+              `<option value="${i}">${escapeHtml(m.name)} (${m.grams} ${unit})</option>`,
           )
           .join("");
         return `<div class="measurement-select-wrap">
@@ -3003,7 +3325,41 @@
         </div>`;
       }
 
-      function initMeasurementSelect(containerId, gramsInputId, quickGramsId, updateMacrosFn) {
+      function buildMealSelectHtml(selectedMeal) {
+        if (!state.mealCategoriesEnabled) return "";
+        const options = ["", ...state.mealCategories];
+        return options
+          .map(
+            (m) =>
+              `<option value="${escapeHtml(m)}" ${m === (selectedMeal || "") ? "selected" : ""}>${m ? escapeHtml(m) : "Bez kategorie"}</option>`,
+          )
+          .join("");
+      }
+
+      function updateMealSelects(selectedMeal) {
+        const show = state.mealCategoriesEnabled;
+        const logWrap = document.getElementById("modal-meal-select-wrap");
+        const editWrap = document.getElementById("edit-meal-select-wrap");
+        if (logWrap) {
+          logWrap.style.display = show ? "block" : "none";
+          if (show)
+            document.getElementById("modal-meal-select").innerHTML =
+              buildMealSelectHtml(selectedMeal || "");
+        }
+        if (editWrap) {
+          editWrap.style.display = show ? "block" : "none";
+          if (show)
+            document.getElementById("edit-meal-select").innerHTML =
+              buildMealSelectHtml(selectedMeal || "");
+        }
+      }
+
+      function initMeasurementSelect(
+        containerId,
+        gramsInputId,
+        quickGramsId,
+        updateMacrosFn,
+      ) {
         const container = document.getElementById(containerId);
         const select = container.querySelector(".measurement-select");
         if (!select) return;
@@ -3044,7 +3400,10 @@
         container.querySelectorAll(".measurement-stepper").forEach((btn) => {
           btn.addEventListener("click", () => {
             const step = parseFloat(btn.dataset.step);
-            const val = Math.max(0.25, (parseFloat(amountInput.value) || 1) + step);
+            const val = Math.max(
+              0.25,
+              (parseFloat(amountInput.value) || 1) + step,
+            );
             amountInput.value = val;
             recalc();
           });
@@ -3068,7 +3427,13 @@
           buildQuickGramsHtml(unit);
         document.getElementById("modal-measurement-select").innerHTML =
           buildMeasurementSelectHtml(unit);
-        initMeasurementSelect("modal-measurement-select", "modal-grams", "quick-grams", updateModalMacros);
+        initMeasurementSelect(
+          "modal-measurement-select",
+          "modal-grams",
+          "quick-grams",
+          updateModalMacros,
+        );
+        updateMealSelects("");
         // Update favorite button
         const favBtn = document.getElementById("btn-toggle-fav");
         const fav = isFavorite(food.name);
@@ -3104,7 +3469,12 @@
               buildQuickGramsHtml(updatedUnit);
             document.getElementById("modal-measurement-select").innerHTML =
               buildMeasurementSelectHtml(updatedUnit);
-            initMeasurementSelect("modal-measurement-select", "modal-grams", "quick-grams", updateModalMacros);
+            initMeasurementSelect(
+              "modal-measurement-select",
+              "modal-grams",
+              "quick-grams",
+              updateModalMacros,
+            );
           }
 
           document.getElementById("modal-loading").style.display = "none";
@@ -3156,10 +3526,11 @@
         const idx = state.favorites.indexOf(name);
         if (idx >= 0) {
           state.favorites.splice(idx, 1);
-          // Reset usage counter so auto-favorite won't re-add it
           delete state.foodUsage[name];
+          showToast("Odebráno z oblíbených");
         } else {
           state.favorites.push(name);
+          showToast("Přidáno do oblíbených");
         }
         saveState();
       }
@@ -3188,6 +3559,9 @@
             hour: "2-digit",
             minute: "2-digit",
           }),
+          meal: state.mealCategoriesEnabled
+            ? document.getElementById("modal-meal-select").value
+            : "",
         });
         state.portionMemory[f.name] = g;
 
@@ -3205,16 +3579,19 @@
         saveState();
         closeModal();
         if (state.activePage === "page-today") renderToday();
+        showToast("Přidáno do záznamu");
       }
 
       function deleteLogEntry(idx) {
         const key = todayKey();
-        if (state.log[key]) {
-          state.log[key].splice(idx, 1);
-          if (state.log[key].length === 0) delete state.log[key];
-          saveState();
-          renderToday();
-        }
+        const entry = state.log[key]?.[idx];
+        if (!entry) return;
+        if (!confirm(`Smazat "${entry.name}"?`)) return;
+        state.log[key].splice(idx, 1);
+        if (state.log[key].length === 0) delete state.log[key];
+        saveState();
+        renderToday();
+        showToast("Záznam smazán");
       }
 
       // ═══════════════════════════════════════════
@@ -3252,7 +3629,21 @@
           buildQuickGramsHtml(unit);
         document.getElementById("edit-measurement-select").innerHTML =
           buildMeasurementSelectHtml(unit);
-        initMeasurementSelect("edit-measurement-select", "edit-modal-grams", "edit-quick-grams", updateEditModalMacros);
+        initMeasurementSelect(
+          "edit-measurement-select",
+          "edit-modal-grams",
+          "edit-quick-grams",
+          updateEditModalMacros,
+        );
+        // Meal category select
+        const editMealWrap = document.getElementById("edit-meal-select-wrap");
+        if (state.mealCategoriesEnabled) {
+          editMealWrap.style.display = "block";
+          document.getElementById("edit-meal-select").innerHTML =
+            buildMealSelectHtml(entry.meal || "");
+        } else {
+          editMealWrap.style.display = "none";
+        }
         // Update favorite button
         const editFavBtn = document.getElementById("btn-edit-toggle-fav");
         const fav = isFavorite(entry.name);
@@ -3305,21 +3696,27 @@
         entry.carbs = +(b.carbs * ratio).toFixed(1);
         entry.fat = +(b.fat * ratio).toFixed(1);
         entry.fiber = +(b.fiber * ratio).toFixed(1);
+        if (state.mealCategoriesEnabled) {
+          entry.meal = document.getElementById("edit-meal-select").value;
+        }
 
         state.portionMemory[entry.name] = g;
         saveState();
         closeEditModal();
         if (state.activePage === "page-today") renderToday();
         if (state.activePage === "page-history") renderHistory();
+        showToast("Změny uloženy");
       }
 
       function deleteLogEntryByKey(dayKey, idx) {
-        if (state.log[dayKey]) {
-          state.log[dayKey].splice(idx, 1);
-          if (state.log[dayKey].length === 0) delete state.log[dayKey];
-          saveState();
-          renderHistory();
-        }
+        const entry = state.log[dayKey]?.[idx];
+        if (!entry) return;
+        if (!confirm(`Smazat "${entry.name}"?`)) return;
+        state.log[dayKey].splice(idx, 1);
+        if (state.log[dayKey].length === 0) delete state.log[dayKey];
+        saveState();
+        renderHistory();
+        showToast("Záznam smazán");
       }
 
       // ═══════════════════════════════════════════
@@ -3393,29 +3790,132 @@
             '<div class="empty-state"><div class="icon">📋</div><p>Zatím žádné záznamy.<br>Přidejte potraviny z tabulek.</p></div>';
           return;
         }
-        logEl.innerHTML = entries
-          .map(
-            (e, i) => `
-    <div class="log-entry">
-      <div class="log-entry-info">
-        <div class="log-entry-name">${e.name}</div>
-        <div class="log-entry-detail">${e.grams}${e.liquid ? "ml" : "g"} · ${e.time}</div>
-      </div>
-      <div class="log-entry-kcal">${e.kcal} kcal</div>
-      <div class="log-entry-actions">
-        <button class="edit-btn" data-log-idx="${i}">✎</button>
-        <button class="delete-btn" data-log-idx="${i}">&times;</button>
-      </div>
-    </div>
-  `,
-          )
-          .join("");
+
+        function renderLogEntry(e, i) {
+          return `<div class="log-entry">
+            <div class="log-entry-info">
+              <div class="log-entry-name">${escapeHtml(e.name)}</div>
+              <div class="log-entry-detail">${e.grams}${e.liquid ? "ml" : "g"} · ${e.time}</div>
+            </div>
+            <div class="log-entry-kcal">${e.kcal} kcal</div>
+            <div class="log-entry-actions">
+              <button class="edit-btn" data-log-idx="${i}">✎</button>
+              <button class="delete-btn" data-log-idx="${i}">&times;</button>
+            </div>
+          </div>`;
+        }
+
+        if (state.mealCategoriesEnabled) {
+          const groups = {};
+          entries.forEach((e, i) => {
+            const key = e.meal || "";
+            if (!groups[key]) groups[key] = [];
+            groups[key].push({ entry: e, idx: i });
+          });
+          const order = [...state.mealCategories, ""];
+          const sortedKeys = Object.keys(groups).sort((a, b) => {
+            const ai = order.indexOf(a);
+            const bi = order.indexOf(b);
+            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+          });
+          logEl.innerHTML = sortedKeys
+            .map((key) => {
+              const label = key || "Ostatní";
+              const items = groups[key]
+                .map(({ entry: e, idx: i }) => renderLogEntry(e, i))
+                .join("");
+              return `<div class="meal-group-header">${escapeHtml(label)}</div>${items}`;
+            })
+            .join("");
+        } else {
+          logEl.innerHTML = entries
+            .map((e, i) => renderLogEntry(e, i))
+            .join("");
+        }
       }
 
       // ═══════════════════════════════════════════
       // HISTORY PAGE
       // ═══════════════════════════════════════════
+      function renderTrends() {
+        const container = document.getElementById("trends-section");
+        if (!state.trendsEnabled) {
+          container.innerHTML = "";
+          return;
+        }
+
+        const period = state.trendsPeriod || 7;
+        const today = new Date();
+        let daysWithData = 0;
+        const totals = { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+
+        for (let i = 0; i < period; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+          const entries = state.log[key];
+          if (entries && entries.length > 0) {
+            daysWithData++;
+            entries.forEach((e) => {
+              totals.kcal += e.kcal;
+              totals.protein += e.protein;
+              totals.carbs += e.carbs;
+              totals.fat += e.fat;
+            });
+          }
+        }
+
+        const avg =
+          daysWithData > 0
+            ? {
+                kcal: Math.round(totals.kcal / daysWithData),
+                protein: Math.round(totals.protein / daysWithData),
+                carbs: Math.round(totals.carbs / daysWithData),
+                fat: Math.round(totals.fat / daysWithData),
+              }
+            : { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+
+        container.innerHTML = `
+          <div class="trends-period-pills">
+            <button class="trends-period-pill ${period === 7 ? "active" : ""}" data-period="7">7 dní</button>
+            <button class="trends-period-pill ${period === 30 ? "active" : ""}" data-period="30">30 dní</button>
+          </div>
+          ${
+            daysWithData === 0
+              ? '<div class="empty-state" style="padding: 20px 0"><p>Žádná data za posledních ' +
+                period +
+                " dní</p></div>"
+              : `
+          <div class="trends-card">
+            <div class="trends-avg-kcal">
+              <div class="val">${avg.kcal}</div>
+              <div class="label">Ø kcal / den</div>
+            </div>
+            <div class="trends-days-info">${daysWithData} ${daysWithData === 1 ? "den" : daysWithData < 5 ? "dny" : "dní"} se záznamy z posledních ${period}</div>
+            <div class="macro-bars">
+              <div class="macro-bar-item">
+                <div class="macro-bar-label">Bílkoviny</div>
+                <div class="macro-bar-track"><div class="macro-bar-fill protein" style="width:${Math.min((avg.protein / state.goals.protein) * 100, 100)}%"></div></div>
+                <div class="macro-bar-val">${avg.protein} / ${state.goals.protein}g</div>
+              </div>
+              <div class="macro-bar-item">
+                <div class="macro-bar-label">Sacharidy</div>
+                <div class="macro-bar-track"><div class="macro-bar-fill carbs" style="width:${Math.min((avg.carbs / state.goals.carbs) * 100, 100)}%"></div></div>
+                <div class="macro-bar-val">${avg.carbs} / ${state.goals.carbs}g</div>
+              </div>
+              <div class="macro-bar-item">
+                <div class="macro-bar-label">Tuky</div>
+                <div class="macro-bar-track"><div class="macro-bar-fill fat" style="width:${Math.min((avg.fat / state.goals.fat) * 100, 100)}%"></div></div>
+                <div class="macro-bar-val">${avg.fat} / ${state.goals.fat}g</div>
+              </div>
+            </div>
+          </div>`
+          }
+        `;
+      }
+
       function renderHistory() {
+        renderTrends();
         const el = document.getElementById("history-list");
         const days = Object.keys(state.log).sort().reverse();
 
@@ -3471,7 +3971,7 @@
                 (e, i) => `
               <div class="log-entry">
                 <div class="log-entry-info">
-                  <div class="log-entry-name">${e.name}</div>
+                  <div class="log-entry-name">${escapeHtml(e.name)}</div>
                   <div class="log-entry-detail">${e.grams}${e.liquid ? "ml" : "g"} · ${e.time}</div>
                 </div>
                 <div class="log-entry-kcal">${e.kcal} kcal</div>
@@ -3483,6 +3983,7 @@
             `,
               )
               .join("")}
+            ${state.copyDayEnabled && day !== todayKey() ? `<button class="btn-copy-day" data-copy-day="${day}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopírovat do dneška</button>` : ""}
           </div>
         `
             : ""
@@ -3491,6 +3992,28 @@
     `;
           })
           .join("");
+      }
+
+      function copyDayToToday(dayKey) {
+        const entries = state.log[dayKey];
+        if (!entries || entries.length === 0) return;
+        if (
+          !confirm(
+            `Kopírovat ${entries.length} ${entries.length === 1 ? "záznam" : entries.length < 5 ? "záznamy" : "záznamů"} do dnešního dne?`,
+          )
+        )
+          return;
+        const today = todayKey();
+        if (!state.log[today]) state.log[today] = [];
+        const now = new Date();
+        const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        entries.forEach((e) => {
+          const copy = { ...e, time };
+          state.log[today].push(copy);
+        });
+        saveState();
+        renderHistory();
+        showToast(`Zkopírováno ${entries.length} záznamů`);
       }
 
       // ═══════════════════════════════════════════
@@ -3525,6 +4048,20 @@
         // Auto-favorite toggle
         document.getElementById("toggle-auto-fav").checked =
           state.autoFavEnabled;
+
+        // Meal categories toggle
+        document.getElementById("toggle-meal-categories").checked =
+          state.mealCategoriesEnabled;
+        document.getElementById("meal-categories-section").style.display =
+          state.mealCategoriesEnabled ? "block" : "none";
+        renderMealCategoriesChips();
+
+        // Trends toggle
+        document.getElementById("toggle-trends").checked = state.trendsEnabled;
+
+        // Copy day toggle
+        document.getElementById("toggle-copy-day").checked =
+          state.copyDayEnabled;
       }
 
       function renderMeasurementsList() {
@@ -3538,7 +4075,7 @@
             (m, i) =>
               `<div class="measurement-item">
                 <div class="meas-info">
-                  <span class="meas-name">${m.name}</span>
+                  <span class="meas-name">${escapeHtml(m.name)}</span>
                   <span class="meas-grams">${m.grams} g</span>
                 </div>
                 <button class="delete-btn" data-meas-idx="${i}">&times;</button>
@@ -3555,6 +4092,19 @@
               `<div class="chip">
                 <span>${g} g</span>
                 <button class="chip-remove" data-qg-idx="${i}">&times;</button>
+              </div>`,
+          )
+          .join("");
+      }
+
+      function renderMealCategoriesChips() {
+        const el = document.getElementById("meal-categories-chips");
+        el.innerHTML = state.mealCategories
+          .map(
+            (c, i) =>
+              `<div class="chip">
+                <span>${escapeHtml(c)}</span>
+                <button class="chip-remove" data-mc-idx="${i}">&times;</button>
               </div>`,
           )
           .join("");
@@ -3770,8 +4320,8 @@
             (f, i) => `
     <div class="custom-food-item">
       <div class="custom-food-item-info">
-        <div class="custom-food-item-name">${f.name}</div>
-        <div class="custom-food-item-detail">${f.cat} · B: ${f.protein}g · S: ${f.carbs}g · T: ${f.fat}g</div>
+        <div class="custom-food-item-name">${escapeHtml(f.name)}</div>
+        <div class="custom-food-item-detail">${escapeHtml(f.cat)} · B: ${f.protein}g · S: ${f.carbs}g · T: ${f.fat}g</div>
       </div>
       <div class="custom-food-item-kcal">${Math.round(f.kcal)} kcal</div>
       <div class="custom-food-item-actions">
@@ -3824,12 +4374,15 @@
       // ═══════════════════════════════════════════
       // SEARCH WITH API + DEBOUNCE
       // ═══════════════════════════════════════════
+      let searchGen = 0;
+
       function handleSearch(query) {
         state.searchQuery = query;
 
         if (searchTimeout) clearTimeout(searchTimeout);
 
         if (!query || query.length < 2) {
+          searchGen++;
           state.apiResults = [];
           state.rohlikResults = [];
           state.barcodeResults = [];
@@ -3845,12 +4398,15 @@
 
         // Debounce API calls (300ms) — run both in parallel
         setSearchLoading(true);
+        const gen = ++searchGen;
         searchTimeout = setTimeout(async () => {
           const searches = [apiSearch(query)];
           if (state.rohlikSearchEnabled) searches.push(rohlikSearch(query));
           const results = await Promise.all(searches);
-          setSearchLoading(false);
 
+          if (gen !== searchGen) return; // Stale — discard
+
+          setSearchLoading(false);
           if (results[0] !== null) {
             state.apiResults = parseAutoResults(results[0]);
           }
@@ -3907,23 +4463,14 @@
           const card = e.target.closest(".food-card");
           if (!card) return;
 
-          const source = card.dataset.source;
-          const name = card.dataset.name;
+          const idx = parseInt(card.dataset.idx);
+          const food = lastRenderedFoods[idx];
+          if (!food) return;
 
-          if (source === "barcode") {
-            const food = state.barcodeResults.find((f) => f.name === name);
-            if (food) openFoodModal({ ...food, source: "local" });
-          } else if (source === "rohlik") {
-            const food = state.rohlikResults.find((f) => f.name === name);
-            if (food) openFoodModal({ ...food, source: "local" });
-          } else if (source === "api") {
-            const food = state.apiResults.find((f) => f.name === name);
-            if (food) openFoodModal(food);
+          if (food.source === "api") {
+            openFoodModal(food);
           } else {
-            const food =
-              localFoods().find((f) => f.name === name) ||
-              lastRenderedFoods.find((f) => f.name === name);
-            if (food) openFoodModal({ ...food, source: "local" });
+            openFoodModal({ ...food, source: "local" });
           }
         });
 
@@ -4043,6 +4590,12 @@
                 parseInt(delBtn.dataset.logIdx),
               );
             }
+            // Copy day button
+            const copyBtn = e.target.closest(".btn-copy-day[data-copy-day]");
+            if (copyBtn) {
+              e.stopPropagation();
+              return copyDayToToday(copyBtn.dataset.copyDay);
+            }
             // Toggle expand
             const header = e.target.closest(".history-header");
             if (header) {
@@ -4051,6 +4604,17 @@
                 state.expandedHistoryDay === day ? null : day;
               renderHistory();
             }
+          });
+
+        // Trends period pill click
+        document
+          .getElementById("trends-section")
+          .addEventListener("click", (e) => {
+            const pill = e.target.closest(".trends-period-pill[data-period]");
+            if (!pill) return;
+            state.trendsPeriod = parseInt(pill.dataset.period);
+            saveState();
+            renderTrends();
           });
 
         // Settings goals
@@ -4186,14 +4750,15 @@
         document
           .getElementById("collapse-custom-measurements")
           .addEventListener("click", () => {
-            const section = document.getElementById("custom-measurements-section");
-            const chevron = document.getElementById("chevron-custom-measurements");
+            const section = document.getElementById(
+              "custom-measurements-section",
+            );
+            const chevron = document.getElementById(
+              "chevron-custom-measurements",
+            );
             const open = section.style.display === "none";
             section.style.display = open ? "block" : "none";
             chevron.classList.toggle("open", open);
-            // Enable/disable measurements based on collapse state
-            state.customMeasurementsEnabled = open;
-            saveState();
           });
 
         // Quick grams toggle
@@ -4226,6 +4791,65 @@
           .addEventListener("change", (e) => {
             state.autoFavEnabled = e.target.checked;
             saveState();
+          });
+
+        // Meal categories toggle
+        document
+          .getElementById("toggle-meal-categories")
+          .addEventListener("change", (e) => {
+            state.mealCategoriesEnabled = e.target.checked;
+            document.getElementById("meal-categories-section").style.display = e
+              .target.checked
+              ? "block"
+              : "none";
+            saveState();
+          });
+
+        // Add meal category
+        document
+          .getElementById("btn-add-meal-category")
+          .addEventListener("click", () => {
+            const input = document.getElementById("new-meal-category");
+            const val = input.value.trim();
+            if (!val) return;
+            if (state.mealCategories.includes(val)) {
+              input.value = "";
+              return;
+            }
+            state.mealCategories.push(val);
+            saveState();
+            input.value = "";
+            renderMealCategoriesChips();
+          });
+
+        // Remove meal category (delegated)
+        document
+          .getElementById("meal-categories-chips")
+          .addEventListener("click", (e) => {
+            const btn = e.target.closest(".chip-remove[data-mc-idx]");
+            if (!btn) return;
+            const idx = parseInt(btn.dataset.mcIdx);
+            state.mealCategories.splice(idx, 1);
+            saveState();
+            renderMealCategoriesChips();
+          });
+
+        // Trends toggle
+        document
+          .getElementById("toggle-trends")
+          .addEventListener("change", (e) => {
+            state.trendsEnabled = e.target.checked;
+            saveState();
+            if (state.activePage === "page-history") renderHistory();
+          });
+
+        // Copy day toggle
+        document
+          .getElementById("toggle-copy-day")
+          .addEventListener("change", (e) => {
+            state.copyDayEnabled = e.target.checked;
+            saveState();
+            if (state.activePage === "page-history") renderHistory();
           });
 
         // Add measurement
@@ -4515,19 +5139,52 @@
           if (e.target === e.currentTarget) closeBarcodeScanner();
         });
 
+      // ═══════════════════════════════════════════
+      // OFFLINE INDICATOR
+      // ═══════════════════════════════════════════
+      (function initOfflineIndicator() {
+        const banner = document.getElementById("offline-banner");
+        let hideTimer = null;
+
+        function updateOnlineStatus() {
+          if (hideTimer) clearTimeout(hideTimer);
+          if (!navigator.onLine) {
+            banner.textContent = "Jste offline";
+            banner.classList.remove("online");
+            banner.classList.add("visible");
+          } else {
+            banner.textContent = "Zpátky online";
+            banner.classList.add("online", "visible");
+            hideTimer = setTimeout(() => {
+              banner.classList.remove("visible", "online");
+            }, 3000);
+          }
+        }
+
+        window.addEventListener("online", updateOnlineStatus);
+        window.addEventListener("offline", updateOnlineStatus);
+        if (!navigator.onLine) updateOnlineStatus();
+      })();
+
       // Register service worker with auto-update
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js").then((reg) => {
-          reg.addEventListener("updatefound", () => {
-            const newSW = reg.installing;
-            if (!newSW) return;
-            newSW.addEventListener("statechange", () => {
-              if (newSW.state === "activated") {
-                window.location.reload();
-              }
+        navigator.serviceWorker
+          .register("sw.js")
+          .then((reg) => {
+            reg.addEventListener("updatefound", () => {
+              const newSW = reg.installing;
+              if (!newSW) return;
+              newSW.addEventListener("statechange", () => {
+                if (
+                  newSW.state === "activated" &&
+                  navigator.serviceWorker.controller
+                ) {
+                  showToast("Nová verze dostupná — obnovte stránku", 5000);
+                }
+              });
             });
-          });
-        }).catch(() => {});
+          })
+          .catch(() => {});
         // Check for updates on every load
         navigator.serviceWorker.ready.then((reg) => reg.update());
       }
