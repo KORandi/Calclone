@@ -1,5 +1,5 @@
-const CACHE_NAME = "kaltab-v15";
-const API_CACHE = "kaltab-api-v15";
+const CACHE_NAME = "kaltab-v16";
+const API_CACHE = "kaltab-api-v16";
 
 const ASSETS = [
   "./",

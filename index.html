@@ -2134,7 +2134,7 @@
           </div>
           <div class="cache-limit-row">
             <label>Limit
-              <span class="info-icon" data-tooltip="cache-limit-info">i
+              <span class="info-icon tooltip-right" data-tooltip="cache-limit-info">i
                 <span class="tooltip">Prohlížeč umožňuje uložit max. 5 MB dat na doménu (localStorage). Doporučeno ponechat alespoň 0.5 MB pro ostatní data aplikace. Rozmezí: 0.5–4.5 MB.</span>
               </span>
             </label>
@@ -2359,6 +2359,7 @@
       const _B = "aHR0cHM6Ly93d3cua2Fsb3JpY2tldGFidWxreS5jeg==";
       const _P1 = "L2F1dG9jb21wbGV0ZS9mb29kc3R1ZmYtYWN0aXZpdHktbWVhbA==";
       const _P2 = "L2Zvb2RzdHVmZi9kZXRhaWwv";
+      const _P3 = "L2Zvb2RzdHVmZi9kZXRhaWwvZm9ybS8=";
       let apiAvailable = true;
 
       function proxyUrl(path, params) {
@@ -2378,6 +2379,10 @@
           protein: 23,
           carbs: 0,
           fat: 1.3,
+          measurements: [
+            { name: "porce (150 g)", grams: 150 },
+            { name: "velká porce (200 g)", grams: 200 },
+          ],
         },
         {
           name: "Kuřecí stehno",
@@ -2386,6 +2391,7 @@
           protein: 18,
           carbs: 0,
           fat: 11,
+          measurements: [{ name: "kus (130 g)", grams: 130 }],
         },
         {
           name: "Hovězí svíčková",
@@ -2394,6 +2400,7 @@
           protein: 21,
           carbs: 0,
           fat: 4,
+          measurements: [{ name: "porce (150 g)", grams: 150 }],
         },
         {
           name: "Hovězí mleté",
@@ -2402,6 +2409,7 @@
           protein: 17,
           carbs: 0,
           fat: 20,
+          measurements: [{ name: "porce (150 g)", grams: 150 }],
         },
         {
           name: "Vepřová kotleta",
@@ -2410,6 +2418,7 @@
           protein: 19,
           carbs: 0,
           fat: 18,
+          measurements: [{ name: "kus (150 g)", grams: 150 }],
         },
         {
           name: "Vepřová panenka",
@@ -2418,6 +2427,7 @@
           protein: 21,
           carbs: 0,
           fat: 6,
+          measurements: [{ name: "porce (150 g)", grams: 150 }],
         },
         {
           name: "Krůtí prsa",
@@ -2426,6 +2436,10 @@
           protein: 24,
           carbs: 0,
           fat: 0.7,
+          measurements: [
+            { name: "porce (150 g)", grams: 150 },
+            { name: "velká porce (200 g)", grams: 200 },
+          ],
         },
         {
           name: "Losos",
@@ -2434,6 +2448,10 @@
           protein: 20,
           carbs: 0,
           fat: 13,
+          measurements: [
+            { name: "filet (125 g)", grams: 125 },
+            { name: "porce (150 g)", grams: 150 },
+          ],
         },
         {
           name: "Tuňák (konzerva)",
@@ -2442,6 +2460,10 @@
           protein: 26,
           carbs: 0,
           fat: 1,
+          measurements: [
+            { name: "malá konzerva (80 g)", grams: 80 },
+            { name: "konzerva (150 g)", grams: 150 },
+          ],
         },
         {
           name: "Treska",
@@ -2450,6 +2472,7 @@
           protein: 18,
           carbs: 0,
           fat: 0.7,
+          measurements: [{ name: "filet (150 g)", grams: 150 }],
         },
         {
           name: "Šunka",
@@ -2458,6 +2481,7 @@
           protein: 18,
           carbs: 1,
           fat: 7,
+          measurements: [{ name: "plátek (25 g)", grams: 25 }],
         },
         {
           name: "Mléko 1.5%",
@@ -2467,6 +2491,10 @@
           carbs: 4.9,
           fat: 1.5,
           liquid: true,
+          measurements: [
+            { name: "sklenice (250 ml)", grams: 250 },
+            { name: "malá sklenice (200 ml)", grams: 200 },
+          ],
         },
         {
           name: "Jogurt bílý",
@@ -2476,6 +2504,10 @@
           carbs: 4,
           fat: 3,
           liquid: true,
+          measurements: [
+            { name: "kelímek (150 g)", grams: 150 },
+            { name: "velký kelímek (200 g)", grams: 200 },
+          ],
         },
         {
           name: "Řecký jogurt",
@@ -2485,6 +2517,10 @@
           carbs: 3.6,
           fat: 5,
           liquid: true,
+          measurements: [
+            { name: "kelímek (150 g)", grams: 150 },
+            { name: "velký kelímek (200 g)", grams: 200 },
+          ],
         },
         {
           name: "Skyr",
@@ -2494,6 +2530,10 @@
           carbs: 4,
           fat: 0.2,
           liquid: true,
+          measurements: [
+            { name: "kelímek (150 g)", grams: 150 },
+            { name: "velký kelímek (400 g)", grams: 400 },
+          ],
         },
         {
           name: "Tvaroh měkký",
@@ -2502,6 +2542,7 @@
           protein: 13,
           carbs: 3.5,
           fat: 4,
+          measurements: [{ name: "balení (250 g)", grams: 250 }],
         },
         {
           name: "Cottage cheese",
@@ -2510,6 +2551,7 @@
           protein: 11,
           carbs: 3.4,
           fat: 4.3,
+          measurements: [{ name: "balení (150 g)", grams: 150 }],
         },
         {
           name: "Eidam 30%",
@@ -2518,6 +2560,7 @@
           protein: 30,
           carbs: 0,
           fat: 15,
+          measurements: [{ name: "plátek (30 g)", grams: 30 }],
         },
         {
           name: "Mozzarella",
@@ -2526,6 +2569,7 @@
           protein: 22,
           carbs: 2,
           fat: 20,
+          measurements: [{ name: "balení (125 g)", grams: 125 }],
         },
         {
           name: "Máslo",
@@ -2534,6 +2578,10 @@
           protein: 0.9,
           carbs: 0.1,
           fat: 81,
+          measurements: [
+            { name: "porce (10 g)", grams: 10 },
+            { name: "balení (250 g)", grams: 250 },
+          ],
         },
         {
           name: "Chleba žitný",
@@ -2542,6 +2590,7 @@
           protein: 7,
           carbs: 43,
           fat: 1.2,
+          measurements: [{ name: "krajíc (60 g)", grams: 60 }],
         },
         {
           name: "Rohlík",
@@ -2550,6 +2599,7 @@
           protein: 8,
           carbs: 52,
           fat: 3.5,
+          measurements: [{ name: "kus (43 g)", grams: 43 }],
         },
         {
           name: "Celozrnný chléb",
@@ -2558,6 +2608,7 @@
           protein: 9,
           carbs: 38,
           fat: 2.5,
+          measurements: [{ name: "krajíc (60 g)", grams: 60 }],
         },
         {
           name: "Ovesné vločky",
@@ -2566,6 +2617,10 @@
           protein: 13,
           carbs: 56,
           fat: 7,
+          measurements: [
+            { name: "porce (40 g)", grams: 40 },
+            { name: "velká porce (60 g)", grams: 60 },
+          ],
         },
         {
           name: "Rýže bílá (vařená)",
@@ -2574,6 +2629,10 @@
           protein: 2.7,
           carbs: 28,
           fat: 0.3,
+          measurements: [
+            { name: "porce (150 g)", grams: 150 },
+            { name: "velká porce (200 g)", grams: 200 },
+          ],
         },
         {
           name: "Těstoviny (vařené)",
@@ -2582,6 +2641,10 @@
           protein: 5,
           carbs: 25,
           fat: 1.1,
+          measurements: [
+            { name: "porce (200 g)", grams: 200 },
+            { name: "velká porce (250 g)", grams: 250 },
+          ],
         },
         {
           name: "Jablko",
@@ -2590,6 +2653,10 @@
           protein: 0.3,
           carbs: 14,
           fat: 0.2,
+          measurements: [
+            { name: "malé (150 g)", grams: 150 },
+            { name: "velké (200 g)", grams: 200 },
+          ],
         },
         {
           name: "Banán",
@@ -2598,6 +2665,10 @@
           protein: 1.1,
           carbs: 23,
           fat: 0.3,
+          measurements: [
+            { name: "malý (100 g)", grams: 100 },
+            { name: "velký (130 g)", grams: 130 },
+          ],
         },
         {
           name: "Pomeranč",
@@ -2606,6 +2677,7 @@
           protein: 0.9,
           carbs: 12,
           fat: 0.1,
+          measurements: [{ name: "kus (180 g)", grams: 180 }],
         },
         {
           name: "Jahody",
@@ -2614,6 +2686,7 @@
           protein: 0.7,
           carbs: 8,
           fat: 0.3,
+          measurements: [{ name: "miska (150 g)", grams: 150 }],
         },
         {
           name: "Avokádo",
@@ -2622,6 +2695,10 @@
           protein: 2,
           carbs: 9,
           fat: 15,
+          measurements: [
+            { name: "kus (150 g)", grams: 150 },
+            { name: "půlka (75 g)", grams: 75 },
+          ],
         },
         {
           name: "Brambory (vařené)",
@@ -2630,6 +2707,10 @@
           protein: 2,
           carbs: 17,
           fat: 0.1,
+          measurements: [
+            { name: "porce (200 g)", grams: 200 },
+            { name: "kus (80 g)", grams: 80 },
+          ],
         },
         {
           name: "Rajče",
@@ -2638,6 +2719,7 @@
           protein: 0.9,
           carbs: 3.9,
           fat: 0.2,
+          measurements: [{ name: "kus (120 g)", grams: 120 }],
         },
         {
           name: "Okurka",
@@ -2646,6 +2728,7 @@
           protein: 0.6,
           carbs: 2,
           fat: 0.1,
+          measurements: [{ name: "kus (300 g)", grams: 300 }],
         },
         {
           name: "Paprika",
@@ -2654,6 +2737,7 @@
           protein: 1,
           carbs: 6,
           fat: 0.3,
+          measurements: [{ name: "kus (150 g)", grams: 150 }],
         },
         {
           name: "Brokolice",
@@ -2662,6 +2746,7 @@
           protein: 2.8,
           carbs: 7,
           fat: 0.4,
+          measurements: [{ name: "porce (150 g)", grams: 150 }],
         },
         {
           name: "Čočka (vařená)",
@@ -2670,6 +2755,7 @@
           protein: 9,
           carbs: 20,
           fat: 0.4,
+          measurements: [{ name: "porce (150 g)", grams: 150 }],
         },
         {
           name: "Cizrna (vařená)",
@@ -2678,6 +2764,7 @@
           protein: 9,
           carbs: 27,
           fat: 2.6,
+          measurements: [{ name: "porce (150 g)", grams: 150 }],
         },
         {
           name: "Arašídy",
@@ -2686,6 +2773,7 @@
           protein: 26,
           carbs: 16,
           fat: 49,
+          measurements: [{ name: "hrst (30 g)", grams: 30 }],
         },
         {
           name: "Mandle",
@@ -2694,6 +2782,7 @@
           protein: 21,
           carbs: 22,
           fat: 50,
+          measurements: [{ name: "hrst (30 g)", grams: 30 }],
         },
         {
           name: "Čokoláda mléčná",
@@ -2702,6 +2791,10 @@
           protein: 8,
           carbs: 56,
           fat: 30,
+          measurements: [
+            { name: "řádka (25 g)", grams: 25 },
+            { name: "tabulka (100 g)", grams: 100 },
+          ],
         },
         {
           name: "Med",
@@ -2710,6 +2803,10 @@
           protein: 0.3,
           carbs: 82,
           fat: 0,
+          measurements: [
+            { name: "lžička (8 g)", grams: 8 },
+            { name: "lžíce (20 g)", grams: 20 },
+          ],
         },
         {
           name: "Chipsy",
@@ -2718,6 +2815,7 @@
           protein: 7,
           carbs: 53,
           fat: 33,
+          measurements: [{ name: "balení (150 g)", grams: 150 }],
         },
         {
           name: "Vejce",
@@ -2726,6 +2824,11 @@
           protein: 11.5,
           carbs: 1.1,
           fat: 9.6,
+          measurements: [
+            { name: "velký kus (60 g)", grams: 60 },
+            { name: "kus (55 g)", grams: 55 },
+            { name: "malý kus (50 g)", grams: 50 },
+          ],
         },
         {
           name: "Olivový olej",
@@ -2734,6 +2837,10 @@
           protein: 0,
           carbs: 0,
           fat: 100,
+          measurements: [
+            { name: "lžíce (14 g)", grams: 14 },
+            { name: "lžička (5 g)", grams: 5 },
+          ],
         },
         {
           name: "Protein whey",
@@ -2742,6 +2849,7 @@
           protein: 80,
           carbs: 10,
           fat: 5,
+          measurements: [{ name: "odměrka (30 g)", grams: 30 }],
         },
         {
           name: "Svíčková na smetaně",
@@ -2750,6 +2858,7 @@
           protein: 12,
           carbs: 15,
           fat: 9,
+          measurements: [{ name: "porce (300 g)", grams: 300 }],
         },
         {
           name: "Knedlo-vepřo-zelo",
@@ -2758,6 +2867,7 @@
           protein: 13,
           carbs: 22,
           fat: 9,
+          measurements: [{ name: "porce (350 g)", grams: 350 }],
         },
         {
           name: "Smažený sýr",
@@ -2766,6 +2876,7 @@
           protein: 16,
           carbs: 15,
           fat: 22,
+          measurements: [{ name: "kus (150 g)", grams: 150 }],
         },
         {
           name: "Guláš hovězí",
@@ -2774,6 +2885,7 @@
           protein: 14,
           carbs: 6,
           fat: 6,
+          measurements: [{ name: "porce (300 g)", grams: 300 }],
         },
         {
           name: "Řízek vepřový",
@@ -2782,6 +2894,7 @@
           protein: 17,
           carbs: 14,
           fat: 16,
+          measurements: [{ name: "kus (150 g)", grams: 150 }],
         },
         {
           name: "Palačinky",
@@ -2790,6 +2903,7 @@
           protein: 6,
           carbs: 28,
           fat: 10,
+          measurements: [{ name: "kus (60 g)", grams: 60 }],
         },
       ];
 
@@ -2798,11 +2912,9 @@
       // ═══════════════════════════════════════════
       const DEFAULT_QUICK_GRAMS = [25, 50, 100, 150, 200, 250, 500];
       const DEFAULT_MEASUREMENTS = [
-        { name: "Krajíc chleba", grams: 35 },
-        { name: "Vejce (1 ks)", grams: 55 },
         { name: "Lžíce", grams: 15 },
         { name: "Lžička", grams: 5 },
-        { name: "Hrnek", grams: 240 },
+        { name: "Hrnek", grams: 250 },
         { name: "Odměrka", grams: 30 },
       ];
 
@@ -2825,7 +2937,7 @@
         foodUsage: {},
         expandedHistoryDay: null,
         customMeasurementsEnabled: false,
-        customMeasurements: [...DEFAULT_MEASUREMENTS],
+        customMeasurements: [],
         customQuickGramsEnabled: true,
         quickGrams: [...DEFAULT_QUICK_GRAMS],
         rohlikSearchEnabled: false,
@@ -3196,7 +3308,7 @@
       // ═══════════════════════════════════════════
       // API CACHE HELPERS
       // ═══════════════════════════════════════════
-      const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+      const CACHE_TTL = 1 * 24 * 60 * 60 * 1000; // 1 day
 
       function getCached(cache, key) {
         const entry = cache[key];
@@ -3319,6 +3431,30 @@
         }
       }
 
+      async function apiFormDetail(guid) {
+        const cacheKey = "form_" + guid;
+        const cached = getCached(state.detailCache, cacheKey);
+        if (cached) return cached;
+
+        const url = proxyUrl(_h(_P3) + guid, {
+          format: "json",
+          default: "true",
+        });
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const data = await resp.json();
+          const opts = (data.unitOptions || [])
+            .filter((o) => o.multiplier > 1)
+            .map((o) => ({ name: o.title, grams: o.multiplier }));
+          setCache(state.detailCache, cacheKey, opts);
+          return opts;
+        } catch (e) {
+          console.warn("API form detail failed:", e);
+          return [];
+        }
+      }
+
       // Parse autocomplete result into normalized food items
       function parseAutoResults(data) {
         if (!data) return [];
@@ -3379,6 +3515,50 @@
             .slice(0, 10)
             .map((p) => {
               const nv = p.composition.nutritionalValues;
+              const isLiquid = p.unit === "l";
+              const measurements = [];
+              const ta = p.textualAmount || "";
+              const ta2 = ta.replace(/^cca\s*/i, "");
+              const mG = ta2.match(/^([\d.,]+)\s*g$/i);
+              const mKg = ta2.match(/^([\d.,]+)\s*kg$/i);
+              const mMl = ta2.match(/^([\d.,]+)\s*ml$/i);
+              const mL = ta2.match(/^([\d.,]+)\s*l$/i);
+              if (mG) {
+                const g = parseFloat(mG[1].replace(",", "."));
+                if (g > 0 && g !== 100)
+                  measurements.push({
+                    name: `${ta} (balení)`,
+                    grams: g,
+                  });
+              } else if (mKg) {
+                const g = parseFloat(mKg[1].replace(",", ".")) * 1000;
+                if (g > 0 && g !== 100)
+                  measurements.push({
+                    name: `${ta} (balení)`,
+                    grams: g,
+                  });
+              } else if (mMl) {
+                const ml = parseFloat(mMl[1].replace(",", "."));
+                if (ml > 0 && ml !== 100)
+                  measurements.push({
+                    name: `${ta} (balení)`,
+                    grams: ml,
+                  });
+              } else if (mL) {
+                const ml = parseFloat(mL[1].replace(",", ".")) * 1000;
+                if (ml > 0 && ml !== 100)
+                  measurements.push({
+                    name: `${ta} (balení)`,
+                    grams: ml,
+                  });
+              } else if (p.unit === "ks") {
+                const nameLower = (p.productName || "")
+                  .toLowerCase()
+                  .normalize("NFD")
+                  .replace(/[\u0300-\u036f]/g, "");
+                if (nameLower.includes("vejce") || nameLower.includes("vajic"))
+                  measurements.push({ name: "kus (~58 g)", grams: 58 });
+              }
               return {
                 name: p.productName,
                 cat: "Rohlik",
@@ -3387,8 +3567,10 @@
                 carbs: nv.carbohydrates || 0,
                 fat: nv.fats || 0,
                 fiber: nv.fiber || 0,
-                liquid: false,
-                portion: p.textualAmount || "100 g",
+                liquid: isLiquid,
+                portion: ta || "100 g",
+                measurements:
+                  measurements.length > 0 ? measurements : undefined,
                 source: "rohlik",
               };
             });
@@ -3599,18 +3781,39 @@
           .join("");
       }
 
-      function buildMeasurementSelectHtml(unit) {
-        if (state.customMeasurements.length === 0) return "";
-        const options = state.customMeasurements
-          .map(
-            (m, i) =>
-              `<option value="${i}">${escapeHtml(m.name)} (${m.grams} ${unit})</option>`,
-          )
-          .join("");
+      function buildMeasurementSelectHtml(unit, apiPortions) {
+        const hasCustom =
+          state.customMeasurementsEnabled &&
+          state.customMeasurements.length > 0;
+        const hasApi = apiPortions && apiPortions.length > 0;
+        if (!hasCustom && !hasApi) return "";
+        let optionsHtml = "";
+        if (hasApi) {
+          const apiOpts = apiPortions
+            .map(
+              (m, i) =>
+                `<option value="api_${i}">${escapeHtml(m.name)}</option>`,
+            )
+            .join("");
+          optionsHtml += hasCustom
+            ? `<optgroup label="Porce z databáze">${apiOpts}</optgroup>`
+            : apiOpts;
+        }
+        if (hasCustom) {
+          const customOpts = state.customMeasurements
+            .map(
+              (m, i) =>
+                `<option value="custom_${i}">${escapeHtml(m.name)} (${m.grams} ${unit})</option>`,
+            )
+            .join("");
+          optionsHtml += hasApi
+            ? `<optgroup label="Vlastní porce">${customOpts}</optgroup>`
+            : customOpts;
+        }
         return `<div class="measurement-select-wrap">
           <select class="measurement-select">
-            <option value="">— Vlastní porce —</option>
-            ${options}
+            <option value="">— Porce —</option>
+            ${optionsHtml}
           </select>
           <div class="measurement-amount-row" style="display:none">
             <label>Počet</label>
@@ -3657,6 +3860,7 @@
         gramsInputId,
         quickGramsId,
         updateMacrosFn,
+        apiPortions,
       ) {
         const container = document.getElementById(containerId);
         const select = container.querySelector(".measurement-select");
@@ -3667,10 +3871,22 @@
         const gramWrap = gramsInput.closest(".gram-input-wrap");
         const quickGramsEl = document.getElementById(quickGramsId);
 
+        function getMeasurement(val) {
+          if (val.startsWith("api_")) {
+            const idx = parseInt(val.slice(4));
+            return apiPortions && apiPortions[idx];
+          }
+          if (val.startsWith("custom_")) {
+            const idx = parseInt(val.slice(7));
+            return state.customMeasurements[idx];
+          }
+          const idx = parseInt(val);
+          if (!isNaN(idx)) return state.customMeasurements[idx];
+          return null;
+        }
+
         function recalc() {
-          const idx = parseInt(select.value);
-          if (isNaN(idx)) return;
-          const m = state.customMeasurements[idx];
+          const m = getMeasurement(select.value);
           if (!m) return;
           const amount = parseFloat(amountInput.value) || 1;
           const totalGrams = Math.round(m.grams * amount);
@@ -3724,12 +3940,13 @@
         document.getElementById("quick-grams").innerHTML =
           buildQuickGramsHtml(unit);
         document.getElementById("modal-measurement-select").innerHTML =
-          buildMeasurementSelectHtml(unit);
+          buildMeasurementSelectHtml(unit, food.measurements);
         initMeasurementSelect(
           "modal-measurement-select",
           "modal-grams",
           "quick-grams",
           updateModalMacros,
+          food.measurements,
         );
         // Reset display state (measurement selection hides these)
         document.querySelector("#food-modal .gram-input-wrap").style.display =
@@ -3750,7 +3967,10 @@
           document.getElementById("modal-content").style.display = "none";
           document.getElementById("btn-log-food").disabled = true;
 
-          const nutrition = await apiDetail(food);
+          const [nutrition, apiPortions] = await Promise.all([
+            apiDetail(food),
+            apiFormDetail(food.guid),
+          ]);
           if (nutrition) {
             state.selectedFood = {
               ...food,
@@ -3770,12 +3990,13 @@
             document.getElementById("quick-grams").innerHTML =
               buildQuickGramsHtml(updatedUnit);
             document.getElementById("modal-measurement-select").innerHTML =
-              buildMeasurementSelectHtml(updatedUnit);
+              buildMeasurementSelectHtml(updatedUnit, apiPortions);
             initMeasurementSelect(
               "modal-measurement-select",
               "modal-grams",
               "quick-grams",
               updateModalMacros,
+              apiPortions,
             );
           }
 
