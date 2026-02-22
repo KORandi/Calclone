@@ -4513,12 +4513,13 @@
             year: "numeric",
           });
 
-        const pct = Math.min(totals.kcal / state.goals.kcal, 1);
+        const kcalRatio = totals.kcal / state.goals.kcal;
+        const pct = Math.min(kcalRatio, 1);
         const remaining = Math.max(state.goals.kcal - totals.kcal, 0);
         const circumference = 2 * Math.PI * 65;
         const offset = circumference * (1 - pct);
         const ringColor =
-          totals.kcal > state.goals.kcal ? "var(--red)" : "var(--green)";
+          kcalRatio > 1.10 ? "var(--red)" : kcalRatio > 1.05 ? "var(--orange)" : "var(--green)";
 
         document.getElementById("daily-ring").innerHTML = `
     <svg viewBox="0 0 160 160">
