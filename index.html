@@ -746,7 +746,9 @@
         height: 100%;
         background: var(--green);
         border-radius: 4px;
-        transition: width 0.3s, background 0.3s;
+        transition:
+          width 0.3s,
+          background 0.3s;
       }
       .cache-usage-fill.warning {
         background: var(--orange);
@@ -1452,6 +1454,21 @@
       .meal-group-header:first-child {
         margin-top: 0;
       }
+      .meal-group-summary {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        padding-left: 2px;
+      }
+      .meal-group-summary span {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px 7px;
+      }
       .trends-section {
         margin-bottom: 20px;
       }
@@ -1523,6 +1540,140 @@
         background: var(--green);
         color: #fff;
       }
+      .btn-add-to-day {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--blue);
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-add-to-day:active {
+        background: var(--blue);
+        color: #fff;
+      }
+      .history-fab {
+        position: fixed;
+        bottom: calc(62px + var(--safe-bottom));
+        right: 16px;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        border: none;
+        background: var(--green);
+        color: #fff;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow:
+          0 4px 16px rgba(34, 197, 94, 0.35),
+          0 2px 6px rgba(0, 0, 0, 0.1);
+        z-index: 99;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .history-fab:active {
+        transform: scale(0.92);
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+      }
+      .date-picker-modal-body {
+        padding: 4px 0 0;
+      }
+      .date-picker-modal-body label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        display: block;
+      }
+      .date-picker-modal-body input[type="date"] {
+        width: 100%;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 16px;
+        font-family: inherit;
+        color: var(--text);
+        background: var(--bg);
+        box-sizing: border-box;
+        transition: border-color 0.15s;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .date-picker-modal-body input[type="date"]:focus {
+        outline: none;
+        border-color: var(--green);
+      }
+      .date-picker-modal-body .btn-confirm-date {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: var(--green);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.15s;
+      }
+      .date-picker-modal-body .btn-confirm-date:active {
+        background: var(--green-dark);
+      }
+      .modal-target-date {
+        background: #eff6ff;
+        border: 1px solid var(--blue);
+        color: var(--blue);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .date-picker-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: 8px;
+      }
+      .date-picker-wrap input[type="date"] {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-size: 13px;
+        font-family: inherit;
+        color: var(--text);
+        background: var(--card);
+      }
+      .date-picker-wrap .btn-reset-date {
+        border: none;
+        background: none;
+        color: var(--text-secondary);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+      }
       .offline-banner {
         position: fixed;
         top: 0;
@@ -1554,6 +1705,7 @@
     <!-- ===== PAGE: Databáze ===== -->
     <div class="page active" id="page-database">
       <h1 class="page-header">Calclone</h1>
+      <div id="target-date-banner" style="display: none"></div>
       <div class="search-wrap">
         <svg
           class="search-icon"
@@ -1631,10 +1783,54 @@
     </div>
 
     <!-- ===== PAGE: Historie ===== -->
-    <div class="page" id="page-history">
+    <div class="page" id="page-history" style="position: relative">
       <h1 class="page-header">Historie</h1>
       <div id="trends-section"></div>
       <div id="history-list"></div>
+      <button class="history-fab" id="history-fab">
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Date picker modal for history FAB -->
+    <div class="modal-overlay" id="date-picker-modal">
+      <div class="modal" style="min-height: auto">
+        <div class="modal-handle"></div>
+        <h2>Přidat záznam</h2>
+        <p class="modal-sub">Vyberte datum, ke kterému chcete přidat záznam</p>
+        <div class="date-picker-modal-body">
+          <label>Datum</label>
+          <input type="date" id="history-date-picker" />
+          <button class="btn-confirm-date" id="btn-add-to-picked-date">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Pokračovat
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ===== PAGE: Nastavení ===== -->
@@ -2129,20 +2325,39 @@
               <span id="cache-usage-limit-text">/ 4.0 MB</span>
             </div>
             <div class="cache-usage-bar">
-              <div class="cache-usage-fill" id="cache-usage-fill" style="width: 0%"></div>
+              <div
+                class="cache-usage-fill"
+                id="cache-usage-fill"
+                style="width: 0%"
+              ></div>
             </div>
           </div>
           <div class="cache-limit-row">
-            <label>Limit
-              <span class="info-icon tooltip-right" data-tooltip="cache-limit-info">i
-                <span class="tooltip">Prohlížeč umožňuje uložit max. 5 MB dat na doménu (localStorage). Doporučeno ponechat alespoň 0.5 MB pro ostatní data aplikace. Rozmezí: 0.5–4.5 MB.</span>
+            <label
+              >Limit
+              <span class="info-icon" data-tooltip="cache-limit-info"
+                >i
+                <span class="tooltip"
+                  >Prohlížeč umožňuje uložit max. 5 MB dat na doménu
+                  (localStorage). Doporučeno ponechat alespoň 0.5 MB pro ostatní
+                  data aplikace. Rozmezí: 0.5–4.5 MB.</span
+                >
               </span>
             </label>
-            <input type="number" id="cache-limit-input" value="4" min="0.5" max="4.5" step="0.1" />
+            <input
+              type="number"
+              id="cache-limit-input"
+              value="4"
+              min="0.5"
+              max="4.5"
+              step="0.1"
+            />
             <span class="unit">MB</span>
           </div>
           <div class="cache-validation-msg" id="cache-validation-msg"></div>
-          <button class="btn-clear-cache" id="btn-clear-cache">Vymazat mezipaměť</button>
+          <button class="btn-clear-cache" id="btn-clear-cache">
+            Vymazat mezipaměť
+          </button>
         </div>
       </div>
 
@@ -2164,7 +2379,7 @@
           margin-top: 24px;
         "
       >
-        Calclone v2.5<br />
+        Calclone v2.6<br />
         Všechna data uložena lokálně v zařízení
       </p>
     </div>
@@ -2948,6 +3163,7 @@
         trendsEnabled: false,
         trendsPeriod: 7,
         copyDayEnabled: false,
+        logTargetDate: null, // null = today, or "YYYY-MM-DD" for specific date
       };
 
       function escapeHtml(str) {
@@ -3025,7 +3241,11 @@
                 : false;
 
             // Migrate caches from old kaltab_state into separate kaltab_cache
-            if (parsed.searchCache || parsed.detailCache || parsed.barcodeCache) {
+            if (
+              parsed.searchCache ||
+              parsed.detailCache ||
+              parsed.barcodeCache
+            ) {
               const existingCache = localStorage.getItem("kaltab_cache");
               if (!existingCache) {
                 const migrated = {
@@ -3034,7 +3254,10 @@
                   barcodeCache: parsed.barcodeCache || {},
                 };
                 try {
-                  localStorage.setItem("kaltab_cache", JSON.stringify(migrated));
+                  localStorage.setItem(
+                    "kaltab_cache",
+                    JSON.stringify(migrated),
+                  );
                 } catch (e) {}
               }
             }
@@ -3172,7 +3395,8 @@
 
       function getCacheSizeBytes() {
         const json =
-          localStorage.getItem("kaltab_cache") || '{"searchCache":{},"detailCache":{},"barcodeCache":{}}';
+          localStorage.getItem("kaltab_cache") ||
+          '{"searchCache":{},"detailCache":{},"barcodeCache":{}}';
         return new Blob([json]).size;
       }
 
@@ -3193,7 +3417,8 @@
         const pct = Math.min((sizeBytes / limitBytes) * 100, 100);
 
         usageText.textContent = formatBytes(sizeBytes);
-        limitText.textContent = "/ " + state.cacheSizeLimitMB.toFixed(1) + " MB";
+        limitText.textContent =
+          "/ " + state.cacheSizeLimitMB.toFixed(1) + " MB";
         fill.style.width = pct.toFixed(1) + "%";
         fill.classList.remove("warning", "danger");
         if (pct > 90) fill.classList.add("danger");
@@ -3297,8 +3522,22 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       }
 
+      function logTargetKey() {
+        return state.logTargetDate || todayKey();
+      }
+
       function todayLog() {
         return state.log[todayKey()] || [];
+      }
+
+      function formatDateLabel(dateKey) {
+        const parts = dateKey.split("-");
+        const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        return d.toLocaleDateString("cs-CZ", {
+          weekday: "short",
+          day: "numeric",
+          month: "long",
+        });
       }
 
       function localFoods() {
@@ -3368,10 +3607,7 @@
           for (const entry of Object.values(state.searchCache)) {
             const items = Array.isArray(entry.data) ? entry.data : [];
             for (const item of items) {
-              if (
-                !item.title ||
-                (item.clazz && item.clazz !== "foodstuff")
-              )
+              if (!item.title || (item.clazz && item.clazz !== "foodstuff"))
                 continue;
               if (item.id && seen.has(item.id)) continue;
               const title = item.title
@@ -3960,6 +4196,7 @@
         favBtn.classList.toggle("active", fav);
 
         document.getElementById("food-modal").classList.add("active");
+        updateModalTargetDate();
 
         // If API food, scrape the food page for full nutrition data
         if (food.source === "api" && food.guid) {
@@ -4067,7 +4304,7 @@
         const g =
           parseFloat(document.getElementById("modal-grams").value) || 100;
         const ratio = g / 100;
-        const key = todayKey();
+        const key = logTargetKey();
         if (!state.log[key]) state.log[key] = [];
         state.log[key].push({
           name: f.name,
@@ -4099,10 +4336,15 @@
           }
         }
 
+        const wasTargetDate = state.logTargetDate;
         saveState();
         closeModal();
         if (state.activePage === "page-today") renderToday();
-        showToast("Přidáno do záznamu");
+        if (wasTargetDate && wasTargetDate !== todayKey()) {
+          showToast(`Přidáno do ${formatDateLabel(wasTargetDate)}`);
+        } else {
+          showToast("Přidáno do záznamu");
+        }
       }
 
       function deleteLogEntry(idx) {
@@ -4348,10 +4590,27 @@
           logEl.innerHTML = sortedKeys
             .map((key) => {
               const label = key || "Ostatní";
-              const items = groups[key]
+              const groupEntries = groups[key];
+              const items = groupEntries
                 .map(({ entry: e, idx: i }) => renderLogEntry(e, i))
                 .join("");
-              return `<div class="meal-group-header">${escapeHtml(label)}</div>${items}`;
+              const gt = groupEntries.reduce(
+                (acc, { entry: e }) => {
+                  acc.kcal += e.kcal;
+                  acc.protein += e.protein;
+                  acc.carbs += e.carbs;
+                  acc.fat += e.fat;
+                  return acc;
+                },
+                { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+              );
+              const summary = `<div class="meal-group-summary">
+                <span>${Math.round(gt.kcal)} kcal</span>
+                <span>B: ${Math.round(gt.protein)}g</span>
+                <span>S: ${Math.round(gt.carbs)}g</span>
+                <span>T: ${Math.round(gt.fat)}g</span>
+              </div>`;
+              return `<div class="meal-group-header">${escapeHtml(label)}</div>${summary}${items}`;
             })
             .join("");
         } else {
@@ -4443,6 +4702,8 @@
 
       function renderHistory() {
         renderTrends();
+        const datePicker = document.getElementById("history-date-picker");
+        if (datePicker && !datePicker.value) datePicker.value = todayKey();
         const el = document.getElementById("history-list");
         const days = Object.keys(state.log).sort().reverse();
 
@@ -4510,6 +4771,7 @@
             `,
               )
               .join("")}
+            <button class="btn-add-to-day" data-add-to-day="${day}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Přidat potravinu</button>
             ${state.copyDayEnabled && day !== todayKey() ? `<button class="btn-copy-day" data-copy-day="${day}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopírovat do dneška</button>` : ""}
           </div>
         `
@@ -4868,8 +5130,38 @@
       // ═══════════════════════════════════════════
       // NAVIGATION
       // ═══════════════════════════════════════════
+      function updateTargetDateUI() {
+        const banner = document.getElementById("target-date-banner");
+        const target = state.logTargetDate;
+        if (target && target !== todayKey()) {
+          banner.innerHTML = `<div class="modal-target-date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Přidáváte pro: ${formatDateLabel(target)}
+            <button onclick="state.logTargetDate=null;updateTargetDateUI();" style="border:none;background:none;color:var(--blue);cursor:pointer;font-weight:700;font-size:14px;padding:0 4px;" title="Zrušit">&times;</button>
+          </div>`;
+          banner.style.display = "block";
+        } else {
+          banner.style.display = "none";
+          banner.innerHTML = "";
+        }
+      }
+
+      function updateModalTargetDate() {
+        const btn = document.getElementById("btn-log-food");
+        const target = state.logTargetDate;
+        if (target && target !== todayKey()) {
+          btn.textContent = `Přidat do ${formatDateLabel(target)}`;
+        } else {
+          btn.textContent = "Přidat do denního záznamu";
+        }
+      }
+
       function navigate(pageId) {
         state.activePage = pageId;
+        // Clear target date when navigating away from database (unless going to food modal)
+        if (pageId !== "page-database") {
+          state.logTargetDate = null;
+        }
         document
           .querySelectorAll(".page")
           .forEach((p) => p.classList.remove("active"));
@@ -4880,9 +5172,12 @@
             b.classList.toggle("active", b.dataset.page === pageId),
           );
 
+        if (pageId === "page-database") updateTargetDateUI();
         if (pageId === "page-today") renderToday();
         if (pageId === "page-history") renderHistory();
         if (pageId === "page-settings") loadSettingsUI();
+        document.getElementById("history-fab").style.display =
+          pageId === "page-history" ? "flex" : "none";
       }
 
       // ═══════════════════════════════════════════
@@ -5121,6 +5416,14 @@
                 parseInt(delBtn.dataset.logIdx),
               );
             }
+            // Add food to specific day button
+            const addBtn = e.target.closest(".btn-add-to-day[data-add-to-day]");
+            if (addBtn) {
+              e.stopPropagation();
+              state.logTargetDate = addBtn.dataset.addToDay;
+              navigate("page-database");
+              return;
+            }
             // Copy day button
             const copyBtn = e.target.closest(".btn-copy-day[data-copy-day]");
             if (copyBtn) {
@@ -5135,6 +5438,38 @@
                 state.expandedHistoryDay === day ? null : day;
               renderHistory();
             }
+          });
+
+        // History FAB → open date picker modal
+        document.getElementById("history-fab").addEventListener("click", () => {
+          const dateInput = document.getElementById("history-date-picker");
+          dateInput.value = todayKey();
+          document.getElementById("date-picker-modal").classList.add("active");
+        });
+
+        // Date picker modal overlay close
+        document
+          .getElementById("date-picker-modal")
+          .addEventListener("click", (e) => {
+            if (e.target === e.currentTarget)
+              e.currentTarget.classList.remove("active");
+          });
+
+        // Add food to picked date from date picker modal
+        document
+          .getElementById("btn-add-to-picked-date")
+          .addEventListener("click", () => {
+            const dateInput = document.getElementById("history-date-picker");
+            const val = dateInput.value;
+            if (!val) {
+              showToast("Vyberte datum");
+              return;
+            }
+            document
+              .getElementById("date-picker-modal")
+              .classList.remove("active");
+            state.logTargetDate = val;
+            navigate("page-database");
           });
 
         // Trends period pill click
@@ -5295,10 +5630,9 @@
           .getElementById("toggle-custom-measurements")
           .addEventListener("change", (e) => {
             state.customMeasurementsEnabled = e.target.checked;
-            document.getElementById("custom-measurements-section").style.display = e
-              .target.checked
-              ? "block"
-              : "none";
+            document.getElementById(
+              "custom-measurements-section",
+            ).style.display = e.target.checked ? "block" : "none";
             saveState();
           });
 
@@ -5390,8 +5724,7 @@
             cacheLimitInput.classList.add("invalid");
             if (isNaN(val) || val === "")
               msgEl.textContent = "Zadejte platnou hodnotu";
-            else if (val < 0.5)
-              msgEl.textContent = "Minimum je 0.5 MB";
+            else if (val < 0.5) msgEl.textContent = "Minimum je 0.5 MB";
             else
               msgEl.textContent = "Maximum je 4.5 MB (limit prohlížeče ~5 MB)";
             return;
