@@ -1551,6 +1551,20 @@
         color: var(--text);
         appearance: auto;
       }
+      .btn-meal-reset {
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text-secondary);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 10px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .btn-meal-reset:active {
+        background: var(--border);
+      }
       .meal-group-header {
         font-size: 13px;
         font-weight: 600;
@@ -2414,6 +2428,17 @@
                 Přidat
               </button>
             </div>
+            <button
+              class="btn-add"
+              id="btn-reset-meal-categories"
+              style="
+                margin-top: 10px;
+                background: var(--border);
+                color: var(--text);
+              "
+            >
+              Obnovit výchozí
+            </button>
           </div>
         </div>
       </div>
@@ -2576,7 +2601,17 @@
             style="display: none"
           >
             <label>Kategorie jídla</label>
-            <select id="modal-meal-select"></select>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <select id="modal-meal-select" style="flex: 1"></select>
+              <button
+                type="button"
+                class="btn-meal-reset"
+                id="btn-modal-meal-reset"
+                title="Obnovit výchozí"
+              >
+                ↺
+              </button>
+            </div>
           </div>
           <button class="btn-add" id="btn-log-food">
             Přidat do denního záznamu
@@ -2625,7 +2660,17 @@
           style="display: none"
         >
           <label>Kategorie jídla</label>
-          <select id="edit-meal-select"></select>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <select id="edit-meal-select" style="flex: 1"></select>
+            <button
+              type="button"
+              class="btn-meal-reset"
+              id="btn-edit-meal-reset"
+              title="Obnovit výchozí"
+            >
+              ↺
+            </button>
+          </div>
         </div>
         <button class="btn-add" id="btn-save-edit">Uložit změny</button>
       </div>
@@ -4278,6 +4323,16 @@
         </div>`;
       }
 
+      function getDefaultMealByTime() {
+        const h = new Date().getHours();
+        const cats = state.mealCategories;
+        if (h >= 6 && h < 10 && cats.includes("Snídaně")) return "Snídaně";
+        if (h >= 10 && h < 14 && cats.includes("Oběd")) return "Oběd";
+        if (h >= 14 && h < 17 && cats.includes("Svačina")) return "Svačina";
+        if (h >= 17 && h < 22 && cats.includes("Večeře")) return "Večeře";
+        return "";
+      }
+
       function buildMealSelectHtml(selectedMeal) {
         if (!state.mealCategoriesEnabled) return "";
         const options = ["", ...state.mealCategories];
@@ -4410,7 +4465,7 @@
         document.querySelector("#food-modal .gram-input-wrap").style.display =
           "";
         document.getElementById("quick-grams").style.display = "";
-        updateMealSelects("");
+        updateMealSelects(getDefaultMealByTime());
         // Update favorite button
         const favBtn = document.getElementById("btn-toggle-fav");
         const fav = isFavorite(food.name);
@@ -5966,6 +6021,31 @@
             state.mealCategories.splice(idx, 1);
             saveState();
             renderMealCategoriesChips();
+          });
+
+        // Reset meal categories to defaults
+        document
+          .getElementById("btn-reset-meal-categories")
+          .addEventListener("click", () => {
+            state.mealCategories = ["Snídaně", "Oběd", "Večeře", "Svačina"];
+            saveState();
+            renderMealCategoriesChips();
+          });
+
+        // Reset meal select in food modal to time-based default
+        document
+          .getElementById("btn-modal-meal-reset")
+          .addEventListener("click", () => {
+            const sel = document.getElementById("modal-meal-select");
+            sel.value = getDefaultMealByTime();
+          });
+
+        // Reset meal select in edit modal to time-based default
+        document
+          .getElementById("btn-edit-meal-reset")
+          .addEventListener("click", () => {
+            const sel = document.getElementById("edit-meal-select");
+            sel.value = getDefaultMealByTime();
           });
 
         // Trends toggle
