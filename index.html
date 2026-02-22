@@ -1538,6 +1538,65 @@
         background: var(--green);
         color: #fff;
       }
+      .btn-add-to-day {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--blue);
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .btn-add-to-day:active {
+        background: var(--blue);
+        color: #fff;
+      }
+      .modal-target-date {
+        background: #eff6ff;
+        border: 1px solid var(--blue);
+        color: var(--blue);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .date-picker-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: 8px;
+      }
+      .date-picker-wrap input[type="date"] {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-size: 13px;
+        font-family: inherit;
+        color: var(--text);
+        background: var(--card);
+      }
+      .date-picker-wrap .btn-reset-date {
+        border: none;
+        background: none;
+        color: var(--text-secondary);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+      }
       .offline-banner {
         position: fixed;
         top: 0;
@@ -1569,6 +1628,7 @@
     <!-- ===== PAGE: Databáze ===== -->
     <div class="page active" id="page-database">
       <h1 class="page-header">Calclone</h1>
+      <div id="target-date-banner" style="display:none"></div>
       <div class="search-wrap">
         <svg
           class="search-icon"
@@ -1648,6 +1708,13 @@
     <!-- ===== PAGE: Historie ===== -->
     <div class="page" id="page-history">
       <h1 class="page-header">Historie</h1>
+      <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+        <input type="date" id="history-date-picker" style="border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:13px; font-family:inherit; color:var(--text); background:var(--card); flex:1;" />
+        <button id="btn-add-to-picked-date" class="btn-add-to-day" style="width:auto; margin-top:0; padding:8px 14px; white-space:nowrap;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Přidat potravinu
+        </button>
+      </div>
       <div id="trends-section"></div>
       <div id="history-list"></div>
     </div>
@@ -2179,7 +2246,7 @@
           margin-top: 24px;
         "
       >
-        Calclone v2.5<br />
+        Calclone v2.6<br />
         Všechna data uložena lokálně v zařízení
       </p>
     </div>
@@ -2230,6 +2297,7 @@
             <label>Kategorie jídla</label>
             <select id="modal-meal-select"></select>
           </div>
+          <div id="modal-target-date-info" class="modal-target-date" style="display:none"></div>
           <button class="btn-add" id="btn-log-food">
             Přidat do denního záznamu
           </button>
@@ -2851,6 +2919,7 @@
         trendsEnabled: false,
         trendsPeriod: 7,
         copyDayEnabled: false,
+        logTargetDate: null, // null = today, or "YYYY-MM-DD" for specific date
       };
 
       function escapeHtml(str) {
@@ -3200,8 +3269,22 @@
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       }
 
+      function logTargetKey() {
+        return state.logTargetDate || todayKey();
+      }
+
       function todayLog() {
         return state.log[todayKey()] || [];
+      }
+
+      function formatDateLabel(dateKey) {
+        const parts = dateKey.split("-");
+        const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        return d.toLocaleDateString("cs-CZ", {
+          weekday: "short",
+          day: "numeric",
+          month: "long",
+        });
       }
 
       function localFoods() {
@@ -3758,6 +3841,7 @@
         favBtn.classList.toggle("active", fav);
 
         document.getElementById("food-modal").classList.add("active");
+        updateModalTargetDate();
 
         // If API food, scrape the food page for full nutrition data
         if (food.source === "api" && food.guid) {
@@ -3861,7 +3945,7 @@
         const g =
           parseFloat(document.getElementById("modal-grams").value) || 100;
         const ratio = g / 100;
-        const key = todayKey();
+        const key = logTargetKey();
         if (!state.log[key]) state.log[key] = [];
         state.log[key].push({
           name: f.name,
@@ -3893,10 +3977,15 @@
           }
         }
 
+        const wasTargetDate = state.logTargetDate;
         saveState();
         closeModal();
         if (state.activePage === "page-today") renderToday();
-        showToast("Přidáno do záznamu");
+        if (wasTargetDate && wasTargetDate !== todayKey()) {
+          showToast(`Přidáno do ${formatDateLabel(wasTargetDate)}`);
+        } else {
+          showToast("Přidáno do záznamu");
+        }
       }
 
       function deleteLogEntry(idx) {
@@ -4254,6 +4343,8 @@
 
       function renderHistory() {
         renderTrends();
+        const datePicker = document.getElementById("history-date-picker");
+        if (datePicker && !datePicker.value) datePicker.value = todayKey();
         const el = document.getElementById("history-list");
         const days = Object.keys(state.log).sort().reverse();
 
@@ -4321,6 +4412,7 @@
             `,
               )
               .join("")}
+            <button class="btn-add-to-day" data-add-to-day="${day}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Přidat potravinu</button>
             ${state.copyDayEnabled && day !== todayKey() ? `<button class="btn-copy-day" data-copy-day="${day}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Kopírovat do dneška</button>` : ""}
           </div>
         `
@@ -4679,8 +4771,42 @@
       // ═══════════════════════════════════════════
       // NAVIGATION
       // ═══════════════════════════════════════════
+      function updateTargetDateUI() {
+        const banner = document.getElementById("target-date-banner");
+        const target = state.logTargetDate;
+        if (target && target !== todayKey()) {
+          banner.innerHTML = `<div class="modal-target-date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Přidáváte pro: ${formatDateLabel(target)}
+            <button onclick="state.logTargetDate=null;updateTargetDateUI();" style="border:none;background:none;color:var(--blue);cursor:pointer;font-weight:700;font-size:14px;padding:0 4px;" title="Zrušit">&times;</button>
+          </div>`;
+          banner.style.display = "block";
+        } else {
+          banner.style.display = "none";
+          banner.innerHTML = "";
+        }
+      }
+
+      function updateModalTargetDate() {
+        const el = document.getElementById("modal-target-date-info");
+        const btn = document.getElementById("btn-log-food");
+        const target = state.logTargetDate;
+        if (target && target !== todayKey()) {
+          el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${formatDateLabel(target)}`;
+          el.style.display = "flex";
+          btn.textContent = `Přidat do ${formatDateLabel(target)}`;
+        } else {
+          el.style.display = "none";
+          btn.textContent = "Přidat do denního záznamu";
+        }
+      }
+
       function navigate(pageId) {
         state.activePage = pageId;
+        // Clear target date when navigating away from database (unless going to food modal)
+        if (pageId !== "page-database") {
+          state.logTargetDate = null;
+        }
         document
           .querySelectorAll(".page")
           .forEach((p) => p.classList.remove("active"));
@@ -4691,6 +4817,7 @@
             b.classList.toggle("active", b.dataset.page === pageId),
           );
 
+        if (pageId === "page-database") updateTargetDateUI();
         if (pageId === "page-today") renderToday();
         if (pageId === "page-history") renderHistory();
         if (pageId === "page-settings") loadSettingsUI();
@@ -4932,6 +5059,14 @@
                 parseInt(delBtn.dataset.logIdx),
               );
             }
+            // Add food to specific day button
+            const addBtn = e.target.closest(".btn-add-to-day[data-add-to-day]");
+            if (addBtn) {
+              e.stopPropagation();
+              state.logTargetDate = addBtn.dataset.addToDay;
+              navigate("page-database");
+              return;
+            }
             // Copy day button
             const copyBtn = e.target.closest(".btn-copy-day[data-copy-day]");
             if (copyBtn) {
@@ -4946,6 +5081,20 @@
                 state.expandedHistoryDay === day ? null : day;
               renderHistory();
             }
+          });
+
+        // Add food to picked date from history page
+        document
+          .getElementById("btn-add-to-picked-date")
+          .addEventListener("click", () => {
+            const dateInput = document.getElementById("history-date-picker");
+            const val = dateInput.value;
+            if (!val) {
+              showToast("Vyberte datum");
+              return;
+            }
+            state.logTargetDate = val;
+            navigate("page-database");
           });
 
         // Trends period pill click
