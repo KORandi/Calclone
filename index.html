@@ -3150,6 +3150,7 @@
         portionMemory: {},
         favorites: [],
         foodUsage: {},
+        foodRelevance: {}, // { [foodName]: { lastUsed: timestamp, clickCount: number } }
         expandedHistoryDay: null,
         customMeasurementsEnabled: false,
         customMeasurements: [],
@@ -3200,6 +3201,7 @@
             state.portionMemory = parsed.portionMemory || {};
             state.favorites = parsed.favorites || [];
             state.foodUsage = parsed.foodUsage || {};
+            state.foodRelevance = parsed.foodRelevance || {};
             state.customMeasurementsEnabled =
               parsed.customMeasurementsEnabled !== undefined
                 ? parsed.customMeasurementsEnabled
@@ -3277,6 +3279,7 @@
             portionMemory: state.portionMemory,
             favorites: state.favorites,
             foodUsage: state.foodUsage,
+            foodRelevance: state.foodRelevance,
             customMeasurementsEnabled: state.customMeasurementsEnabled,
             customMeasurements: state.customMeasurements,
             customQuickGramsEnabled: state.customQuickGramsEnabled,
@@ -3464,6 +3467,7 @@
             state.portionMemory = parsed.portionMemory || {};
             state.favorites = parsed.favorites || [];
             state.foodUsage = parsed.foodUsage || {};
+            state.foodRelevance = parsed.foodRelevance || {};
             state.customMeasurementsEnabled =
               parsed.customMeasurementsEnabled !== undefined
                 ? parsed.customMeasurementsEnabled
@@ -3843,6 +3847,68 @@
       }
 
       // ═══════════════════════════════════════════
+      // RELEVANCE SCORING
+      // ═══════════════════════════════════════════
+      function normalizeStr(s) {
+        return (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function computeRelevanceScore(food, query) {
+        let score = 0;
+
+        // 1. Favorite bonus (+50)
+        if (isFavorite(food.name)) score += 50;
+
+        // 2. Usage frequency — up to 40 points (capped at 10 uses)
+        const usage = state.foodUsage[food.name] || 0;
+        score += Math.min(usage * 4, 40);
+
+        // 3. Recency — up to 30 points, decaying over 30 days
+        const rel = state.foodRelevance[food.name];
+        if (rel && rel.lastUsed) {
+          const daysSince =
+            (Date.now() - rel.lastUsed) / (1000 * 60 * 60 * 24);
+          if (daysSince < 1) score += 30;
+          else if (daysSince < 30) score += Math.round(30 * (1 - daysSince / 30));
+        }
+
+        // 4. Click/selection count — up to 15 points
+        if (rel && rel.clickCount) {
+          score += Math.min(rel.clickCount * 3, 15);
+        }
+
+        // 5. Search match quality (when query is present) — up to 25 points
+        if (query) {
+          const q = normalizeStr(query);
+          const name = normalizeStr(food.name);
+          if (name === q) score += 25;
+          else if (name.startsWith(q)) score += 15;
+          else if (name.includes(q)) score += 5;
+        }
+
+        // 6. Source priority bonus
+        if (food.source === "barcode") score += 20;
+        else if (food.source === "local") score += 10;
+        else if (food.source === "rohlik") score += 5;
+        // api gets 0 bonus
+
+        return score;
+      }
+
+      function sortByRelevance(foods, query) {
+        return foods.sort((a, b) => {
+          const scoreA = computeRelevanceScore(a, query);
+          const scoreB = computeRelevanceScore(b, query);
+          if (scoreB !== scoreA) return scoreB - scoreA;
+          // Tie-break: alphabetical
+          return a.name.localeCompare(b.name, "cs");
+        });
+      }
+
+      // ═══════════════════════════════════════════
       // FOOD LIST RENDERING
       // ═══════════════════════════════════════════
       function renderFoodList() {
@@ -3870,7 +3936,7 @@
             })
             .map((f) => ({ ...f, source: "local" }));
 
-          // Barcode results first, then API results, then local matches
+          // Combine all sources and sort by relevance
           const barcodeItems = state.barcodeResults.map((f) => ({
             ...f,
             source: "barcode",
@@ -3881,6 +3947,7 @@
             ...state.apiResults,
             ...localMatches,
           ];
+          sortByRelevance(combined, state.searchQuery);
           renderFoodCards(el, combined);
           return;
         }
@@ -3944,10 +4011,8 @@
           });
         }
 
-        // Sort favorites to top
-        foods.sort(
-          (a, b) => (isFavorite(b.name) ? 1 : 0) - (isFavorite(a.name) ? 1 : 0),
-        );
+        // Sort by relevance (favorites, usage frequency, recency, etc.)
+        sortByRelevance(foods, state.searchQuery);
 
         renderFoodCards(el, foods);
       }
@@ -4162,6 +4227,12 @@
 
       async function openFoodModal(food) {
         state.selectedFood = food;
+        // Track food selection for relevance scoring
+        if (!state.foodRelevance[food.name]) {
+          state.foodRelevance[food.name] = { lastUsed: 0, clickCount: 0 };
+        }
+        state.foodRelevance[food.name].clickCount =
+          (state.foodRelevance[food.name].clickCount || 0) + 1;
         const unit = food.liquid ? "ml" : "g";
         document.getElementById("modal-food-name").textContent = food.name;
         document.getElementById("modal-food-portion").textContent =
@@ -4335,6 +4406,12 @@
             state.favorites.push(f.name);
           }
         }
+
+        // Track relevance data (lastUsed timestamp)
+        if (!state.foodRelevance[f.name]) {
+          state.foodRelevance[f.name] = { lastUsed: 0, clickCount: 0 };
+        }
+        state.foodRelevance[f.name].lastUsed = Date.now();
 
         const wasTargetDate = state.logTargetDate;
         saveState();
@@ -5603,6 +5680,7 @@
               state.barcodeCache = {};
               state.portionMemory = {};
               state.foodUsage = {};
+              state.foodRelevance = {};
               state.favorites = [];
               state.goals = { kcal: 2000, protein: 120, carbs: 250, fat: 65 };
               saveState();
