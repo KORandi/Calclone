@@ -1452,6 +1452,21 @@
       .meal-group-header:first-child {
         margin-top: 0;
       }
+      .meal-group-summary {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        padding-left: 2px;
+      }
+      .meal-group-summary span {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px 7px;
+      }
       .trends-section {
         margin-bottom: 20px;
       }
@@ -4127,10 +4142,27 @@
           logEl.innerHTML = sortedKeys
             .map((key) => {
               const label = key || "Ostatní";
-              const items = groups[key]
+              const groupEntries = groups[key];
+              const items = groupEntries
                 .map(({ entry: e, idx: i }) => renderLogEntry(e, i))
                 .join("");
-              return `<div class="meal-group-header">${escapeHtml(label)}</div>${items}`;
+              const gt = groupEntries.reduce(
+                (acc, { entry: e }) => {
+                  acc.kcal += e.kcal;
+                  acc.protein += e.protein;
+                  acc.carbs += e.carbs;
+                  acc.fat += e.fat;
+                  return acc;
+                },
+                { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+              );
+              const summary = `<div class="meal-group-summary">
+                <span>${Math.round(gt.kcal)} kcal</span>
+                <span>B: ${Math.round(gt.protein)}g</span>
+                <span>S: ${Math.round(gt.carbs)}g</span>
+                <span>T: ${Math.round(gt.fat)}g</span>
+              </div>`;
+              return `<div class="meal-group-header">${escapeHtml(label)}</div>${summary}${items}`;
             })
             .join("");
         } else {
