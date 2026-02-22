@@ -2542,8 +2542,8 @@
                 >i
                 <span class="tooltip"
                   >Prohlížeč umožňuje uložit max. 5 MB dat na doménu
-                  (localStorage). Doporučeno ponechat alespoň 0.5 MB pro ostatní
-                  data aplikace. Rozmezí: 0.5–4.5 MB.</span
+                  (IndexedDB). Doporučeno ponechat alespoň 0.5 MB. Rozmezí:
+                  0.5–50 MB.</span
                 >
               </span>
             </label>
@@ -2552,8 +2552,8 @@
               id="cache-limit-input"
               value="4"
               min="0.5"
-              max="4.5"
-              step="0.1"
+              max="50"
+              step="0.5"
             />
             <span class="unit">MB</span>
           </div>
@@ -2768,6 +2768,132 @@
     </nav>
 
     <script>
+      // ═══════════════════════════════════════════
+      // INDEXED DB STORAGE LAYER
+      // ═══════════════════════════════════════════
+      const KaltabDB = (() => {
+        const DB_NAME = "kaltab_db";
+        const DB_VERSION = 1;
+        let _db = null;
+
+        function open() {
+          if (_db) return Promise.resolve(_db);
+          return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains("logs")) {
+                db.createObjectStore("logs"); // keyed by date string
+              }
+              if (!db.objectStoreNames.contains("cache")) {
+                db.createObjectStore("cache"); // keyed by cacheType
+              }
+              if (!db.objectStoreNames.contains("userData")) {
+                db.createObjectStore("userData"); // keyed by data name
+              }
+            };
+            req.onsuccess = (e) => {
+              _db = e.target.result;
+              resolve(_db);
+            };
+            req.onerror = (e) => reject(e.target.error);
+          });
+        }
+
+        function _tx(storeName, mode) {
+          return _db.transaction(storeName, mode).objectStore(storeName);
+        }
+
+        function put(storeName, key, value) {
+          return new Promise((resolve, reject) => {
+            try {
+              const store = _tx(storeName, "readwrite");
+              const req = store.put(value, key);
+              req.onsuccess = () => resolve();
+              req.onerror = (e) => reject(e.target.error);
+            } catch (e) { reject(e); }
+          });
+        }
+
+        function get(storeName, key) {
+          return new Promise((resolve, reject) => {
+            try {
+              const store = _tx(storeName, "readonly");
+              const req = store.get(key);
+              req.onsuccess = () => resolve(req.result);
+              req.onerror = (e) => reject(e.target.error);
+            } catch (e) { reject(e); }
+          });
+        }
+
+        function getAll(storeName) {
+          return new Promise((resolve, reject) => {
+            try {
+              const store = _tx(storeName, "readonly");
+              const result = {};
+              const cursorReq = store.openCursor();
+              cursorReq.onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                  result[cursor.key] = cursor.value;
+                  cursor.continue();
+                } else {
+                  resolve(result);
+                }
+              };
+              cursorReq.onerror = (e) => reject(e.target.error);
+            } catch (e) { reject(e); }
+          });
+        }
+
+        function del(storeName, key) {
+          return new Promise((resolve, reject) => {
+            try {
+              const store = _tx(storeName, "readwrite");
+              const req = store.delete(key);
+              req.onsuccess = () => resolve();
+              req.onerror = (e) => reject(e.target.error);
+            } catch (e) { reject(e); }
+          });
+        }
+
+        function clear(storeName) {
+          return new Promise((resolve, reject) => {
+            try {
+              const store = _tx(storeName, "readwrite");
+              const req = store.clear();
+              req.onsuccess = () => resolve();
+              req.onerror = (e) => reject(e.target.error);
+            } catch (e) { reject(e); }
+          });
+        }
+
+        // Estimate size of a store in bytes
+        function storeSize(storeName) {
+          return getAll(storeName).then((data) => {
+            return new Blob([JSON.stringify(data)]).size;
+          }).catch(() => 0);
+        }
+
+        // Save all logs at once (batch put)
+        function putAllLogs(logObj) {
+          return open().then((db) => {
+            return new Promise((resolve, reject) => {
+              const tx = db.transaction("logs", "readwrite");
+              const store = tx.objectStore("logs");
+              store.clear();
+              for (const [dateKey, entries] of Object.entries(logObj)) {
+                store.put(entries, dateKey);
+              }
+              tx.oncomplete = () => resolve();
+              tx.onerror = (e) => reject(e.target.error);
+            });
+          });
+        }
+
+        return { open, put, get, getAll, del, clear, storeSize, putAllLogs };
+      })();
+
       // ═══════════════════════════════════════════
       // API CONFIG
       // ═══════════════════════════════════════════
@@ -3394,18 +3520,28 @@
         el._timer = setTimeout(() => el.classList.remove("show"), duration);
       }
 
+      // ─── Settings keys stored in localStorage (small, sync) ───
+      const SETTINGS_KEYS = [
+        "goals", "customMeasurementsEnabled", "customMeasurements",
+        "customQuickGramsEnabled", "quickGrams", "rohlikSearchEnabled",
+        "cacheSizeLimitMB", "autoFavEnabled", "mealCategoriesEnabled",
+        "mealCategories", "trendsEnabled", "trendsPeriod",
+        "copyDayEnabled", "theme",
+      ];
+
+      // ─── Data keys stored in IndexedDB (large, async) ───
+      const USERDATA_KEYS = [
+        "customFoods", "portionMemory", "favorites",
+        "foodUsage", "foodRelevance",
+      ];
+
       function loadState() {
+        // 1) Load settings from localStorage (synchronous — instant UI)
         try {
           const saved = localStorage.getItem("kaltab_state");
           if (saved) {
             const parsed = JSON.parse(saved);
             state.goals = parsed.goals || state.goals;
-            state.log = parsed.log || {};
-            state.customFoods = parsed.customFoods || [];
-            state.portionMemory = parsed.portionMemory || {};
-            state.favorites = parsed.favorites || [];
-            state.foodUsage = parsed.foodUsage || {};
-            state.foodRelevance = parsed.foodRelevance || {};
             state.customMeasurementsEnabled =
               parsed.customMeasurementsEnabled !== undefined
                 ? parsed.customMeasurementsEnabled
@@ -3446,63 +3582,61 @@
                 ? parsed.copyDayEnabled
                 : false;
             state.theme = parsed.theme || "default";
-
-            // Migrate caches from old kaltab_state into separate kaltab_cache
-            if (
-              parsed.searchCache ||
-              parsed.detailCache ||
-              parsed.barcodeCache
-            ) {
-              const existingCache = localStorage.getItem("kaltab_cache");
-              if (!existingCache) {
-                const migrated = {
-                  searchCache: parsed.searchCache || {},
-                  detailCache: parsed.detailCache || {},
-                  barcodeCache: parsed.barcodeCache || {},
-                };
-                try {
-                  localStorage.setItem(
-                    "kaltab_cache",
-                    JSON.stringify(migrated),
-                  );
-                } catch (e) {}
-              }
-            }
           }
         } catch (e) {}
-        // Load caches from separate storage
-        loadCache();
       }
 
-      function saveState() {
-        localStorage.setItem(
-          "kaltab_state",
-          JSON.stringify({
-            goals: state.goals,
-            log: state.log,
-            customFoods: state.customFoods,
-            portionMemory: state.portionMemory,
-            favorites: state.favorites,
-            foodUsage: state.foodUsage,
-            foodRelevance: state.foodRelevance,
-            customMeasurementsEnabled: state.customMeasurementsEnabled,
-            customMeasurements: state.customMeasurements,
-            customQuickGramsEnabled: state.customQuickGramsEnabled,
-            quickGrams: state.quickGrams,
-            rohlikSearchEnabled: state.rohlikSearchEnabled,
-            cacheSizeLimitMB: state.cacheSizeLimitMB,
-            autoFavEnabled: state.autoFavEnabled,
-            mealCategoriesEnabled: state.mealCategoriesEnabled,
-            mealCategories: state.mealCategories,
-            trendsEnabled: state.trendsEnabled,
-            trendsPeriod: state.trendsPeriod,
-            copyDayEnabled: state.copyDayEnabled,
-            theme: state.theme,
-          }),
-        );
+      // 2) Load large data from IndexedDB (async — after initial render)
+      async function loadFromIndexedDB() {
+        try {
+          await KaltabDB.open();
+
+          // Check if we need to migrate from old localStorage format
+          const needsMigration = await _checkMigration();
+          if (needsMigration) {
+            await _migrateToIndexedDB();
+            return; // migration already populated state
+          }
+
+          // Load logs
+          const logs = await KaltabDB.getAll("logs");
+          if (Object.keys(logs).length > 0) {
+            state.log = logs;
+          }
+
+          // Load user data (customFoods, favorites, etc.)
+          for (const key of USERDATA_KEYS) {
+            const val = await KaltabDB.get("userData", key);
+            if (val !== undefined) state[key] = val;
+          }
+
+          // Load caches
+          const caches = await KaltabDB.get("cache", "apiCaches");
+          if (caches) {
+            state.searchCache = caches.searchCache || {};
+            state.detailCache = caches.detailCache || {};
+            state.barcodeCache = caches.barcodeCache || {};
+          }
+        } catch (e) {
+          console.warn("IndexedDB load failed, falling back to localStorage:", e);
+          _loadLegacyData();
+        }
       }
 
-      function loadCache() {
+      // Fallback: load data from localStorage if IndexedDB fails
+      function _loadLegacyData() {
+        try {
+          const saved = localStorage.getItem("kaltab_state");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            state.log = parsed.log || {};
+            state.customFoods = parsed.customFoods || [];
+            state.portionMemory = parsed.portionMemory || {};
+            state.favorites = parsed.favorites || [];
+            state.foodUsage = parsed.foodUsage || {};
+            state.foodRelevance = parsed.foodRelevance || {};
+          }
+        } catch (e) {}
         try {
           const saved = localStorage.getItem("kaltab_cache");
           if (saved) {
@@ -3514,59 +3648,142 @@
         } catch (e) {}
       }
 
-      function saveCache() {
-        const cacheData = {
-          searchCache: state.searchCache,
-          detailCache: state.detailCache,
-          barcodeCache: state.barcodeCache,
-        };
-        const json = JSON.stringify(cacheData);
-        const sizeBytes = new Blob([json]).size;
-        const limitBytes = state.cacheSizeLimitMB * 1024 * 1024;
+      // Check if old localStorage data exists but IndexedDB is empty
+      async function _checkMigration() {
+        const saved = localStorage.getItem("kaltab_state");
+        if (!saved) return false;
+        const parsed = JSON.parse(saved);
+        // If old state has logs or user data, we need migration
+        const hasLog = parsed.log && Object.keys(parsed.log).length > 0;
+        const hasCustomFoods = parsed.customFoods && parsed.customFoods.length > 0;
+        const hasFavorites = parsed.favorites && parsed.favorites.length > 0;
+        const hasUsage = parsed.foodUsage && Object.keys(parsed.foodUsage).length > 0;
+        const hasRelevance = parsed.foodRelevance && Object.keys(parsed.foodRelevance).length > 0;
+        const hasPortion = parsed.portionMemory && Object.keys(parsed.portionMemory).length > 0;
+        const hasLegacyData = hasLog || hasCustomFoods || hasFavorites ||
+          hasUsage || hasRelevance || hasPortion;
+        if (!hasLegacyData) return false;
+        // Only migrate if IndexedDB logs store is empty
+        const existingLogs = await KaltabDB.getAll("logs");
+        return Object.keys(existingLogs).length === 0;
+      }
 
-        // Evict oldest entries if over limit
-        if (sizeBytes > limitBytes) {
-          evictCacheEntries(limitBytes);
-          const trimmed = JSON.stringify({
+      // One-time migration from localStorage to IndexedDB
+      async function _migrateToIndexedDB() {
+        try {
+          const saved = localStorage.getItem("kaltab_state");
+          if (!saved) return;
+          const parsed = JSON.parse(saved);
+
+          // Migrate logs
+          const log = parsed.log || {};
+          state.log = log;
+          await KaltabDB.putAllLogs(log);
+
+          // Migrate user data
+          for (const key of USERDATA_KEYS) {
+            if (parsed[key] !== undefined) {
+              state[key] = parsed[key];
+              await KaltabDB.put("userData", key, parsed[key]);
+            }
+          }
+
+          // Migrate caches (from kaltab_state or kaltab_cache)
+          let searchCache = parsed.searchCache || {};
+          let detailCache = parsed.detailCache || {};
+          let barcodeCache = parsed.barcodeCache || {};
+          try {
+            const cacheStr = localStorage.getItem("kaltab_cache");
+            if (cacheStr) {
+              const cacheParsed = JSON.parse(cacheStr);
+              searchCache = cacheParsed.searchCache || searchCache;
+              detailCache = cacheParsed.detailCache || detailCache;
+              barcodeCache = cacheParsed.barcodeCache || barcodeCache;
+            }
+          } catch (e) {}
+          state.searchCache = searchCache;
+          state.detailCache = detailCache;
+          state.barcodeCache = barcodeCache;
+          await KaltabDB.put("cache", "apiCaches", {
+            searchCache, detailCache, barcodeCache,
+          });
+
+          // Clean up: remove large data from localStorage, keep only settings
+          const settingsOnly = {};
+          for (const key of SETTINGS_KEYS) {
+            if (parsed[key] !== undefined) settingsOnly[key] = parsed[key];
+          }
+          localStorage.setItem("kaltab_state", JSON.stringify(settingsOnly));
+          localStorage.removeItem("kaltab_cache");
+
+          console.log("Migration to IndexedDB complete");
+        } catch (e) {
+          console.warn("Migration failed:", e);
+          _loadLegacyData();
+        }
+      }
+
+      function saveState() {
+        // Save settings to localStorage (synchronous, small)
+        try {
+          const settings = {};
+          for (const key of SETTINGS_KEYS) {
+            settings[key] = state[key];
+          }
+          localStorage.setItem("kaltab_state", JSON.stringify(settings));
+        } catch (e) {}
+
+        // Save large data to IndexedDB (async, fire-and-forget)
+        _saveToIndexedDB();
+      }
+
+      async function _saveToIndexedDB() {
+        try {
+          await KaltabDB.open();
+
+          // Save logs
+          await KaltabDB.putAllLogs(state.log);
+
+          // Save user data
+          for (const key of USERDATA_KEYS) {
+            await KaltabDB.put("userData", key, state[key]);
+          }
+        } catch (e) {
+          console.warn("IndexedDB save failed:", e);
+        }
+      }
+
+      function saveCache() {
+        // Save caches to IndexedDB
+        _saveCacheToIndexedDB();
+        updateCacheUsageUI();
+      }
+
+      async function _saveCacheToIndexedDB() {
+        try {
+          await KaltabDB.open();
+
+          const cacheData = {
+            searchCache: state.searchCache,
+            detailCache: state.detailCache,
+            barcodeCache: state.barcodeCache,
+          };
+
+          // Evict if over limit (check in-memory size)
+          const sizeBytes = new Blob([JSON.stringify(cacheData)]).size;
+          const limitBytes = state.cacheSizeLimitMB * 1024 * 1024;
+          if (sizeBytes > limitBytes) {
+            evictCacheEntries(limitBytes);
+          }
+
+          await KaltabDB.put("cache", "apiCaches", {
             searchCache: state.searchCache,
             detailCache: state.detailCache,
             barcodeCache: state.barcodeCache,
           });
-          try {
-            localStorage.setItem("kaltab_cache", trimmed);
-          } catch (e) {
-            // If still fails, aggressively evict more
-            evictCacheEntries(limitBytes * 0.5);
-            try {
-              localStorage.setItem(
-                "kaltab_cache",
-                JSON.stringify({
-                  searchCache: state.searchCache,
-                  detailCache: state.detailCache,
-                  barcodeCache: state.barcodeCache,
-                }),
-              );
-            } catch (e2) {}
-          }
-        } else {
-          try {
-            localStorage.setItem("kaltab_cache", json);
-          } catch (e) {
-            // QuotaExceededError — evict and retry
-            evictCacheEntries(limitBytes * 0.7);
-            try {
-              localStorage.setItem(
-                "kaltab_cache",
-                JSON.stringify({
-                  searchCache: state.searchCache,
-                  detailCache: state.detailCache,
-                  barcodeCache: state.barcodeCache,
-                }),
-              );
-            } catch (e2) {}
-          }
+        } catch (e) {
+          console.warn("IndexedDB cache save failed:", e);
         }
-        updateCacheUsageUI();
       }
 
       function evictCacheEntries(targetBytes) {
@@ -3603,9 +3820,11 @@
       }
 
       function getCacheSizeBytes() {
-        const json =
-          localStorage.getItem("kaltab_cache") ||
-          '{"searchCache":{},"detailCache":{},"barcodeCache":{}}';
+        const json = JSON.stringify({
+          searchCache: state.searchCache,
+          detailCache: state.detailCache,
+          barcodeCache: state.barcodeCache,
+        });
         return new Blob([json]).size;
       }
 
@@ -3635,13 +3854,23 @@
       }
 
       function exportData() {
-        const stateData = localStorage.getItem("kaltab_state");
-        if (!stateData) return;
-        // Merge state + cache into one export file for full backup
-        const merged = JSON.parse(stateData);
+        // Merge settings (localStorage) + data (in-memory from IndexedDB) into one export
+        const merged = {};
+        // Settings
+        for (const key of SETTINGS_KEYS) {
+          merged[key] = state[key];
+        }
+        // User data
+        for (const key of USERDATA_KEYS) {
+          merged[key] = state[key];
+        }
+        // Logs
+        merged.log = state.log;
+        // Caches
         merged.searchCache = state.searchCache;
         merged.detailCache = state.detailCache;
         merged.barcodeCache = state.barcodeCache;
+
         const blob = new Blob([JSON.stringify(merged)], {
           type: "application/json",
         });
@@ -3655,7 +3884,7 @@
 
       function importData(file) {
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.onload = async () => {
           try {
             const parsed = JSON.parse(reader.result);
             if (!parsed.goals && !parsed.log && !parsed.customFoods) {
@@ -3664,16 +3893,9 @@
             }
             if (!confirm("Importovat data? Stávající data budou přepsána."))
               return;
+
+            // Settings
             state.goals = parsed.goals || state.goals;
-            state.log = parsed.log || {};
-            state.customFoods = parsed.customFoods || [];
-            state.detailCache = parsed.detailCache || {};
-            state.searchCache = parsed.searchCache || {};
-            state.barcodeCache = parsed.barcodeCache || {};
-            state.portionMemory = parsed.portionMemory || {};
-            state.favorites = parsed.favorites || [];
-            state.foodUsage = parsed.foodUsage || {};
-            state.foodRelevance = parsed.foodRelevance || {};
             state.customMeasurementsEnabled =
               parsed.customMeasurementsEnabled !== undefined
                 ? parsed.customMeasurementsEnabled
@@ -3713,6 +3935,19 @@
               parsed.copyDayEnabled !== undefined
                 ? parsed.copyDayEnabled
                 : false;
+            state.theme = parsed.theme || state.theme;
+
+            // Data (stored in IndexedDB)
+            state.log = parsed.log || {};
+            state.customFoods = parsed.customFoods || [];
+            state.portionMemory = parsed.portionMemory || {};
+            state.favorites = parsed.favorites || [];
+            state.foodUsage = parsed.foodUsage || {};
+            state.foodRelevance = parsed.foodRelevance || {};
+            state.searchCache = parsed.searchCache || {};
+            state.detailCache = parsed.detailCache || {};
+            state.barcodeCache = parsed.barcodeCache || {};
+
             saveState();
             saveCache();
             loadSettingsUI();
@@ -5566,10 +5801,22 @@
       // EVENT LISTENERS
       // ═══════════════════════════════════════════
       document.addEventListener("DOMContentLoaded", () => {
+        // Phase 1: Load settings from localStorage (synchronous, instant UI)
         loadState();
         applyTheme(state.theme);
         renderCategories();
         renderFoodList();
+
+        // Phase 2: Load large data from IndexedDB (async, re-render when ready)
+        loadFromIndexedDB().then(() => {
+          renderCategories();
+          renderFoodList();
+          if (state.activePage === "page-today") renderToday();
+          if (state.activePage === "page-history") renderHistory();
+          updateCacheUsageUI();
+        }).catch((e) => {
+          console.warn("IndexedDB init failed:", e);
+        });
 
         // Tab bar
         document.querySelector(".tab-bar").addEventListener("click", (e) => {
@@ -5927,7 +6174,7 @@
         // Clear all data
         document
           .getElementById("btn-clear-all")
-          .addEventListener("click", () => {
+          .addEventListener("click", async () => {
             if (
               confirm("Opravdu smazat VŠECHNA data? Tato akce je nevratná.")
             ) {
@@ -5939,11 +6186,19 @@
               state.foodUsage = {};
               state.foodRelevance = {};
               state.favorites = [];
+              state.customFoods = [];
               state.goals = { kcal: 2000, protein: 120, carbs: 250, fat: 65 };
               state.theme = "default";
               applyTheme("default");
               saveState();
               saveCache();
+              // Clear all IndexedDB stores
+              try {
+                await KaltabDB.open();
+                await KaltabDB.clear("logs");
+                await KaltabDB.clear("cache");
+                await KaltabDB.clear("userData");
+              } catch (e) {}
               loadSettingsUI();
               renderCategories();
               renderFoodList();
@@ -6067,13 +6322,13 @@
         cacheLimitInput.addEventListener("input", () => {
           const val = parseFloat(cacheLimitInput.value);
           const msgEl = document.getElementById("cache-validation-msg");
-          if (isNaN(val) || val < 0.5 || val > 4.5) {
+          if (isNaN(val) || val < 0.5 || val > 50) {
             cacheLimitInput.classList.add("invalid");
             if (isNaN(val) || val === "")
               msgEl.textContent = "Zadejte platnou hodnotu";
             else if (val < 0.5) msgEl.textContent = "Minimum je 0.5 MB";
             else
-              msgEl.textContent = "Maximum je 4.5 MB (limit prohlížeče ~5 MB)";
+              msgEl.textContent = "Maximum je 50 MB";
             return;
           }
           cacheLimitInput.classList.remove("invalid");
@@ -6092,7 +6347,7 @@
         // Clear cache button
         document
           .getElementById("btn-clear-cache")
-          .addEventListener("click", () => {
+          .addEventListener("click", async () => {
             if (!confirm("Vymazat mezipaměť vyhledávání?")) return;
             state.searchCache = {};
             state.detailCache = {};
