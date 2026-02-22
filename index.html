@@ -45,6 +45,70 @@
         --safe-bottom: env(safe-area-inset-bottom, 0px);
       }
 
+      /* ── Theme: Dark ── */
+      [data-theme="dark"] {
+        --green: #22c55e;
+        --green-dark: #16a34a;
+        --green-light: #1a3a2a;
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --border: #334155;
+        --red: #f87171;
+        --orange: #fb923c;
+        --blue: #60a5fa;
+        --purple: #a78bfa;
+      }
+
+      /* ── Theme: Ocean ── */
+      [data-theme="ocean"] {
+        --green: #0ea5e9;
+        --green-dark: #0284c7;
+        --green-light: #e0f2fe;
+        --bg: #f0f9ff;
+        --card: #ffffff;
+        --text: #0c4a6e;
+        --text-secondary: #64748b;
+        --border: #bae6fd;
+        --red: #ef4444;
+        --orange: #f97316;
+        --blue: #0ea5e9;
+        --purple: #8b5cf6;
+      }
+
+      /* ── Theme: Sunset ── */
+      [data-theme="sunset"] {
+        --green: #f97316;
+        --green-dark: #ea580c;
+        --green-light: #fff7ed;
+        --bg: #fffbeb;
+        --card: #ffffff;
+        --text: #7c2d12;
+        --text-secondary: #9a3412;
+        --border: #fed7aa;
+        --red: #dc2626;
+        --orange: #f97316;
+        --blue: #3b82f6;
+        --purple: #8b5cf6;
+      }
+
+      /* ── Theme: Lavender ── */
+      [data-theme="lavender"] {
+        --green: #8b5cf6;
+        --green-dark: #7c3aed;
+        --green-light: #ede9fe;
+        --bg: #faf5ff;
+        --card: #ffffff;
+        --text: #3b0764;
+        --text-secondary: #6b21a8;
+        --border: #ddd6fe;
+        --red: #ef4444;
+        --orange: #f97316;
+        --blue: #3b82f6;
+        --purple: #8b5cf6;
+      }
+
       body {
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -805,6 +869,52 @@
       }
       .btn-clear-cache:active {
         background: var(--bg);
+      }
+
+      /* ── Theme Picker ── */
+      .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+      }
+      .theme-option {
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 6px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, transform 0.15s;
+        background: var(--card);
+      }
+      .theme-option:active {
+        transform: scale(0.96);
+      }
+      .theme-option.active {
+        border-color: var(--green);
+      }
+      .theme-option .theme-preview {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        margin: 0 auto 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .theme-option .theme-preview .tp-stripe {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+      }
+      .theme-option .theme-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
       }
 
       /* ── Settings ── */
@@ -1836,6 +1946,44 @@
     <!-- ===== PAGE: Nastavení ===== -->
     <div class="page" id="page-settings">
       <h1 class="page-header">Nastavení</h1>
+
+      <div class="setting-group">
+        <h3>Vzhled</h3>
+        <div class="setting-card" style="padding: 14px">
+          <div class="theme-grid" id="theme-grid">
+            <div class="theme-option active" data-theme-id="default">
+              <div class="theme-preview" style="background: #f8fafc">
+                <div class="tp-stripe" style="background: #22c55e"></div>
+              </div>
+              <div class="theme-label">Výchozí</div>
+            </div>
+            <div class="theme-option" data-theme-id="dark">
+              <div class="theme-preview" style="background: #0f172a">
+                <div class="tp-stripe" style="background: #22c55e"></div>
+              </div>
+              <div class="theme-label">Tmavý</div>
+            </div>
+            <div class="theme-option" data-theme-id="ocean">
+              <div class="theme-preview" style="background: #f0f9ff">
+                <div class="tp-stripe" style="background: #0ea5e9"></div>
+              </div>
+              <div class="theme-label">Oceán</div>
+            </div>
+            <div class="theme-option" data-theme-id="sunset">
+              <div class="theme-preview" style="background: #fffbeb">
+                <div class="tp-stripe" style="background: #f97316"></div>
+              </div>
+              <div class="theme-label">Západ slunce</div>
+            </div>
+            <div class="theme-option" data-theme-id="lavender">
+              <div class="theme-preview" style="background: #faf5ff">
+                <div class="tp-stripe" style="background: #8b5cf6"></div>
+              </div>
+              <div class="theme-label">Levandule</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="setting-group">
         <h3>Denní cíle</h3>
@@ -3165,6 +3313,7 @@
         trendsPeriod: 7,
         copyDayEnabled: false,
         logTargetDate: null, // null = today, or "YYYY-MM-DD" for specific date
+        theme: "default",
       };
 
       function escapeHtml(str) {
@@ -3241,6 +3390,7 @@
               parsed.copyDayEnabled !== undefined
                 ? parsed.copyDayEnabled
                 : false;
+            state.theme = parsed.theme || "default";
 
             // Migrate caches from old kaltab_state into separate kaltab_cache
             if (
@@ -3292,6 +3442,7 @@
             trendsEnabled: state.trendsEnabled,
             trendsPeriod: state.trendsPeriod,
             copyDayEnabled: state.copyDayEnabled,
+            theme: state.theme,
           }),
         );
       }
@@ -4886,6 +5037,24 @@
       // ═══════════════════════════════════════════
       // SETTINGS
       // ═══════════════════════════════════════════
+      function applyTheme(themeId) {
+        if (themeId === "default") {
+          document.documentElement.removeAttribute("data-theme");
+        } else {
+          document.documentElement.setAttribute("data-theme", themeId);
+        }
+        // Update meta theme-color for mobile browsers
+        const themeColors = {
+          default: "#22c55e",
+          dark: "#0f172a",
+          ocean: "#0ea5e9",
+          sunset: "#f97316",
+          lavender: "#8b5cf6",
+        };
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", themeColors[themeId] || "#22c55e");
+      }
+
       function loadSettingsUI() {
         document.getElementById("goal-kcal").value = state.goals.kcal;
         document.getElementById("goal-protein").value = state.goals.protein;
@@ -4933,6 +5102,11 @@
         document.getElementById("cache-limit-input").value =
           state.cacheSizeLimitMB;
         updateCacheUsageUI();
+
+        // Theme
+        document.querySelectorAll(".theme-option").forEach((el) => {
+          el.classList.toggle("active", el.dataset.themeId === state.theme);
+        });
       }
 
       function renderMeasurementsList() {
@@ -5326,6 +5500,7 @@
       // ═══════════════════════════════════════════
       document.addEventListener("DOMContentLoaded", () => {
         loadState();
+        applyTheme(state.theme);
         renderCategories();
         renderFoodList();
 
@@ -5561,6 +5736,21 @@
             renderTrends();
           });
 
+        // Theme picker
+        document
+          .getElementById("theme-grid")
+          .addEventListener("click", (e) => {
+            const option = e.target.closest(".theme-option[data-theme-id]");
+            if (!option) return;
+            const themeId = option.dataset.themeId;
+            state.theme = themeId;
+            applyTheme(themeId);
+            document.querySelectorAll(".theme-option").forEach((el) => {
+              el.classList.toggle("active", el.dataset.themeId === themeId);
+            });
+            saveState();
+          });
+
         // Settings goals
         ["goal-kcal", "goal-protein", "goal-carbs", "goal-fat"].forEach(
           (id) => {
@@ -5683,6 +5873,8 @@
               state.foodRelevance = {};
               state.favorites = [];
               state.goals = { kcal: 2000, protein: 120, carbs: 250, fat: 65 };
+              state.theme = "default";
+              applyTheme("default");
               saveState();
               saveCache();
               loadSettingsUI();
