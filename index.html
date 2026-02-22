@@ -47,16 +47,16 @@
 
       /* ── Theme: Dark ── */
       [data-theme="dark"] {
-        --green: #22c55e;
-        --green-dark: #16a34a;
-        --green-light: #1a3a2a;
-        --bg: #0f172a;
-        --card: #1e293b;
-        --text: #f1f5f9;
-        --text-secondary: #94a3b8;
-        --border: #334155;
+        --green: #34d399;
+        --green-dark: #10b981;
+        --green-light: #132e21;
+        --bg: #111827;
+        --card: #1f2937;
+        --text: #f9fafb;
+        --text-secondary: #9ca3af;
+        --border: #374151;
         --red: #f87171;
-        --orange: #fb923c;
+        --orange: #fbbf24;
         --blue: #60a5fa;
         --purple: #a78bfa;
       }
@@ -107,6 +107,38 @@
         --orange: #f97316;
         --blue: #3b82f6;
         --purple: #8b5cf6;
+      }
+
+      /* ── Theme: Midnight ── */
+      [data-theme="midnight"] {
+        --green: #818cf8;
+        --green-dark: #6366f1;
+        --green-light: #1e1b4b;
+        --bg: #0c0a1d;
+        --card: #161333;
+        --text: #e8e6f0;
+        --text-secondary: #a5a1c2;
+        --border: #2e2a52;
+        --red: #fb7185;
+        --orange: #fbbf24;
+        --blue: #7dd3fc;
+        --purple: #c084fc;
+      }
+
+      /* ── Theme: AMOLED ── */
+      [data-theme="amoled"] {
+        --green: #4ade80;
+        --green-dark: #22c55e;
+        --green-light: #0a1f0f;
+        --bg: #000000;
+        --card: #0a0a0a;
+        --text: #fafafa;
+        --text-secondary: #a1a1aa;
+        --border: #1c1c1e;
+        --red: #ff6b6b;
+        --orange: #fbbf24;
+        --blue: #38bdf8;
+        --purple: #c084fc;
       }
 
       body {
@@ -1958,8 +1990,8 @@
               <div class="theme-label">Výchozí</div>
             </div>
             <div class="theme-option" data-theme-id="dark">
-              <div class="theme-preview" style="background: #0f172a">
-                <div class="tp-stripe" style="background: #22c55e"></div>
+              <div class="theme-preview" style="background: #111827">
+                <div class="tp-stripe" style="background: #34d399"></div>
               </div>
               <div class="theme-label">Tmavý</div>
             </div>
@@ -1980,6 +2012,18 @@
                 <div class="tp-stripe" style="background: #8b5cf6"></div>
               </div>
               <div class="theme-label">Levandule</div>
+            </div>
+            <div class="theme-option" data-theme-id="midnight">
+              <div class="theme-preview" style="background: #0c0a1d">
+                <div class="tp-stripe" style="background: #818cf8"></div>
+              </div>
+              <div class="theme-label">Půlnoc</div>
+            </div>
+            <div class="theme-option" data-theme-id="amoled">
+              <div class="theme-preview" style="background: #000000">
+                <div class="tp-stripe" style="background: #4ade80"></div>
+              </div>
+              <div class="theme-label">AMOLED</div>
             </div>
           </div>
         </div>
@@ -5067,10 +5111,12 @@
         // Update meta theme-color for mobile browsers
         const themeColors = {
           default: "#22c55e",
-          dark: "#0f172a",
+          dark: "#111827",
           ocean: "#0ea5e9",
           sunset: "#f97316",
           lavender: "#8b5cf6",
+          midnight: "#0c0a1d",
+          amoled: "#000000",
         };
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute("content", themeColors[themeId] || "#22c55e");
