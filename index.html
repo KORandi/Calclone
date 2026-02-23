@@ -1545,6 +1545,137 @@
         cursor: default;
       }
 
+      /* ── Custom Food Wizard: Ingredient-specific ── */
+      .cfw-ingredient-search-wrap {
+        position: relative;
+        margin-bottom: 14px;
+      }
+      .cfw-search-results {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        margin-top: 4px;
+      }
+      .cfw-search-results.visible { display: block; }
+      .cfw-search-result-item {
+        padding: 10px 14px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+      }
+      .cfw-search-result-item:last-child { border-bottom: none; }
+      .cfw-search-result-item:active { background: var(--bg); }
+      .cfw-search-result-item .name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+      }
+      .cfw-search-result-item .detail {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      .cfw-search-result-item .kcal {
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--green);
+        white-space: nowrap;
+        margin-left: 10px;
+      }
+      .cfw-ingredients-list {
+        margin-bottom: 14px;
+        min-height: 40px;
+      }
+      .cfw-empty-ingredients {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 13px;
+        padding: 16px 0;
+      }
+      .cfw-ingredient-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: var(--bg);
+        border-radius: 10px;
+        margin-bottom: 6px;
+      }
+      .cfw-ingredient-item .ing-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .cfw-ingredient-item .ing-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cfw-ingredient-item .ing-macros {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 1px;
+      }
+      .cfw-ingredient-item .ing-grams {
+        width: 70px;
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        text-align: center;
+        color: var(--text);
+        background: var(--card);
+        outline: none;
+        flex-shrink: 0;
+      }
+      .cfw-ingredient-item .ing-grams:focus { border-color: var(--green); }
+      .cfw-ingredient-item .ing-unit {
+        font-size: 12px;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+      .cfw-ingredient-item .ing-remove {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: none;
+        color: var(--red);
+        font-size: 18px;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .cfw-weight-hint {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+      .cfw-recipe-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--green);
+        background: var(--green-light);
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-right: 4px;
+      }
+
       .info-icon {
         display: inline-flex;
         align-items: center;
@@ -2866,79 +2997,9 @@
 
       <div class="setting-group">
         <h3>Potraviny a porce</h3>
-        <div class="setting-collapse-header" id="collapse-custom-food">
-          <span class="collapse-title" style="font-weight: 400"
-            >Přidat vlastní potravinu</span
-          >
-          <span class="collapse-chevron" id="chevron-custom-food">&#9662;</span>
-        </div>
-        <div id="custom-food-section" style="display: none; margin-top: 8px">
-          <div class="setting-card" style="padding: 14px">
-            <div class="custom-form">
-              <div class="form-row">
-                <label>Název</label
-                ><input
-                  type="text"
-                  id="custom-name"
-                  placeholder="Např. Domácí granola"
-                />
-              </div>
-              <div class="form-row">
-                <label>Kategorie</label
-                ><input
-                  type="text"
-                  id="custom-cat"
-                  placeholder="Např. Snídaně"
-                />
-              </div>
-              <div class="form-row">
-                <label>Kalorie (na 100 g)</label
-                ><input type="number" id="custom-kcal" placeholder="0" />
-              </div>
-              <div class="form-row">
-                <label>Bílkoviny (g na 100 g)</label
-                ><input
-                  type="number"
-                  id="custom-protein"
-                  placeholder="0"
-                  step="0.1"
-                />
-              </div>
-              <div class="form-row">
-                <label>Sacharidy (g na 100 g)</label
-                ><input
-                  type="number"
-                  id="custom-carbs"
-                  placeholder="0"
-                  step="0.1"
-                />
-              </div>
-              <div class="form-row">
-                <label>Tuky (g na 100 g)</label
-                ><input
-                  type="number"
-                  id="custom-fat"
-                  placeholder="0"
-                  step="0.1"
-                />
-              </div>
-              <button
-                class="btn-add"
-                id="btn-add-custom"
-                style="margin-top: 12px"
-              >
-                Přidat potravinu
-              </button>
-              <button
-                class="btn-cancel-edit"
-                id="btn-cancel-custom-edit"
-                style="margin-top: 8px; display: none"
-              >
-                Zrušit úpravu
-              </button>
-            </div>
-          </div>
-        </div>
+        <button class="btn-add" id="btn-open-custom-food-wizard" style="font-size:14px; padding:12px;">
+          + Přidat vlastní potravinu
+        </button>
         <div id="custom-foods-list" style="margin-top: 12px"></div>
       </div>
 
@@ -3619,6 +3680,118 @@
             </div>
           </div>
           <button class="wizard-btn-next" id="wizard-summary-save">Uložit</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== MODAL: Custom Food Wizard ===== -->
+    <div class="modal-overlay" id="custom-food-wizard-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="wizard-header">
+          <button class="wizard-back-btn" id="cfw-back-btn">&larr;</button>
+          <h2 id="cfw-title">Přidat vlastní potravinu</h2>
+        </div>
+        <div class="wizard-progress" id="cfw-progress"></div>
+
+        <!-- Step 1: Choose path -->
+        <div class="wizard-step active" id="cfw-step-path">
+          <div class="wizard-option" data-cfw-path="know-macros">
+            <div class="wizard-option-title">Vím kalorie a makra</div>
+            <div class="wizard-option-desc">Zadám hodnoty na 100 g ručně</div>
+          </div>
+          <div class="wizard-option" data-cfw-path="know-ingredients">
+            <div class="wizard-option-title">Vím ingredience</div>
+            <div class="wizard-option-desc">Sestavím recept z potravin v databázi</div>
+          </div>
+        </div>
+
+        <!-- Step 2a: Direct macro input -->
+        <div class="wizard-step" id="cfw-step-macros">
+          <div class="wizard-input-group">
+            <label>Název</label>
+            <input type="text" id="cfw-name" placeholder="Např. Domácí granola" />
+          </div>
+          <div class="wizard-input-group">
+            <label>Kategorie</label>
+            <input type="text" id="cfw-cat" placeholder="Např. Snídaně" />
+          </div>
+          <div class="wizard-input-group">
+            <label>Kalorie (na 100 g)</label>
+            <input type="number" id="cfw-kcal" placeholder="0" />
+          </div>
+          <div class="wizard-input-row">
+            <div class="wizard-input-group">
+              <label>Bílkoviny (g)</label>
+              <input type="number" id="cfw-protein" placeholder="0" step="0.1" />
+            </div>
+            <div class="wizard-input-group">
+              <label>Sacharidy (g)</label>
+              <input type="number" id="cfw-carbs" placeholder="0" step="0.1" />
+            </div>
+          </div>
+          <div class="wizard-input-group">
+            <label>Tuky (g na 100 g)</label>
+            <input type="number" id="cfw-fat" placeholder="0" step="0.1" />
+          </div>
+          <button class="wizard-btn-next" id="cfw-save-macros">Uložit</button>
+        </div>
+
+        <!-- Step 2b: Recipe builder -->
+        <div class="wizard-step" id="cfw-step-ingredients">
+          <div class="wizard-input-group">
+            <label>Název receptu</label>
+            <input type="text" id="cfw-recipe-name" placeholder="Např. Domácí müsli" />
+          </div>
+          <div class="wizard-input-group">
+            <label>Kategorie</label>
+            <input type="text" id="cfw-recipe-cat" placeholder="Např. Snídaně" />
+          </div>
+
+          <div class="cfw-ingredient-search-wrap">
+            <div class="search-wrap" style="margin-bottom:0;">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+              <input type="text" id="cfw-ingredient-search" placeholder="Hledat potravinu..." autocomplete="off" />
+              <button class="search-clear" id="cfw-search-clear" title="Vymazat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+              <button class="barcode-btn" id="cfw-barcode-btn" title="Skenovat čárový kód">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                  <path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                  <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
+                  <line x1="13" y1="8" x2="13" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/>
+                </svg>
+              </button>
+            </div>
+            <div class="cfw-search-results" id="cfw-search-results"></div>
+          </div>
+
+          <div class="cfw-ingredients-list" id="cfw-ingredients-list">
+            <div class="cfw-empty-ingredients">Zatím žádné ingredience</div>
+          </div>
+
+          <div class="wizard-input-group" id="cfw-weight-group" style="display:none;">
+            <label>Celková hmotnost ingrediencí</label>
+            <div id="cfw-total-weight" style="font-size:18px;font-weight:700;color:var(--green);padding:4px 0;">0 g</div>
+          </div>
+
+          <div class="wizard-macro-preview" id="cfw-recipe-preview" style="display:none;">
+            <div class="wizard-macro-preview-title">Hodnoty na 100 g</div>
+            <div class="wizard-macro-preview-row">
+              <div class="wizard-macro-preview-item"><div class="val" style="color:var(--green)" id="cfw-prev-kcal">-</div><div class="lbl">kcal</div></div>
+              <div class="wizard-macro-preview-item"><div class="val protein" id="cfw-prev-protein">-</div><div class="lbl">Bílkoviny</div></div>
+              <div class="wizard-macro-preview-item"><div class="val carbs" id="cfw-prev-carbs">-</div><div class="lbl">Sacharidy</div></div>
+              <div class="wizard-macro-preview-item"><div class="val fat" id="cfw-prev-fat">-</div><div class="lbl">Tuky</div></div>
+            </div>
+          </div>
+
+          <button class="wizard-btn-next" id="cfw-save-recipe" disabled>Uložit recept</button>
         </div>
 
       </div>
@@ -6703,102 +6876,12 @@
         return backMap[currentStep] || "wizard-step-path";
       }
 
-      let editingCustomIdx = null;
-
-      function addCustomFood() {
-        const name = document.getElementById("custom-name").value.trim();
-        const cat =
-          document.getElementById("custom-cat").value.trim() || "Vlastní";
-        const kcal =
-          parseFloat(document.getElementById("custom-kcal").value) || 0;
-        const protein =
-          parseFloat(document.getElementById("custom-protein").value) || 0;
-        const carbs =
-          parseFloat(document.getElementById("custom-carbs").value) || 0;
-        const fat =
-          parseFloat(document.getElementById("custom-fat").value) || 0;
-
-        if (!name) return;
-
-        if (editingCustomIdx !== null) {
-          state.customFoods[editingCustomIdx] = {
-            name,
-            cat,
-            kcal,
-            protein,
-            carbs,
-            fat,
-          };
-          cancelCustomEdit();
-        } else {
-          state.customFoods.push({ name, cat, kcal, protein, carbs, fat });
-        }
-        saveState();
-
-        [
-          "custom-name",
-          "custom-cat",
-          "custom-kcal",
-          "custom-protein",
-          "custom-carbs",
-          "custom-fat",
-        ].forEach((id) => (document.getElementById(id).value = ""));
-
-        renderCategories();
-        renderFoodList();
-        renderCustomFoodsList();
-      }
-
-      function editCustomFood(idx) {
-        const food = state.customFoods[idx];
-        if (!food) return;
-
-        // Ensure the form is visible
-        document.getElementById("custom-food-section").style.display = "block";
-        document.getElementById("chevron-custom-food").classList.add("open");
-
-        editingCustomIdx = idx;
-        document.getElementById("custom-name").value = food.name;
-        document.getElementById("custom-cat").value =
-          food.cat === "Vlastní" ? "" : food.cat;
-        document.getElementById("custom-kcal").value = food.kcal;
-        document.getElementById("custom-protein").value = food.protein;
-        document.getElementById("custom-carbs").value = food.carbs;
-        document.getElementById("custom-fat").value = food.fat;
-
-        document.getElementById("btn-add-custom").textContent = "Uložit změny";
-        document.getElementById("btn-cancel-custom-edit").style.display = "";
-
-        document
-          .getElementById("custom-name")
-          .scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-
-      function cancelCustomEdit() {
-        editingCustomIdx = null;
-        [
-          "custom-name",
-          "custom-cat",
-          "custom-kcal",
-          "custom-protein",
-          "custom-carbs",
-          "custom-fat",
-        ].forEach((id) => (document.getElementById(id).value = ""));
-        document.getElementById("btn-add-custom").textContent =
-          "Přidat potravinu";
-        document.getElementById("btn-cancel-custom-edit").style.display =
-          "none";
-      }
-
       function deleteCustomFood(idx) {
         const food = state.customFoods[idx];
         if (!food) return;
         if (!confirm(`Opravdu smazat "${food.name}"?`)) return;
 
         state.customFoods.splice(idx, 1);
-        if (editingCustomIdx === idx) cancelCustomEdit();
-        else if (editingCustomIdx !== null && editingCustomIdx > idx)
-          editingCustomIdx--;
         saveState();
         renderCategories();
         renderFoodList();
@@ -6818,7 +6901,7 @@
     <div class="custom-food-item">
       <div class="custom-food-item-info">
         <div class="custom-food-item-name">${escapeHtml(f.name)}</div>
-        <div class="custom-food-item-detail">${escapeHtml(f.cat)} · B: ${f.protein}g · S: ${f.carbs}g · T: ${f.fat}g</div>
+        <div class="custom-food-item-detail">${f.recipe ? '<span class="cfw-recipe-badge">Recept</span>' : ''}${escapeHtml(f.cat)} · B: ${f.protein}g · S: ${f.carbs}g · T: ${f.fat}g</div>
       </div>
       <div class="custom-food-item-kcal">${Math.round(f.kcal)} kcal</div>
       <div class="custom-food-item-actions">
@@ -6829,6 +6912,370 @@
   `,
           )
           .join("");
+      }
+
+      // ═══════════════════════════════════════════
+      // CUSTOM FOOD WIZARD
+      // ═══════════════════════════════════════════
+      const cfwState = {
+        path: null,
+        editIdx: null,
+        ingredients: [],
+        searchTimeout: null,
+        barcodeMode: false,
+      };
+
+      function openCustomFoodWizard(editIdx = null) {
+        cfwState.path = null;
+        cfwState.editIdx = editIdx;
+        cfwState.ingredients = [];
+
+        ["cfw-name","cfw-cat","cfw-kcal","cfw-protein","cfw-carbs","cfw-fat",
+         "cfw-recipe-name","cfw-recipe-cat","cfw-ingredient-search"
+        ].forEach(id => { document.getElementById(id).value = ""; });
+        document.getElementById("cfw-total-weight").textContent = "0 g";
+
+        if (editIdx !== null) {
+          const food = state.customFoods[editIdx];
+          if (food.recipe) {
+            cfwState.path = "know-ingredients";
+            cfwState.ingredients = food.recipe.ingredients.map(ing => ({
+              name: ing.name, grams: ing.grams,
+              kcalPer100: ing.kcal, proteinPer100: ing.protein,
+              carbsPer100: ing.carbs, fatPer100: ing.fat,
+            }));
+            document.getElementById("cfw-recipe-name").value = food.name;
+            document.getElementById("cfw-recipe-cat").value = food.cat === "Vlastní" ? "" : food.cat;
+            renderCfwIngredients();
+            updateCfwRecipePreview();
+            showCfwStep("cfw-step-ingredients");
+          } else {
+            cfwState.path = "know-macros";
+            document.getElementById("cfw-name").value = food.name;
+            document.getElementById("cfw-cat").value = food.cat === "Vlastní" ? "" : food.cat;
+            document.getElementById("cfw-kcal").value = food.kcal;
+            document.getElementById("cfw-protein").value = food.protein;
+            document.getElementById("cfw-carbs").value = food.carbs;
+            document.getElementById("cfw-fat").value = food.fat;
+            showCfwStep("cfw-step-macros");
+          }
+        } else {
+          renderCfwIngredients();
+          showCfwStep("cfw-step-path");
+        }
+
+        document.getElementById("cfw-search-results").classList.remove("visible");
+        document.getElementById("custom-food-wizard-modal").classList.add("active");
+      }
+
+      function closeCfwWizard() {
+        document.getElementById("custom-food-wizard-modal").classList.remove("active");
+        cfwState.path = null;
+        cfwState.editIdx = null;
+        cfwState.ingredients = [];
+        clearTimeout(cfwState.searchTimeout);
+      }
+
+      function showCfwStep(stepId) {
+        document.querySelectorAll("#custom-food-wizard-modal .wizard-step").forEach(s => s.classList.remove("active"));
+        document.getElementById(stepId).classList.add("active");
+
+        const backBtn = document.getElementById("cfw-back-btn");
+        backBtn.classList.toggle("visible", stepId !== "cfw-step-path");
+
+        const titles = {
+          "cfw-step-path": cfwState.editIdx !== null ? "Upravit potravinu" : "Přidat vlastní potravinu",
+          "cfw-step-macros": "Zadat hodnoty",
+          "cfw-step-ingredients": "Sestavit recept",
+        };
+        document.getElementById("cfw-title").textContent = titles[stepId] || "Přidat vlastní potravinu";
+        document.getElementById("cfw-progress").innerHTML = "";
+      }
+
+      let cfwSearchGen = 0;
+
+      function cfwRenderSearchResults(results) {
+        const el = document.getElementById("cfw-search-results");
+        if (results.length === 0) {
+          el.innerHTML = '<div class="cfw-search-result-item"><span class="name">Nic nenalezeno</span></div>';
+        } else {
+          el.innerHTML = results.map((f, i) => {
+            const hasMacros = f.protein != null;
+            const catText = (f.cat && f.cat !== "API") ? escapeHtml(f.cat) : "";
+            const macroHtml = hasMacros
+              ? `<span style="color:var(--blue)">B:${f.protein}g</span> <span style="color:var(--orange)">S:${f.carbs}g</span> <span style="color:var(--red)">T:${f.fat}g</span>`
+              : "";
+            const detailParts = [catText, macroHtml].filter(Boolean).join(" · ");
+            return `
+            <div class="cfw-search-result-item" data-cfw-ridx="${i}">
+              <div>
+                <div class="name">${escapeHtml(f.name)}</div>
+                ${detailParts ? `<div class="detail">${detailParts}</div>` : ""}
+              </div>
+              <div class="kcal">${f.kcal != null ? Math.round(f.kcal) : ''}<span style="font-weight:400;font-size:11px;color:var(--text-secondary)"> kcal</span></div>
+            </div>`;
+          }).join("");
+        }
+        el._results = results;
+        el.classList.add("visible");
+      }
+
+      function cfwSearchIngredients(query) {
+        if (!query || query.length < 1) {
+          document.getElementById("cfw-search-results").classList.remove("visible");
+          return;
+        }
+        const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        // Show local results immediately
+        let localResults = localFoods()
+          .map(f => ({ ...f, source: f.source || "local" }))
+          .filter(f => {
+            const n = f.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const c = f.cat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return n.includes(q) || c.includes(q);
+          });
+        sortByRelevance(localResults, query);
+        localResults = localResults.slice(0, 8);
+        cfwRenderSearchResults(localResults);
+
+        // Also search APIs (debounced by the caller) if query is long enough
+        if (query.length >= 2) {
+          const gen = ++cfwSearchGen;
+          (async () => {
+            const searches = [apiSearch(query)];
+            if (state.rohlikSearchEnabled) searches.push(rohlikSearch(query));
+            const results = await Promise.all(searches);
+            if (gen !== cfwSearchGen) return; // stale
+
+            let apiResults = results[0] ? parseAutoResults(results[0]) : [];
+            let rohlikResults = (state.rohlikSearchEnabled && results[1]) ? results[1] : [];
+
+            // Merge: local first, then API/Rohlik (deduplicate by name)
+            const seen = new Set(localResults.map(f => f.name.toLowerCase()));
+            const extra = [...rohlikResults, ...apiResults].filter(f => {
+              const key = f.name.toLowerCase();
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+
+            const combined = [...localResults, ...extra].slice(0, 10);
+            cfwRenderSearchResults(combined);
+          })();
+        }
+      }
+
+      async function cfwAddIngredient(food) {
+        // If API food without macros, fetch full details first
+        if (food.source === "api" && food.guid && food.protein == null) {
+          showToast("Načítám detaily...");
+          const detail = await apiDetail(food);
+          if (detail) {
+            food = { ...food, ...detail, name: food.name };
+          }
+        }
+        cfwState.ingredients.push({
+          name: food.name, grams: 100,
+          kcalPer100: food.kcal || 0, proteinPer100: food.protein || 0,
+          carbsPer100: food.carbs || 0, fatPer100: food.fat || 0,
+        });
+        document.getElementById("cfw-ingredient-search").value = "";
+        document.getElementById("cfw-search-clear").classList.remove("active");
+        document.getElementById("cfw-search-results").classList.remove("visible");
+        renderCfwIngredients();
+        updateCfwRecipePreview();
+      }
+
+      function renderCfwIngredients() {
+        const el = document.getElementById("cfw-ingredients-list");
+        const weightGroup = document.getElementById("cfw-weight-group");
+        const previewEl = document.getElementById("cfw-recipe-preview");
+
+        if (cfwState.ingredients.length === 0) {
+          el.innerHTML = '<div class="cfw-empty-ingredients">Zatím žádné ingredience</div>';
+          weightGroup.style.display = "none";
+          previewEl.style.display = "none";
+          document.getElementById("cfw-save-recipe").disabled = true;
+          return;
+        }
+
+        weightGroup.style.display = "block";
+        previewEl.style.display = "block";
+
+        const sum = cfwState.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+        document.getElementById("cfw-total-weight").textContent = sum + " g";
+
+        el.innerHTML = cfwState.ingredients.map((ing, i) => `
+          <div class="cfw-ingredient-item" data-ing-idx="${i}">
+            <div class="ing-info">
+              <div class="ing-name">${escapeHtml(ing.name)}</div>
+              <div class="ing-macros">${Math.round(ing.kcalPer100 * ing.grams / 100)} kcal · B:${(ing.proteinPer100 * ing.grams / 100).toFixed(1)}g · S:${(ing.carbsPer100 * ing.grams / 100).toFixed(1)}g · T:${(ing.fatPer100 * ing.grams / 100).toFixed(1)}g</div>
+            </div>
+            <input type="number" class="ing-grams" value="${ing.grams}" min="1" data-ing-idx="${i}" />
+            <span class="ing-unit">g</span>
+            <button class="ing-remove" data-ing-idx="${i}">&times;</button>
+          </div>`).join("");
+      }
+
+      function updateCfwRecipePreview() {
+        if (cfwState.ingredients.length === 0) return;
+        let tKcal = 0, tProt = 0, tCarbs = 0, tFat = 0;
+        for (const ing of cfwState.ingredients) {
+          const g = ing.grams || 0;
+          tKcal += (ing.kcalPer100 * g) / 100;
+          tProt += (ing.proteinPer100 * g) / 100;
+          tCarbs += (ing.carbsPer100 * g) / 100;
+          tFat += (ing.fatPer100 * g) / 100;
+        }
+        const tw = cfwState.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+        if (tw > 0) {
+          document.getElementById("cfw-prev-kcal").textContent = Math.round((tKcal / tw) * 100);
+          document.getElementById("cfw-prev-protein").textContent = ((tProt / tw) * 100).toFixed(1);
+          document.getElementById("cfw-prev-carbs").textContent = ((tCarbs / tw) * 100).toFixed(1);
+          document.getElementById("cfw-prev-fat").textContent = ((tFat / tw) * 100).toFixed(1);
+          validateCfwRecipe();
+        } else {
+          ["cfw-prev-kcal","cfw-prev-protein","cfw-prev-carbs","cfw-prev-fat"].forEach(id => {
+            document.getElementById(id).textContent = "-";
+          });
+          document.getElementById("cfw-save-recipe").disabled = true;
+        }
+      }
+
+      function validateCfwRecipe() {
+        const name = document.getElementById("cfw-recipe-name").value.trim();
+        const weight = cfwState.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+        document.getElementById("cfw-save-recipe").disabled = !(name && weight > 0 && cfwState.ingredients.length > 0);
+      }
+
+      function saveCfwMacros() {
+        const name = document.getElementById("cfw-name").value.trim();
+        if (!name) return;
+        const food = {
+          name,
+          cat: document.getElementById("cfw-cat").value.trim() || "Vlastní",
+          kcal: parseFloat(document.getElementById("cfw-kcal").value) || 0,
+          protein: parseFloat(document.getElementById("cfw-protein").value) || 0,
+          carbs: parseFloat(document.getElementById("cfw-carbs").value) || 0,
+          fat: parseFloat(document.getElementById("cfw-fat").value) || 0,
+        };
+        if (cfwState.editIdx !== null) {
+          state.customFoods[cfwState.editIdx] = food;
+        } else {
+          state.customFoods.push(food);
+        }
+        saveState();
+        renderCategories();
+        renderFoodList();
+        renderCustomFoodsList();
+        closeCfwWizard();
+        showToast(cfwState.editIdx !== null ? "Potravina upravena" : "Potravina přidána");
+      }
+
+      async function handleCfwBarcodeResult(code) {
+        // Ensure wizard modal stays open
+        document.getElementById("custom-food-wizard-modal").classList.add("active");
+
+        let food = null;
+
+        // Check barcode cache first
+        const cached = getCached(state.barcodeCache, code);
+        if (cached) {
+          food = Array.isArray(cached) ? cached[0] : cached;
+        } else {
+          // Look up on Open Food Facts
+          try {
+            const resp = await fetch(
+              `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`,
+            );
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data.status === 1 && data.product) {
+                food = parseBarcodeProduct(code, data.product);
+                setCache(state.barcodeCache, code, [food]);
+              }
+            }
+          } catch (e) {
+            console.warn("[CFW] Barcode lookup failed:", e);
+          }
+        }
+
+        // Ensure wizard is visible
+        document.getElementById("custom-food-wizard-modal").classList.add("active");
+        showCfwStep("cfw-step-ingredients");
+
+        if (food) {
+          cfwAddIngredient(food);
+          showToast(`Přidáno: ${food.name}`);
+        } else {
+          // Product not in Open Food Facts — fall back to API search like the main barcode flow
+          const searchInput = document.getElementById("cfw-ingredient-search");
+          searchInput.value = code;
+          document.getElementById("cfw-search-clear").classList.add("active");
+          // Try API search and show results in dropdown
+          try {
+            const apiData = await apiSearch(code);
+            if (apiData) {
+              const parsed = parseAutoResults(apiData);
+              if (parsed.length > 0) {
+                cfwRenderSearchResults(parsed.slice(0, 8));
+                return;
+              }
+            }
+          } catch (e) {
+            console.warn("[CFW] API search fallback failed:", e);
+          }
+          // Also try local search by barcode number
+          cfwSearchIngredients(code);
+          if (document.getElementById("cfw-search-results").innerHTML.includes("Nic nenalezeno")) {
+            showToast("Produkt nenalezen");
+          }
+        }
+      }
+
+      function saveCfwRecipe() {
+        const name = document.getElementById("cfw-recipe-name").value.trim();
+        if (!name || cfwState.ingredients.length === 0) return;
+        const totalWeight = cfwState.ingredients.reduce((s, ing) => s + (ing.grams || 0), 0);
+        if (totalWeight <= 0) return;
+
+        let tKcal = 0, tProt = 0, tCarbs = 0, tFat = 0;
+        for (const ing of cfwState.ingredients) {
+          const g = ing.grams || 0;
+          tKcal += (ing.kcalPer100 * g) / 100;
+          tProt += (ing.proteinPer100 * g) / 100;
+          tCarbs += (ing.carbsPer100 * g) / 100;
+          tFat += (ing.fatPer100 * g) / 100;
+        }
+
+        const food = {
+          name,
+          cat: document.getElementById("cfw-recipe-cat").value.trim() || "Vlastní",
+          kcal: +((tKcal / totalWeight) * 100).toFixed(1),
+          protein: +((tProt / totalWeight) * 100).toFixed(1),
+          carbs: +((tCarbs / totalWeight) * 100).toFixed(1),
+          fat: +((tFat / totalWeight) * 100).toFixed(1),
+          recipe: {
+            totalWeight,
+            ingredients: cfwState.ingredients.map(ing => ({
+              name: ing.name, grams: ing.grams,
+              kcal: ing.kcalPer100, protein: ing.proteinPer100,
+              carbs: ing.carbsPer100, fat: ing.fatPer100,
+            })),
+          },
+        };
+        if (cfwState.editIdx !== null) {
+          state.customFoods[cfwState.editIdx] = food;
+        } else {
+          state.customFoods.push(food);
+        }
+        saveState();
+        renderCategories();
+        renderFoodList();
+        renderCustomFoodsList();
+        closeCfwWizard();
+        showToast(cfwState.editIdx !== null ? "Recept upraven" : "Recept přidán");
       }
 
       // ═══════════════════════════════════════════
@@ -7429,24 +7876,90 @@
           }
         });
 
-        // Custom food collapse
-        document
-          .getElementById("collapse-custom-food")
-          .addEventListener("click", () => {
-            const section = document.getElementById("custom-food-section");
-            const chevron = document.getElementById("chevron-custom-food");
-            const open = section.style.display === "none";
-            section.style.display = open ? "block" : "none";
-            chevron.classList.toggle("open", open);
-          });
+        // Custom food wizard
+        document.getElementById("btn-open-custom-food-wizard").addEventListener("click", () => openCustomFoodWizard());
 
-        // Custom food
-        document
-          .getElementById("btn-add-custom")
-          .addEventListener("click", addCustomFood);
-        document
-          .getElementById("btn-cancel-custom-edit")
-          .addEventListener("click", cancelCustomEdit);
+        document.getElementById("custom-food-wizard-modal").addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeCfwWizard();
+        });
+
+        document.getElementById("cfw-back-btn").addEventListener("click", () => {
+          const active = document.querySelector("#custom-food-wizard-modal .wizard-step.active");
+          if (!active) return;
+          if (cfwState.editIdx !== null) { closeCfwWizard(); return; }
+          const backMap = { "cfw-step-macros": "cfw-step-path", "cfw-step-ingredients": "cfw-step-path" };
+          if (backMap[active.id]) showCfwStep(backMap[active.id]);
+          else closeCfwWizard();
+        });
+
+        document.getElementById("cfw-step-path").addEventListener("click", (e) => {
+          const opt = e.target.closest(".wizard-option");
+          if (!opt) return;
+          cfwState.path = opt.dataset.cfwPath;
+          if (cfwState.path === "know-macros") showCfwStep("cfw-step-macros");
+          else if (cfwState.path === "know-ingredients") showCfwStep("cfw-step-ingredients");
+        });
+
+        document.getElementById("cfw-save-macros").addEventListener("click", saveCfwMacros);
+        document.getElementById("cfw-save-recipe").addEventListener("click", saveCfwRecipe);
+
+        document.getElementById("cfw-ingredient-search").addEventListener("input", (e) => {
+          clearTimeout(cfwState.searchTimeout);
+          const val = e.target.value.trim();
+          document.getElementById("cfw-search-clear").classList.toggle("active", val.length > 0);
+          cfwState.searchTimeout = setTimeout(() => cfwSearchIngredients(val), 150);
+        });
+
+        document.getElementById("cfw-search-clear").addEventListener("click", () => {
+          document.getElementById("cfw-ingredient-search").value = "";
+          document.getElementById("cfw-search-clear").classList.remove("active");
+          document.getElementById("cfw-search-results").classList.remove("visible");
+        });
+
+        document.getElementById("cfw-barcode-btn").addEventListener("click", () => {
+          cfwState.barcodeMode = true;
+          openBarcodeScanner();
+        });
+
+        document.getElementById("cfw-search-results").addEventListener("click", (e) => {
+          const item = e.target.closest(".cfw-search-result-item");
+          if (!item || item.dataset.cfwRidx === undefined) return;
+          const results = document.getElementById("cfw-search-results")._results;
+          if (results && results[parseInt(item.dataset.cfwRidx)]) cfwAddIngredient(results[parseInt(item.dataset.cfwRidx)]);
+        });
+
+        document.getElementById("cfw-ingredients-list").addEventListener("input", (e) => {
+          if (e.target.classList.contains("ing-grams")) {
+            const idx = parseInt(e.target.dataset.ingIdx);
+            cfwState.ingredients[idx].grams = parseFloat(e.target.value) || 0;
+            const row = e.target.closest(".cfw-ingredient-item");
+            const ing = cfwState.ingredients[idx];
+            const g = ing.grams;
+            row.querySelector(".ing-macros").textContent =
+              `${Math.round(ing.kcalPer100 * g / 100)} kcal · B:${(ing.proteinPer100 * g / 100).toFixed(1)}g · S:${(ing.carbsPer100 * g / 100).toFixed(1)}g · T:${(ing.fatPer100 * g / 100).toFixed(1)}g`;
+            // Update total weight display
+            const sum = cfwState.ingredients.reduce((s, i) => s + (i.grams || 0), 0);
+            document.getElementById("cfw-total-weight").textContent = sum + " g";
+            updateCfwRecipePreview();
+          }
+        });
+
+        document.getElementById("cfw-ingredients-list").addEventListener("click", (e) => {
+          const btn = e.target.closest(".ing-remove");
+          if (!btn) return;
+          cfwState.ingredients.splice(parseInt(btn.dataset.ingIdx), 1);
+          renderCfwIngredients();
+          updateCfwRecipePreview();
+        });
+
+        document.getElementById("cfw-recipe-name").addEventListener("input", validateCfwRecipe);
+
+        // Close search dropdown when clicking outside
+        document.getElementById("custom-food-wizard-modal").addEventListener("click", (e) => {
+          if (!e.target.closest(".cfw-ingredient-search-wrap")) {
+            document.getElementById("cfw-search-results").classList.remove("visible");
+          }
+        });
 
         // Custom foods list: edit & delete
         document
@@ -7454,7 +7967,7 @@
           .addEventListener("click", (e) => {
             const editBtn = e.target.closest(".edit-btn[data-custom-idx]");
             if (editBtn)
-              return editCustomFood(parseInt(editBtn.dataset.customIdx));
+              return openCustomFoodWizard(parseInt(editBtn.dataset.customIdx));
             const delBtn = e.target.closest(".delete-btn[data-custom-idx]");
             if (delBtn)
               return deleteCustomFood(parseInt(delBtn.dataset.customIdx));
@@ -7925,6 +8438,12 @@
       }
 
       async function handleBarcodeResult(code) {
+        // If scanning for ingredient wizard, handle separately
+        if (cfwState.barcodeMode) {
+          cfwState.barcodeMode = false;
+          await handleCfwBarcodeResult(code);
+          return;
+        }
         const searchInput = document.getElementById("search-input");
         searchInput.value = code;
         state.barcodeResults = [];
