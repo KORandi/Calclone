@@ -7249,6 +7249,12 @@
       let qrScanInterval = null;
       let qrPendingImport = null; // parsed data waiting for confirmation
 
+      // --- Diacritics encoding for QR (ASCII-safe) ---
+      const _qrDiacMap = {"á":"a~","č":"c~","ď":"d~","é":"e~","ě":"e~~","í":"i~","ň":"n~","ó":"o~","ř":"r~","š":"s~","ť":"t~","ú":"u~","ů":"u~~","ý":"y~","ž":"z~","Á":"A~","Č":"C~","Ď":"D~","É":"E~","Ě":"E~~","Í":"I~","Ň":"N~","Ó":"O~","Ř":"R~","Š":"S~","Ť":"T~","Ú":"U~","Ů":"U~~","Ý":"Y~","Ž":"Z~"};
+      const _qrDiacMapRev = Object.fromEntries(Object.entries(_qrDiacMap).map(([k,v])=>[v,k]));
+      function qrEncDiac(s) { return s.replace(/[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g, m => _qrDiacMap[m] || m); }
+      function qrDecDiac(s) { return s.replace(/([A-Za-z])~~|([A-Za-z])~/g, (m) => _qrDiacMapRev[m] || m); }
+
       // --- Compact data format for QR ---
       function compressLogForQR(selected) {
         const d = {};
@@ -7260,7 +7266,7 @@
             const e = entries[i];
             if (!e) return null;
             const item = {
-              n: e.name,
+              n: qrEncDiac(e.name),
               g: e.grams,
               k: e.kcal,
               p: e.protein,
@@ -7270,7 +7276,7 @@
             if (e.fiber) item.fb = e.fiber;
             if (e.liquid) item.l = 1;
             if (e.time) item.t = e.time;
-            if (e.meal) item.m = e.meal;
+            if (e.meal) item.m = qrEncDiac(e.meal);
             return item;
           }).filter(Boolean);
         }
@@ -7285,7 +7291,7 @@
           for (const [day, items] of Object.entries(obj.d)) {
             if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
             result[day] = items.map((e) => ({
-              name: e.n || "?",
+              name: qrDecDiac(e.n || "?"),
               grams: e.g || 0,
               kcal: e.k || 0,
               protein: e.p || 0,
@@ -7294,7 +7300,7 @@
               fiber: e.fb || 0,
               liquid: !!e.l,
               time: e.t || "00:00",
-              meal: e.m || "",
+              meal: qrDecDiac(e.m || ""),
             }));
           }
           return result;
@@ -7440,8 +7446,6 @@
         // Determine QR type number based on data length
         let typeNumber = 0; // auto
         try {
-          // Encode as UTF-8 so Czech diacritics survive the roundtrip
-          qrcode.stringToBytesFuncs["default"] = qrcode.stringToBytesFuncs["UTF-8"];
           const qr = qrcode(typeNumber, "M");
           qr.addData(data);
           qr.make();
@@ -7503,13 +7507,7 @@
                 inversionAttempts: "dontInvert",
               });
               if (code && code.data) {
-                // jsQR returns byte-mode data as Latin-1; decode UTF-8 bytes
-                let raw = code.data;
-                try {
-                  const bytes = new Uint8Array([...raw].map(c => c.charCodeAt(0)));
-                  raw = new TextDecoder("utf-8").decode(bytes);
-                } catch {}
-                const parsed = decompressQRData(raw);
+                const parsed = decompressQRData(code.data);
                 if (parsed && Object.keys(parsed).length > 0) {
                   closeQrScanModal();
                   openQrPreviewModal(parsed);
