@@ -7440,6 +7440,8 @@
         // Determine QR type number based on data length
         let typeNumber = 0; // auto
         try {
+          // Encode as UTF-8 so Czech diacritics survive the roundtrip
+          qrcode.stringToBytesFuncs["default"] = qrcode.stringToBytesFuncs["UTF-8"];
           const qr = qrcode(typeNumber, "M");
           qr.addData(data);
           qr.make();
@@ -7501,7 +7503,13 @@
                 inversionAttempts: "dontInvert",
               });
               if (code && code.data) {
-                const parsed = decompressQRData(code.data);
+                // jsQR returns byte-mode data as Latin-1; decode UTF-8 bytes
+                let raw = code.data;
+                try {
+                  const bytes = new Uint8Array([...raw].map(c => c.charCodeAt(0)));
+                  raw = new TextDecoder("utf-8").decode(bytes);
+                } catch {}
+                const parsed = decompressQRData(raw);
                 if (parsed && Object.keys(parsed).length > 0) {
                   closeQrScanModal();
                   openQrPreviewModal(parsed);
