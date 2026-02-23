@@ -1206,38 +1206,335 @@
         white-space: nowrap;
       }
 
-      /* Goal calculator */
-      .goal-calc-buttons {
-        display: flex;
+      /* Goals display (read-only) */
+      .goals-display {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 8px;
-        margin-top: 12px;
       }
-      .btn-calc {
-        flex: 1;
-        padding: 10px 8px;
+      .goals-display-item {
+        background: var(--card);
         border: 1px solid var(--border);
         border-radius: 10px;
-        background: var(--card);
+        padding: 12px;
+        text-align: center;
+      }
+      .goals-display-value {
+        font-size: 22px;
+        font-weight: 700;
         color: var(--text);
-        font-size: 13px;
+        line-height: 1.2;
+      }
+      .goals-display-value.kcal { color: var(--green); }
+      .goals-display-value.protein { color: var(--blue); }
+      .goals-display-value.carbs { color: var(--orange); }
+      .goals-display-value.fat { color: var(--red); }
+      .goals-display-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+      .btn-set-goals {
+        width: 100%;
+        margin-top: 12px;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: var(--green);
+        color: #fff;
+        font-size: 15px;
         font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        transition:
-          background 0.15s,
-          border-color 0.15s;
+        gap: 8px;
+        transition: background 0.15s;
       }
-      .btn-calc:active {
-        background: var(--green-light);
-        border-color: var(--green);
+      .btn-set-goals:active {
+        background: var(--green-dark);
       }
-      .btn-calc svg {
-        width: 16px;
-        height: 16px;
+
+      /* Goals wizard modal */
+      .wizard-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .wizard-back-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 18px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .wizard-back-btn.visible { display: flex; }
+      .wizard-back-btn:active { background: var(--border); }
+      .wizard-header h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        flex: 1;
+      }
+      .wizard-progress {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .wizard-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+        transition: background 0.2s;
+      }
+      .wizard-dot.active { background: var(--green); }
+      .wizard-dot.done { background: var(--green); opacity: 0.4; }
+
+      .wizard-step { display: none; }
+      .wizard-step.active { display: block; }
+
+      .wizard-option {
+        padding: 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+        cursor: pointer;
+        margin-bottom: 8px;
+        transition: border-color 0.15s, background 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .wizard-option:active { background: var(--bg); }
+      .wizard-option.selected {
+        border-color: var(--green);
+        background: var(--green-light);
+      }
+      .wizard-option-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .wizard-option-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      .wizard-input-group {
+        margin-bottom: 14px;
+      }
+      .wizard-input-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+      .wizard-input-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 16px;
+        color: var(--text);
+        background: var(--card);
+        outline: none;
+        box-sizing: border-box;
+      }
+      .wizard-input-group input:focus { border-color: var(--green); }
+      .wizard-input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .wizard-sex-toggle {
+        display: flex;
+        gap: 8px;
+      }
+      .wizard-sex-btn {
+        flex: 1;
+        padding: 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        color: var(--text);
+        transition: border-color 0.15s, background 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .wizard-sex-btn:active { background: var(--bg); }
+      .wizard-sex-btn.selected {
+        border-color: var(--green);
+        background: var(--green-light);
+        color: var(--green-dark);
+      }
+
+      .wizard-kcal-stepper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+      .wizard-kcal-stepper input {
+        width: 100px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        color: var(--text);
+        background: var(--card);
+        outline: none;
+      }
+      .wizard-kcal-stepper input:focus { border-color: var(--green); }
+      .wizard-kcal-stepper .unit {
+        font-size: 15px;
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
+      .wizard-macro-preview {
+        background: var(--bg);
+        border-radius: 12px;
+        padding: 14px;
+        margin-top: 12px;
+        margin-bottom: 16px;
+      }
+      .wizard-macro-preview-title {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        text-align: center;
+      }
+      .wizard-macro-preview-row {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+      }
+      .wizard-macro-preview-item .val {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .wizard-macro-preview-item .val.protein { color: var(--blue); }
+      .wizard-macro-preview-item .val.carbs { color: var(--orange); }
+      .wizard-macro-preview-item .val.fat { color: var(--red); }
+      .wizard-macro-preview-item .lbl {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      .wizard-live-kcal {
+        text-align: center;
+        padding: 16px;
+        background: var(--bg);
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+      .wizard-live-kcal .val {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .wizard-live-kcal .lbl {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      .wizard-summary-card {
+        background: var(--bg);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .wizard-summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 14px;
+        color: var(--text);
+      }
+      .wizard-summary-row.highlight {
+        font-weight: 700;
+        font-size: 16px;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+        margin-top: 4px;
+      }
+      .wizard-summary-row .label { color: var(--text-secondary); }
+
+      .wizard-custom-pct {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+        margin-bottom: 6px;
+      }
+      .wizard-custom-pct label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: block;
+        margin-bottom: 4px;
+      }
+      .wizard-custom-pct input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 15px;
+        text-align: center;
+        color: var(--text);
+        background: var(--card);
+        outline: none;
+        box-sizing: border-box;
+      }
+      .wizard-custom-pct input:focus { border-color: var(--green); }
+      .wizard-pct-error {
+        font-size: 12px;
+        color: var(--red);
+        text-align: center;
+        margin-top: 4px;
+        min-height: 16px;
+      }
+
+      .wizard-btn-next {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: var(--green);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin-top: 8px;
+      }
+      .wizard-btn-next:active { background: var(--green-dark); }
+      .wizard-btn-next:disabled {
+        background: var(--border);
+        color: var(--text-secondary);
+        cursor: default;
       }
 
       .info-icon {
@@ -1297,48 +1594,6 @@
         left: 4px;
       }
 
-      .macro-preset-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-top: 10px;
-      }
-      .macro-preset {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 14px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: var(--card);
-        cursor: pointer;
-        transition:
-          background 0.15s,
-          border-color 0.15s;
-      }
-      .macro-preset:active {
-        background: var(--green-light);
-        border-color: var(--green);
-      }
-      .macro-preset.active {
-        border-color: var(--green);
-        background: var(--green-light);
-      }
-      .macro-preset-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text);
-      }
-      .macro-preset-desc {
-        font-size: 11px;
-        color: var(--text-secondary);
-        margin-top: 2px;
-      }
-      .macro-preset-ratio {
-        font-size: 12px;
-        color: var(--text-secondary);
-        white-space: nowrap;
-      }
 
       /* Collapsible setting cards */
       .setting-collapse-header {
@@ -2575,129 +2830,30 @@
 
       <div class="setting-group">
         <h3>Denní cíle</h3>
-        <div class="setting-card">
-          <div class="setting-row">
-            <label
-              >Kalorie
-              <span
-                class="info-icon tooltip-right"
-                data-tooltip="calc-kcal-info"
-                >i
-                <span class="tooltip"
-                  >Kalorie se vypočítají z makroživin: bílkoviny × 4 + sacharidy
-                  × 4 + tuky × 9</span
-                >
-              </span>
-            </label>
-            <div>
-              <input type="number" id="goal-kcal" value="2000" /><span
-                class="unit"
-                >kcal</span
-              >
-            </div>
+        <div class="goals-display" id="goals-display">
+          <div class="goals-display-item">
+            <div class="goals-display-value kcal" id="goals-disp-kcal">2000</div>
+            <div class="goals-display-label">kcal</div>
           </div>
-          <div class="setting-row">
-            <label
-              >Bílkoviny
-              <span class="info-icon tooltip-right" data-tooltip="protein-info"
-                >i
-                <span class="tooltip"
-                  >1 g bílkovin = 4 kcal. Důležité pro svaly a regeneraci.
-                  Doporučeno 1.2–2 g/kg tělesné hmotnosti.</span
-                >
-              </span>
-            </label>
-            <div>
-              <input type="number" id="goal-protein" value="120" /><span
-                class="unit"
-                >g</span
-              >
-            </div>
+          <div class="goals-display-item">
+            <div class="goals-display-value protein" id="goals-disp-protein">120</div>
+            <div class="goals-display-label">Bílkoviny (g)</div>
           </div>
-          <div class="setting-row">
-            <label
-              >Sacharidy
-              <span class="info-icon tooltip-right" data-tooltip="carbs-info"
-                >i
-                <span class="tooltip"
-                  >1 g sacharidů = 4 kcal. Hlavní zdroj energie. Doporučeno
-                  45–65 % celkového příjmu.</span
-                >
-              </span>
-            </label>
-            <div>
-              <input type="number" id="goal-carbs" value="250" /><span
-                class="unit"
-                >g</span
-              >
-            </div>
+          <div class="goals-display-item">
+            <div class="goals-display-value carbs" id="goals-disp-carbs">250</div>
+            <div class="goals-display-label">Sacharidy (g)</div>
           </div>
-          <div class="setting-row">
-            <label
-              >Tuky
-              <span class="info-icon tooltip-right" data-tooltip="fat-info"
-                >i
-                <span class="tooltip"
-                  >1 g tuků = 9 kcal. Důležité pro hormony a vstřebávání
-                  vitamínů. Doporučeno 20–35 % celkového příjmu.</span
-                >
-              </span>
-            </label>
-            <div>
-              <input type="number" id="goal-fat" value="65" /><span class="unit"
-                >g</span
-              >
-            </div>
+          <div class="goals-display-item">
+            <div class="goals-display-value fat" id="goals-disp-fat">65</div>
+            <div class="goals-display-label">Tuky (g)</div>
           </div>
         </div>
-        <div class="goal-calc-buttons">
-          <button class="btn-calc" id="btn-calc-kcal">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 20V10" />
-              <path d="m18 14-6-6-6 6" />
-            </svg>
-            Spočítat kalorie
-          </button>
-          <button class="btn-calc" id="btn-calc-macros">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-              <path d="M22 12A10 10 0 0 0 12 2v10z" />
-            </svg>
-            Spočítat makra
-          </button>
-        </div>
-        <div id="macro-presets-section" style="display: none; margin-top: 10px">
-          <div class="setting-card" style="padding: 14px">
-            <p
-              style="
-                font-size: 13px;
-                color: var(--text-secondary);
-                margin-bottom: 8px;
-              "
-            >
-              Zvolte rozložení makroživin podle cíle
-              <span class="info-icon" data-tooltip="preset-info"
-                >i
-                <span class="tooltip"
-                  >Makra se vypočítají z aktuální hodnoty kalorií. Každý preset
-                  rozdělí kalorie do bílkovin, sacharidů a tuků podle
-                  procent.</span
-                >
-              </span>
-            </p>
-            <div class="macro-preset-list" id="macro-preset-list"></div>
-          </div>
-        </div>
+        <button class="btn-set-goals" id="btn-set-goals">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Nastavit cíle
+        </button>
       </div>
 
       <div class="setting-group">
@@ -3250,6 +3406,213 @@
           <select id="edit-meal-select"></select>
         </div>
         <button class="btn-add" id="btn-save-edit">Uložit změny</button>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: Goals Wizard ===== -->
+    <div class="modal-overlay" id="goals-wizard-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="wizard-header">
+          <button class="wizard-back-btn" id="wizard-back-btn">&larr;</button>
+          <h2 id="wizard-title">Nastavit cíle</h2>
+        </div>
+        <div class="wizard-progress" id="wizard-progress"></div>
+
+        <!-- Step 1: Choose path -->
+        <div class="wizard-step active" id="wizard-step-path">
+          <div class="wizard-option" data-path="know-kcal">
+            <div class="wizard-option-title">Znám kalorie</div>
+            <div class="wizard-option-desc">Mám kalorický cíl a chci rozložit do maker</div>
+          </div>
+          <div class="wizard-option" data-path="know-macros">
+            <div class="wizard-option-title">Znám makra</div>
+            <div class="wizard-option-desc">Znám svá makra a chci spočítat kalorie</div>
+          </div>
+          <div class="wizard-option" data-path="help-me">
+            <div class="wizard-option-title">Nevím, pomozte mi</div>
+            <div class="wizard-option-desc">Spočítejte mi vše na základě dotazníku</div>
+          </div>
+        </div>
+
+        <!-- Step 2a: Know kcal → pick preset -->
+        <div class="wizard-step" id="wizard-step-kcal">
+          <div class="wizard-input-group">
+            <label>Kalorický cíl</label>
+            <div class="wizard-kcal-stepper">
+              <button class="stepper-btn minus" id="wizard-kcal-minus">&minus;</button>
+              <input type="number" id="wizard-kcal-input" value="2000" min="800" max="8000" />
+              <span class="unit">kcal</span>
+              <button class="stepper-btn plus" id="wizard-kcal-plus">+</button>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Zvolte rozložení makroživin</p>
+          <div id="wizard-preset-list"></div>
+          <div id="wizard-custom-pct-wrap" style="display:none;">
+            <div class="wizard-custom-pct">
+              <div><label>Bílkoviny %</label><input type="number" id="wizard-pct-protein" value="25" min="5" max="60" /></div>
+              <div><label>Sacharidy %</label><input type="number" id="wizard-pct-carbs" value="50" min="5" max="80" /></div>
+              <div><label>Tuky %</label><input type="number" id="wizard-pct-fat" value="25" min="5" max="80" /></div>
+            </div>
+            <div class="wizard-pct-error" id="wizard-pct-error"></div>
+          </div>
+          <div class="wizard-macro-preview" id="wizard-kcal-preview">
+            <div class="wizard-macro-preview-title">Vypočítaná makra</div>
+            <div class="wizard-macro-preview-row">
+              <div class="wizard-macro-preview-item"><div class="val protein" id="wiz-prev-protein">120</div><div class="lbl">Bílkoviny (g)</div></div>
+              <div class="wizard-macro-preview-item"><div class="val carbs" id="wiz-prev-carbs">250</div><div class="lbl">Sacharidy (g)</div></div>
+              <div class="wizard-macro-preview-item"><div class="val fat" id="wiz-prev-fat">56</div><div class="lbl">Tuky (g)</div></div>
+            </div>
+          </div>
+          <button class="wizard-btn-next" id="wizard-save-kcal">Uložit</button>
+        </div>
+
+        <!-- Step 2b: Know macros → calculate kcal -->
+        <div class="wizard-step" id="wizard-step-macros">
+          <div class="wizard-input-group">
+            <label>Bílkoviny (g)</label>
+            <input type="number" id="wizard-macro-protein" value="120" min="0" />
+          </div>
+          <div class="wizard-input-group">
+            <label>Sacharidy (g)</label>
+            <input type="number" id="wizard-macro-carbs" value="250" min="0" />
+          </div>
+          <div class="wizard-input-group">
+            <label>Tuky (g)</label>
+            <input type="number" id="wizard-macro-fat" value="65" min="0" />
+          </div>
+          <div class="wizard-live-kcal">
+            <div class="val" id="wizard-live-kcal-val">2065</div>
+            <div class="lbl">Vypočítané kalorie (kcal)</div>
+          </div>
+          <button class="wizard-btn-next" id="wizard-save-macros">Uložit</button>
+        </div>
+
+        <!-- Step 2c-1: Help me → Basic info -->
+        <div class="wizard-step" id="wizard-step-body">
+          <div class="wizard-input-group">
+            <label>Pohlaví</label>
+            <div class="wizard-sex-toggle">
+              <button class="wizard-sex-btn selected" data-sex="male">Muž</button>
+              <button class="wizard-sex-btn" data-sex="female">Žena</button>
+            </div>
+          </div>
+          <div class="wizard-input-row">
+            <div class="wizard-input-group">
+              <label>Věk</label>
+              <input type="number" id="wizard-age" placeholder="25" min="10" max="120" />
+            </div>
+            <div class="wizard-input-group">
+              <label>Váha (kg)</label>
+              <input type="number" id="wizard-weight" placeholder="75" min="20" max="300" />
+            </div>
+          </div>
+          <div class="wizard-input-group">
+            <label>Výška (cm)</label>
+            <input type="number" id="wizard-height" placeholder="175" min="100" max="250" />
+          </div>
+          <button class="wizard-btn-next" id="wizard-body-next">Další</button>
+        </div>
+
+        <!-- Step 2c-2: Activity level -->
+        <div class="wizard-step" id="wizard-step-activity">
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Jaká je vaše úroveň aktivity?</p>
+          <div class="wizard-option" data-activity="1.2">
+            <div class="wizard-option-title">Sedavý</div>
+            <div class="wizard-option-desc">Kancelářská práce, minimum pohybu</div>
+          </div>
+          <div class="wizard-option" data-activity="1.375">
+            <div class="wizard-option-title">Lehce aktivní</div>
+            <div class="wizard-option-desc">Lehké cvičení 1–3× týdně</div>
+          </div>
+          <div class="wizard-option" data-activity="1.55">
+            <div class="wizard-option-title">Středně aktivní</div>
+            <div class="wizard-option-desc">Cvičení 3–5× týdně</div>
+          </div>
+          <div class="wizard-option" data-activity="1.725">
+            <div class="wizard-option-title">Velmi aktivní</div>
+            <div class="wizard-option-desc">Intenzivní cvičení 6–7× týdně</div>
+          </div>
+          <div class="wizard-option" data-activity="1.9">
+            <div class="wizard-option-title">Extrémně aktivní</div>
+            <div class="wizard-option-desc">Fyzicky náročná práce + cvičení</div>
+          </div>
+          <button class="wizard-btn-next" id="wizard-activity-next" disabled>Další</button>
+        </div>
+
+        <!-- Step 2c-3: Goal selection -->
+        <div class="wizard-step" id="wizard-step-goal">
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Jaký je váš cíl?</p>
+          <div class="wizard-option" data-goal="-750">
+            <div class="wizard-option-title">Rychlé hubnutí</div>
+            <div class="wizard-option-desc">Deficit −750 kcal/den</div>
+          </div>
+          <div class="wizard-option" data-goal="-300">
+            <div class="wizard-option-title">Mírné hubnutí</div>
+            <div class="wizard-option-desc">Deficit −300 kcal/den</div>
+          </div>
+          <div class="wizard-option" data-goal="0">
+            <div class="wizard-option-title">Udržení váhy</div>
+            <div class="wizard-option-desc">Žádná změna kalorií</div>
+          </div>
+          <div class="wizard-option" data-goal="300">
+            <div class="wizard-option-title">Mírné nabírání</div>
+            <div class="wizard-option-desc">Přebytek +300 kcal/den</div>
+          </div>
+          <div class="wizard-option" data-goal="750">
+            <div class="wizard-option-title">Rychlé nabírání</div>
+            <div class="wizard-option-desc">Přebytek +750 kcal/den</div>
+          </div>
+          <button class="wizard-btn-next" id="wizard-goal-next" disabled>Další</button>
+        </div>
+
+        <!-- Step 2c-4: Diet preset (reused for help-me path) -->
+        <div class="wizard-step" id="wizard-step-helppreset">
+          <div class="wizard-live-kcal" style="margin-bottom:12px;">
+            <div class="val" id="wizard-tdee-val">2000</div>
+            <div class="lbl">Váš denní kalorický cíl (kcal)</div>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Zvolte rozložení makroživin</p>
+          <div id="wizard-help-preset-list"></div>
+          <div id="wizard-help-custom-pct-wrap" style="display:none;">
+            <div class="wizard-custom-pct">
+              <div><label>Bílkoviny %</label><input type="number" id="wizard-help-pct-protein" value="25" min="5" max="60" /></div>
+              <div><label>Sacharidy %</label><input type="number" id="wizard-help-pct-carbs" value="50" min="5" max="80" /></div>
+              <div><label>Tuky %</label><input type="number" id="wizard-help-pct-fat" value="25" min="5" max="80" /></div>
+            </div>
+            <div class="wizard-pct-error" id="wizard-help-pct-error"></div>
+          </div>
+          <div class="wizard-macro-preview" id="wizard-help-preview">
+            <div class="wizard-macro-preview-title">Vypočítaná makra</div>
+            <div class="wizard-macro-preview-row">
+              <div class="wizard-macro-preview-item"><div class="val protein" id="wiz-help-prev-protein">-</div><div class="lbl">Bílkoviny (g)</div></div>
+              <div class="wizard-macro-preview-item"><div class="val carbs" id="wiz-help-prev-carbs">-</div><div class="lbl">Sacharidy (g)</div></div>
+              <div class="wizard-macro-preview-item"><div class="val fat" id="wiz-help-prev-fat">-</div><div class="lbl">Tuky (g)</div></div>
+            </div>
+          </div>
+          <button class="wizard-btn-next" id="wizard-help-save" disabled>Uložit</button>
+        </div>
+
+        <!-- Step 2c-5: Summary (help-me path) -->
+        <div class="wizard-step" id="wizard-step-summary">
+          <div class="wizard-summary-card">
+            <div class="wizard-summary-row"><span class="label">BMR</span><span id="wiz-sum-bmr">-</span></div>
+            <div class="wizard-summary-row"><span class="label">Aktivita (×)</span><span id="wiz-sum-activity">-</span></div>
+            <div class="wizard-summary-row"><span class="label">TDEE</span><span id="wiz-sum-tdee">-</span></div>
+            <div class="wizard-summary-row"><span class="label">Úprava cíle</span><span id="wiz-sum-adjust">-</span></div>
+            <div class="wizard-summary-row highlight"><span class="label">Cílové kalorie</span><span id="wiz-sum-kcal">-</span></div>
+          </div>
+          <div class="wizard-macro-preview">
+            <div class="wizard-macro-preview-title">Vaše denní makra</div>
+            <div class="wizard-macro-preview-row">
+              <div class="wizard-macro-preview-item"><div class="val protein" id="wiz-sum-protein">-</div><div class="lbl">Bílkoviny (g)</div></div>
+              <div class="wizard-macro-preview-item"><div class="val carbs" id="wiz-sum-carbs">-</div><div class="lbl">Sacharidy (g)</div></div>
+              <div class="wizard-macro-preview-item"><div class="val fat" id="wiz-sum-fat">-</div><div class="lbl">Tuky (g)</div></div>
+            </div>
+          </div>
+          <button class="wizard-btn-next" id="wizard-summary-save">Uložit</button>
+        </div>
+
       </div>
     </div>
 
@@ -6014,10 +6377,7 @@
       }
 
       function loadSettingsUI() {
-        document.getElementById("goal-kcal").value = state.goals.kcal;
-        document.getElementById("goal-protein").value = state.goals.protein;
-        document.getElementById("goal-carbs").value = state.goals.carbs;
-        document.getElementById("goal-fat").value = state.goals.fat;
+        updateGoalsDisplay();
         renderCustomFoodsList();
 
         // Quick grams toggle
@@ -6131,100 +6491,208 @@
           .join("");
       }
 
-      function saveGoals() {
-        state.goals.kcal =
-          parseInt(document.getElementById("goal-kcal").value) || 2000;
-        state.goals.protein =
-          parseInt(document.getElementById("goal-protein").value) || 120;
-        state.goals.carbs =
-          parseInt(document.getElementById("goal-carbs").value) || 250;
-        state.goals.fat =
-          parseInt(document.getElementById("goal-fat").value) || 65;
-        saveState();
-      }
-
       // ═══════════════════════════════════════════
-      // GOAL CALCULATORS
+      // GOAL CALCULATORS & WIZARD
       // ═══════════════════════════════════════════
       const MACRO_PRESETS = [
-        {
-          name: "Vyvážená strava",
-          desc: "Univerzální rozložení pro udržení hmotnosti",
-          protein: 0.25,
-          carbs: 0.5,
-          fat: 0.25,
-        },
-        {
-          name: "Vysokobílkovinná",
-          desc: "Pro budování svalů a regeneraci",
-          protein: 0.35,
-          carbs: 0.4,
-          fat: 0.25,
-        },
-        {
-          name: "Nízkosacharidová",
-          desc: "Pro redukci váhy, omezené sacharidy",
-          protein: 0.3,
-          carbs: 0.25,
-          fat: 0.45,
-        },
-        {
-          name: "Keto",
-          desc: "Velmi nízké sacharidy, vysoké tuky",
-          protein: 0.25,
-          carbs: 0.05,
-          fat: 0.7,
-        },
-        {
-          name: "Sportovní",
-          desc: "Pro vytrvalostní a silový trénink",
-          protein: 0.3,
-          carbs: 0.5,
-          fat: 0.2,
-        },
+        { name: "Vyvážená strava", desc: "Univerzální rozložení pro udržení hmotnosti", protein: 0.25, carbs: 0.5, fat: 0.25 },
+        { name: "Vysokobílkovinná", desc: "Pro budování svalů a regeneraci", protein: 0.35, carbs: 0.4, fat: 0.25 },
+        { name: "Nízkosacharidová", desc: "Pro redukci váhy, omezené sacharidy", protein: 0.3, carbs: 0.25, fat: 0.45 },
+        { name: "Keto", desc: "Velmi nízké sacharidy, vysoké tuky", protein: 0.25, carbs: 0.05, fat: 0.7 },
+        { name: "Sportovní", desc: "Pro vytrvalostní a silový trénink", protein: 0.3, carbs: 0.5, fat: 0.2 },
       ];
 
-      function calcKcalFromMacros() {
-        const p =
-          parseFloat(document.getElementById("goal-protein").value) || 0;
-        const c = parseFloat(document.getElementById("goal-carbs").value) || 0;
-        const f = parseFloat(document.getElementById("goal-fat").value) || 0;
-        const kcal = Math.round(p * 4 + c * 4 + f * 9);
-        document.getElementById("goal-kcal").value = kcal;
-        saveGoals();
+      function updateGoalsDisplay() {
+        document.getElementById("goals-disp-kcal").textContent = state.goals.kcal;
+        document.getElementById("goals-disp-protein").textContent = state.goals.protein;
+        document.getElementById("goals-disp-carbs").textContent = state.goals.carbs;
+        document.getElementById("goals-disp-fat").textContent = state.goals.fat;
       }
 
-      function renderMacroPresets() {
-        const el = document.getElementById("macro-preset-list");
-        el.innerHTML = MACRO_PRESETS.map(
-          (p, i) =>
-            `<div class="macro-preset" data-preset-idx="${i}">
-              <div>
-                <div class="macro-preset-name">${p.name}</div>
-                <div class="macro-preset-desc">${p.desc}</div>
-              </div>
-              <div class="macro-preset-ratio">B ${Math.round(p.protein * 100)}% · S ${Math.round(p.carbs * 100)}% · T ${Math.round(p.fat * 100)}%</div>
-            </div>`,
+      // Wizard state
+      const wizState = { path: null, sex: "male", activity: null, goalAdj: null, presetIdx: null, helpPresetIdx: null };
+
+      function renderWizardPresets(listId, prefix) {
+        const el = document.getElementById(listId);
+        const allPresets = [...MACRO_PRESETS, { name: "Vlastní", desc: "Nastavte si vlastní poměr maker", protein: null, carbs: null, fat: null }];
+        el.innerHTML = allPresets.map((p, i) =>
+          `<div class="wizard-option" data-preset-idx="${i}">
+            <div class="wizard-option-title">${p.name}</div>
+            <div class="wizard-option-desc">${p.desc}${p.protein !== null ? ` — B ${Math.round(p.protein*100)}% · S ${Math.round(p.carbs*100)}% · T ${Math.round(p.fat*100)}%` : ''}</div>
+          </div>`
         ).join("");
       }
 
-      function applyMacroPreset(idx) {
-        const preset = MACRO_PRESETS[idx];
-        if (!preset) return;
-        const kcal =
-          parseInt(document.getElementById("goal-kcal").value) || 2000;
-        const protein = Math.round((kcal * preset.protein) / 4);
-        const carbs = Math.round((kcal * preset.carbs) / 4);
-        const fat = Math.round((kcal * preset.fat) / 9);
-        document.getElementById("goal-protein").value = protein;
-        document.getElementById("goal-carbs").value = carbs;
-        document.getElementById("goal-fat").value = fat;
-        saveGoals();
+      function getPresetRatios(idx, prefix) {
+        if (idx < MACRO_PRESETS.length) {
+          const p = MACRO_PRESETS[idx];
+          return { protein: p.protein, carbs: p.carbs, fat: p.fat };
+        }
+        // Custom
+        const pP = (parseFloat(document.getElementById(prefix + "-pct-protein").value) || 0) / 100;
+        const pC = (parseFloat(document.getElementById(prefix + "-pct-carbs").value) || 0) / 100;
+        const pF = (parseFloat(document.getElementById(prefix + "-pct-fat").value) || 0) / 100;
+        return { protein: pP, carbs: pC, fat: pF };
+      }
 
-        // Highlight selected preset
-        document.querySelectorAll(".macro-preset").forEach((el, i) => {
-          el.classList.toggle("active", i === idx);
+      function calcMacrosFromKcal(kcal, ratios) {
+        return {
+          protein: Math.round((kcal * ratios.protein) / 4),
+          carbs: Math.round((kcal * ratios.carbs) / 4),
+          fat: Math.round((kcal * ratios.fat) / 9),
+        };
+      }
+
+      function updateKcalPreview() {
+        if (wizState.presetIdx === null) return;
+        const kcal = parseInt(document.getElementById("wizard-kcal-input").value) || 2000;
+        const ratios = getPresetRatios(wizState.presetIdx, "wizard");
+        const m = calcMacrosFromKcal(kcal, ratios);
+        document.getElementById("wiz-prev-protein").textContent = m.protein;
+        document.getElementById("wiz-prev-carbs").textContent = m.carbs;
+        document.getElementById("wiz-prev-fat").textContent = m.fat;
+      }
+
+      function updateHelpPreview() {
+        if (wizState.helpPresetIdx === null) return;
+        const kcal = parseInt(document.getElementById("wizard-tdee-val").textContent) || 2000;
+        const ratios = getPresetRatios(wizState.helpPresetIdx, "wizard-help");
+        const m = calcMacrosFromKcal(kcal, ratios);
+        document.getElementById("wiz-help-prev-protein").textContent = m.protein;
+        document.getElementById("wiz-help-prev-carbs").textContent = m.carbs;
+        document.getElementById("wiz-help-prev-fat").textContent = m.fat;
+      }
+
+      function updateLiveKcal() {
+        const p = parseFloat(document.getElementById("wizard-macro-protein").value) || 0;
+        const c = parseFloat(document.getElementById("wizard-macro-carbs").value) || 0;
+        const f = parseFloat(document.getElementById("wizard-macro-fat").value) || 0;
+        document.getElementById("wizard-live-kcal-val").textContent = Math.round(p * 4 + c * 4 + f * 9);
+      }
+
+      function validateCustomPct(prefix) {
+        const pP = parseFloat(document.getElementById(prefix + "-pct-protein").value) || 0;
+        const pC = parseFloat(document.getElementById(prefix + "-pct-carbs").value) || 0;
+        const pF = parseFloat(document.getElementById(prefix + "-pct-fat").value) || 0;
+        const sum = pP + pC + pF;
+        const errEl = document.getElementById(prefix + "-pct-error");
+        if (Math.abs(sum - 100) > 0.5) {
+          errEl.textContent = `Součet: ${Math.round(sum)}% (musí být 100%)`;
+          return false;
+        }
+        errEl.textContent = "";
+        return true;
+      }
+
+      function calculateBMR() {
+        const w = parseFloat(document.getElementById("wizard-weight").value) || 0;
+        const h = parseFloat(document.getElementById("wizard-height").value) || 0;
+        const a = parseFloat(document.getElementById("wizard-age").value) || 0;
+        let bmr = 10 * w + 6.25 * h - 5 * a;
+        bmr += wizState.sex === "male" ? 5 : -161;
+        return Math.round(bmr);
+      }
+
+      function showWizardStep(stepId) {
+        document.querySelectorAll("#goals-wizard-modal .wizard-step").forEach(s => s.classList.remove("active"));
+        document.getElementById(stepId).classList.add("active");
+
+        // Back button visibility
+        const backBtn = document.getElementById("wizard-back-btn");
+        backBtn.classList.toggle("visible", stepId !== "wizard-step-path");
+
+        // Title
+        const titles = {
+          "wizard-step-path": "Nastavit cíle",
+          "wizard-step-kcal": "Znám kalorie",
+          "wizard-step-macros": "Znám makra",
+          "wizard-step-body": "Základní údaje",
+          "wizard-step-activity": "Úroveň aktivity",
+          "wizard-step-goal": "Váš cíl",
+          "wizard-step-helppreset": "Rozložení maker",
+          "wizard-step-summary": "Shrnutí",
+        };
+        document.getElementById("wizard-title").textContent = titles[stepId] || "Nastavit cíle";
+
+        // Progress dots for help-me path
+        const helpSteps = ["wizard-step-body", "wizard-step-activity", "wizard-step-goal", "wizard-step-helppreset"];
+        const progEl = document.getElementById("wizard-progress");
+        if (helpSteps.includes(stepId)) {
+          const currentIdx = helpSteps.indexOf(stepId);
+          progEl.innerHTML = helpSteps.map((_, i) =>
+            `<div class="wizard-dot ${i === currentIdx ? 'active' : i < currentIdx ? 'done' : ''}"></div>`
+          ).join("");
+        } else {
+          progEl.innerHTML = "";
+        }
+      }
+
+      function openGoalsWizard() {
+        // Reset wizard state
+        wizState.path = null;
+        wizState.presetIdx = null;
+        wizState.helpPresetIdx = null;
+        wizState.activity = null;
+        wizState.goalAdj = null;
+
+        // Pre-fill with current goals
+        document.getElementById("wizard-kcal-input").value = state.goals.kcal;
+        document.getElementById("wizard-macro-protein").value = state.goals.protein;
+        document.getElementById("wizard-macro-carbs").value = state.goals.carbs;
+        document.getElementById("wizard-macro-fat").value = state.goals.fat;
+        updateLiveKcal();
+
+        // Reset selections
+        document.querySelectorAll("#goals-wizard-modal .wizard-option.selected").forEach(el => el.classList.remove("selected"));
+
+        // Render presets
+        renderWizardPresets("wizard-preset-list", "wizard");
+        renderWizardPresets("wizard-help-preset-list", "wizard-help");
+
+        // Hide custom pct
+        document.getElementById("wizard-custom-pct-wrap").style.display = "none";
+        document.getElementById("wizard-help-custom-pct-wrap").style.display = "none";
+
+        // Reset preview
+        ["wiz-prev-protein","wiz-prev-carbs","wiz-prev-fat","wiz-help-prev-protein","wiz-help-prev-carbs","wiz-help-prev-fat"].forEach(id => {
+          document.getElementById(id).textContent = "-";
         });
+
+        // Disable next buttons
+        document.getElementById("wizard-activity-next").disabled = true;
+        document.getElementById("wizard-goal-next").disabled = true;
+        document.getElementById("wizard-help-save").disabled = true;
+
+        showWizardStep("wizard-step-path");
+        document.getElementById("goals-wizard-modal").classList.add("active");
+      }
+
+      function closeGoalsWizard() {
+        document.getElementById("goals-wizard-modal").classList.remove("active");
+      }
+
+      function saveWizardGoals(kcal, protein, carbs, fat) {
+        state.goals.kcal = Math.round(kcal);
+        state.goals.protein = Math.round(protein);
+        state.goals.carbs = Math.round(carbs);
+        state.goals.fat = Math.round(fat);
+        saveState();
+        updateGoalsDisplay();
+        closeGoalsWizard();
+        if (state.activePage === "page-today") renderToday();
+      }
+
+      function getWizardBackStep(currentStep) {
+        const backMap = {
+          "wizard-step-kcal": "wizard-step-path",
+          "wizard-step-macros": "wizard-step-path",
+          "wizard-step-body": "wizard-step-path",
+          "wizard-step-activity": "wizard-step-body",
+          "wizard-step-goal": "wizard-step-activity",
+          "wizard-step-helppreset": "wizard-step-goal",
+          "wizard-step-summary": "wizard-step-helppreset",
+        };
+        return backMap[currentStep] || "wizard-step-path";
       }
 
       let editingCustomIdx = null;
@@ -6741,43 +7209,204 @@
           saveState();
         });
 
-        // Settings goals
-        ["goal-kcal", "goal-protein", "goal-carbs", "goal-fat"].forEach(
-          (id) => {
-            document.getElementById(id).addEventListener("change", () => {
-              saveGoals();
-              document.getElementById("macro-presets-section").style.display =
-                "none";
-              document
-                .querySelectorAll(".macro-preset")
-                .forEach((el) => el.classList.remove("active"));
-            });
-          },
-        );
+        // Goals wizard - open
+        document.getElementById("btn-set-goals").addEventListener("click", openGoalsWizard);
 
-        // Calculate kcal from macros
-        document
-          .getElementById("btn-calc-kcal")
-          .addEventListener("click", calcKcalFromMacros);
+        // Goals wizard - close on overlay click
+        document.getElementById("goals-wizard-modal").addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeGoalsWizard();
+        });
 
-        // Calculate macros from presets
-        document
-          .getElementById("btn-calc-macros")
-          .addEventListener("click", () => {
-            const section = document.getElementById("macro-presets-section");
-            const open = section.style.display === "none";
-            section.style.display = open ? "block" : "none";
-            if (open) renderMacroPresets();
+        // Goals wizard - back button
+        document.getElementById("wizard-back-btn").addEventListener("click", () => {
+          const active = document.querySelector("#goals-wizard-modal .wizard-step.active");
+          if (active) showWizardStep(getWizardBackStep(active.id));
+        });
+
+        // Goals wizard - path selection (step 1)
+        document.getElementById("wizard-step-path").addEventListener("click", (e) => {
+          const opt = e.target.closest(".wizard-option");
+          if (!opt) return;
+          const path = opt.dataset.path;
+          wizState.path = path;
+          if (path === "know-kcal") showWizardStep("wizard-step-kcal");
+          else if (path === "know-macros") showWizardStep("wizard-step-macros");
+          else if (path === "help-me") showWizardStep("wizard-step-body");
+        });
+
+        // Path 1: Know kcal - stepper buttons
+        document.getElementById("wizard-kcal-minus").addEventListener("click", () => {
+          const inp = document.getElementById("wizard-kcal-input");
+          inp.value = Math.max(800, (parseInt(inp.value) || 2000) - 50);
+          updateKcalPreview();
+        });
+        document.getElementById("wizard-kcal-plus").addEventListener("click", () => {
+          const inp = document.getElementById("wizard-kcal-input");
+          inp.value = Math.min(8000, (parseInt(inp.value) || 2000) + 50);
+          updateKcalPreview();
+        });
+        document.getElementById("wizard-kcal-input").addEventListener("input", updateKcalPreview);
+
+        // Path 1: Preset selection
+        document.getElementById("wizard-preset-list").addEventListener("click", (e) => {
+          const opt = e.target.closest(".wizard-option");
+          if (!opt) return;
+          const idx = parseInt(opt.dataset.presetIdx);
+          wizState.presetIdx = idx;
+          document.querySelectorAll("#wizard-preset-list .wizard-option").forEach((el, i) => {
+            el.classList.toggle("selected", i === idx);
           });
+          const isCustom = idx >= MACRO_PRESETS.length;
+          document.getElementById("wizard-custom-pct-wrap").style.display = isCustom ? "block" : "none";
+          updateKcalPreview();
+        });
 
-        // Macro preset selection (delegated)
-        document
-          .getElementById("macro-preset-list")
-          .addEventListener("click", (e) => {
-            const preset = e.target.closest(".macro-preset");
-            if (!preset) return;
-            applyMacroPreset(parseInt(preset.dataset.presetIdx));
+        // Path 1: Custom pct inputs
+        ["wizard-pct-protein", "wizard-pct-carbs", "wizard-pct-fat"].forEach(id => {
+          document.getElementById(id).addEventListener("input", () => {
+            validateCustomPct("wizard");
+            updateKcalPreview();
           });
+        });
+
+        // Path 1: Save
+        document.getElementById("wizard-save-kcal").addEventListener("click", () => {
+          if (wizState.presetIdx === null) return;
+          if (wizState.presetIdx >= MACRO_PRESETS.length && !validateCustomPct("wizard")) return;
+          const kcal = parseInt(document.getElementById("wizard-kcal-input").value) || 2000;
+          const ratios = getPresetRatios(wizState.presetIdx, "wizard");
+          const m = calcMacrosFromKcal(kcal, ratios);
+          saveWizardGoals(kcal, m.protein, m.carbs, m.fat);
+        });
+
+        // Path 2: Know macros - live kcal
+        ["wizard-macro-protein", "wizard-macro-carbs", "wizard-macro-fat"].forEach(id => {
+          document.getElementById(id).addEventListener("input", updateLiveKcal);
+        });
+
+        // Path 2: Save
+        document.getElementById("wizard-save-macros").addEventListener("click", () => {
+          const p = parseFloat(document.getElementById("wizard-macro-protein").value) || 0;
+          const c = parseFloat(document.getElementById("wizard-macro-carbs").value) || 0;
+          const f = parseFloat(document.getElementById("wizard-macro-fat").value) || 0;
+          const kcal = Math.round(p * 4 + c * 4 + f * 9);
+          saveWizardGoals(kcal, p, c, f);
+        });
+
+        // Path 3: Sex toggle
+        document.querySelectorAll(".wizard-sex-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            wizState.sex = btn.dataset.sex;
+            document.querySelectorAll(".wizard-sex-btn").forEach(b => b.classList.toggle("selected", b === btn));
+          });
+        });
+
+        // Path 3: Body next
+        document.getElementById("wizard-body-next").addEventListener("click", () => {
+          const age = document.getElementById("wizard-age").value;
+          const weight = document.getElementById("wizard-weight").value;
+          const height = document.getElementById("wizard-height").value;
+          if (!age || !weight || !height) return;
+          showWizardStep("wizard-step-activity");
+        });
+
+        // Path 3: Activity selection
+        document.getElementById("wizard-step-activity").addEventListener("click", (e) => {
+          const opt = e.target.closest(".wizard-option");
+          if (!opt) return;
+          wizState.activity = parseFloat(opt.dataset.activity);
+          document.querySelectorAll("#wizard-step-activity .wizard-option").forEach(el => {
+            el.classList.toggle("selected", el === opt);
+          });
+          document.getElementById("wizard-activity-next").disabled = false;
+        });
+        document.getElementById("wizard-activity-next").addEventListener("click", () => {
+          if (wizState.activity === null) return;
+          showWizardStep("wizard-step-goal");
+        });
+
+        // Path 3: Goal selection
+        document.getElementById("wizard-step-goal").addEventListener("click", (e) => {
+          const opt = e.target.closest(".wizard-option");
+          if (!opt) return;
+          wizState.goalAdj = parseInt(opt.dataset.goal);
+          document.querySelectorAll("#wizard-step-goal .wizard-option").forEach(el => {
+            el.classList.toggle("selected", el === opt);
+          });
+          document.getElementById("wizard-goal-next").disabled = false;
+        });
+        document.getElementById("wizard-goal-next").addEventListener("click", () => {
+          if (wizState.goalAdj === null) return;
+          // Calculate TDEE
+          const bmr = calculateBMR();
+          const tdee = Math.round(bmr * wizState.activity);
+          const target = Math.max(800, tdee + wizState.goalAdj);
+          document.getElementById("wizard-tdee-val").textContent = target;
+          wizState.helpPresetIdx = null;
+          document.querySelectorAll("#wizard-help-preset-list .wizard-option").forEach(el => el.classList.remove("selected"));
+          document.getElementById("wizard-help-custom-pct-wrap").style.display = "none";
+          ["wiz-help-prev-protein","wiz-help-prev-carbs","wiz-help-prev-fat"].forEach(id => {
+            document.getElementById(id).textContent = "-";
+          });
+          document.getElementById("wizard-help-save").disabled = true;
+          showWizardStep("wizard-step-helppreset");
+        });
+
+        // Path 3: Help preset selection
+        document.getElementById("wizard-help-preset-list").addEventListener("click", (e) => {
+          const opt = e.target.closest(".wizard-option");
+          if (!opt) return;
+          const idx = parseInt(opt.dataset.presetIdx);
+          wizState.helpPresetIdx = idx;
+          document.querySelectorAll("#wizard-help-preset-list .wizard-option").forEach((el, i) => {
+            el.classList.toggle("selected", i === idx);
+          });
+          const isCustom = idx >= MACRO_PRESETS.length;
+          document.getElementById("wizard-help-custom-pct-wrap").style.display = isCustom ? "block" : "none";
+          document.getElementById("wizard-help-save").disabled = false;
+          updateHelpPreview();
+        });
+
+        // Path 3: Help custom pct inputs
+        ["wizard-help-pct-protein", "wizard-help-pct-carbs", "wizard-help-pct-fat"].forEach(id => {
+          document.getElementById(id).addEventListener("input", () => {
+            validateCustomPct("wizard-help");
+            updateHelpPreview();
+          });
+        });
+
+        // Path 3: Save from preset step (goes to summary)
+        document.getElementById("wizard-help-save").addEventListener("click", () => {
+          if (wizState.helpPresetIdx === null) return;
+          if (wizState.helpPresetIdx >= MACRO_PRESETS.length && !validateCustomPct("wizard-help")) return;
+          const bmr = calculateBMR();
+          const tdee = Math.round(bmr * wizState.activity);
+          const target = Math.max(800, tdee + wizState.goalAdj);
+          const ratios = getPresetRatios(wizState.helpPresetIdx, "wizard-help");
+          const m = calcMacrosFromKcal(target, ratios);
+
+          // Fill summary
+          document.getElementById("wiz-sum-bmr").textContent = bmr + " kcal";
+          document.getElementById("wiz-sum-activity").textContent = "×" + wizState.activity;
+          document.getElementById("wiz-sum-tdee").textContent = tdee + " kcal";
+          const adj = wizState.goalAdj;
+          document.getElementById("wiz-sum-adjust").textContent = (adj >= 0 ? "+" : "") + adj + " kcal";
+          document.getElementById("wiz-sum-kcal").textContent = target + " kcal";
+          document.getElementById("wiz-sum-protein").textContent = m.protein;
+          document.getElementById("wiz-sum-carbs").textContent = m.carbs;
+          document.getElementById("wiz-sum-fat").textContent = m.fat;
+
+          showWizardStep("wizard-step-summary");
+        });
+
+        // Path 3: Final save from summary
+        document.getElementById("wizard-summary-save").addEventListener("click", () => {
+          const kcal = parseInt(document.getElementById("wiz-sum-kcal").textContent) || 2000;
+          const p = parseInt(document.getElementById("wiz-sum-protein").textContent) || 0;
+          const c = parseInt(document.getElementById("wiz-sum-carbs").textContent) || 0;
+          const f = parseInt(document.getElementById("wiz-sum-fat").textContent) || 0;
+          saveWizardGoals(kcal, p, c, f);
+        });
 
         // Info icon tooltips
         document.addEventListener("click", (e) => {
