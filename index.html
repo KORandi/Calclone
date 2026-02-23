@@ -4629,6 +4629,7 @@
           const data = await resp.json();
           const fs = data.foodstuff || {};
           const result = {
+            name: fs.name || fs.title || null,
             kcal: czFloat(fs.energy) || food.kcal || 0,
             protein: czFloat(fs.protein),
             carbs: czFloat(fs.carbohydrate),
@@ -5381,7 +5382,7 @@
         const ratio = g / 100;
         const key = logTargetKey();
         if (!state.log[key]) state.log[key] = [];
-        state.log[key].push({
+        const entry = {
           name: f.name,
           grams: g,
           liquid: !!f.liquid,
@@ -5397,7 +5398,10 @@
           meal: state.mealCategoriesEnabled
             ? document.getElementById("modal-meal-select").value
             : "",
-        });
+        };
+        if (f.guid) entry.guid = f.guid;
+        if (f.source) entry.source = f.source;
+        state.log[key].push(entry);
         state.portionMemory[f.name] = g;
 
         // Track usage and auto-favorite
@@ -7256,54 +7260,90 @@
       function qrDecDiac(s) { return s.replace(/([A-Za-z])~~|([A-Za-z])~/g, (m) => _qrDiacMapRev[m] || m); }
 
       // --- Compact data format for QR ---
+      // Format: "K\nDYYYYMMDD\n..." with two line types:
+      //   R|guid|name|grams|time|meal        — API food (fetch nutrition by guid)
+      //   F|name|g|k|p|c|f|fb|l|time|meal    — full inline data
       function compressLogForQR(selected) {
-        const d = {};
-        for (const [day, indices] of Object.entries(selected)) {
+        const lines = [];
+        const days = Object.keys(selected).sort();
+        for (const day of days) {
           const entries = state.log[day];
           if (!entries) continue;
-          const idxArr = Array.from(indices).sort((a, b) => a - b);
-          d[day] = idxArr.map((i) => {
+          const idxArr = Array.from(selected[day]).sort((a, b) => a - b);
+          lines.push("D" + day.replace(/-/g, ""));
+          for (const i of idxArr) {
             const e = entries[i];
-            if (!e) return null;
-            const item = {
-              n: qrEncDiac(e.name),
-              g: e.grams,
-              k: e.kcal,
-              p: e.protein,
-              c: e.carbs,
-              f: e.fat,
-            };
-            if (e.fiber) item.fb = e.fiber;
-            if (e.liquid) item.l = 1;
-            if (e.time) item.t = e.time;
-            if (e.meal) item.m = qrEncDiac(e.meal);
-            return item;
-          }).filter(Boolean);
+            if (!e) continue;
+            const t = (e.time || "").replace(":", "");
+            const ml = qrEncDiac(e.meal || "");
+            if (e.guid && e.source === "api") {
+              // Reference line — just ID, short name, grams, time, meal
+              lines.push("R|" + [e.guid, qrEncDiac(e.name.slice(0, 6)), e.grams, t, ml].join("|"));
+            } else {
+              // Full data line
+              lines.push("F|" + [
+                qrEncDiac(e.name), e.grams, e.kcal, e.protein, e.carbs, e.fat,
+                e.fiber || 0, e.liquid ? 1 : 0, t, ml,
+              ].join("|"));
+            }
+          }
         }
-        return JSON.stringify({ v: 1, d });
+        return "K\n" + lines.join("\n");
       }
 
-      function decompressQRData(jsonStr) {
+      function decompressQRData(raw) {
         try {
-          const obj = JSON.parse(jsonStr);
-          if (!obj || obj.v !== 1 || !obj.d) return null;
+          if (!raw.startsWith("K\n")) return null;
+          const lines = raw.split("\n");
           const result = {};
-          for (const [day, items] of Object.entries(obj.d)) {
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
-            result[day] = items.map((e) => ({
-              name: qrDecDiac(e.n || "?"),
-              grams: e.g || 0,
-              kcal: e.k || 0,
-              protein: e.p || 0,
-              carbs: e.c || 0,
-              fat: e.f || 0,
-              fiber: e.fb || 0,
-              liquid: !!e.l,
-              time: e.t || "00:00",
-              meal: qrDecDiac(e.m || ""),
-            }));
+          let currentDay = null;
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line) continue;
+            if (line.startsWith("D") && line.length === 9) {
+              const ds = line.slice(1);
+              currentDay = ds.slice(0, 4) + "-" + ds.slice(4, 6) + "-" + ds.slice(6, 8);
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(currentDay)) { currentDay = null; continue; }
+              result[currentDay] = [];
+              continue;
+            }
+            if (!currentDay) continue;
+            const p = line.split("|");
+            if (p[0] === "R" && p.length >= 4) {
+              // Reference entry — needs API fetch
+              const timeRaw = p[4] || "";
+              const time = timeRaw.length >= 3
+                ? timeRaw.slice(0, -2).padStart(2, "0") + ":" + timeRaw.slice(-2)
+                : "00:00";
+              result[currentDay].push({
+                guid: p[1],
+                name: qrDecDiac(p[2] || "?"),
+                grams: +p[3] || 100,
+                time,
+                meal: qrDecDiac(p[5] || ""),
+                _needsFetch: true,
+              });
+            } else if (p[0] === "F" && p.length >= 7) {
+              // Full inline entry
+              const timeRaw = p[9] || "";
+              const time = timeRaw.length >= 3
+                ? timeRaw.slice(0, -2).padStart(2, "0") + ":" + timeRaw.slice(-2)
+                : "00:00";
+              result[currentDay].push({
+                name: qrDecDiac(p[1] || "?"),
+                grams: +p[2] || 0,
+                kcal: +p[3] || 0,
+                protein: +p[4] || 0,
+                carbs: +p[5] || 0,
+                fat: +p[6] || 0,
+                fiber: +p[7] || 0,
+                liquid: p[8] === "1",
+                time,
+                meal: qrDecDiac(p[10] || ""),
+              });
+            }
           }
-          return result;
+          return Object.keys(result).length > 0 ? result : null;
         } catch {
           return null;
         }
@@ -7417,11 +7457,11 @@
         if (count > 0) {
           const data = compressLogForQR(qrSelectedEntries);
           const bytes = new Blob([data]).size;
-          if (bytes > 1800) {
+          if (bytes > 2200) {
             warning.style.display = "block";
-            warning.textContent = `Data jsou příliš velká (${bytes} B). Maximální kapacita QR kódu je ~1800 B. Vyberte méně záznamů.`;
+            warning.textContent = `Data jsou příliš velká (${bytes} B). Maximální kapacita QR kódu je ~2200 B. Vyberte méně záznamů.`;
             btn.disabled = true;
-          } else if (bytes > 1400) {
+          } else if (bytes > 1800) {
             warning.style.display = "block";
             warning.textContent = `Data: ${bytes} B — blízko limitu QR kódu. Kód může být obtížně skenovatelný.`;
           } else {
@@ -7436,7 +7476,7 @@
       function generateQrCode() {
         const data = compressLogForQR(qrSelectedEntries);
         const bytes = new Blob([data]).size;
-        if (bytes > 1800) {
+        if (bytes > 2200) {
           showToast("Data příliš velká pro QR kód");
           return;
         }
@@ -7543,48 +7583,90 @@
       }
 
       // --- Import preview ---
-      function openQrPreviewModal(data) {
+      async function openQrPreviewModal(data) {
         qrPendingImport = data;
         const el = document.getElementById("qr-preview-list");
+        const btn = document.getElementById("btn-confirm-import");
+        const summaryEl = document.getElementById("qr-preview-summary");
         const days = Object.keys(data).sort().reverse();
         let totalEntries = 0;
-        let totalKcal = 0;
+        const needsFetch = [];
 
-        el.innerHTML = days.map((day) => {
-          const entries = data[day];
-          totalEntries += entries.length;
-          const parts = day.split("-");
-          const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-          const label = date.toLocaleDateString("cs-CZ", {
-            weekday: "short",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          });
+        // Collect entries that need API fetch
+        for (const day of days) {
+          for (const e of data[day]) {
+            totalEntries++;
+            if (e._needsFetch) needsFetch.push(e);
+          }
+        }
 
-          return `
-            <div class="qr-preview-day">
-              <div class="qr-preview-day-label">${escapeHtml(label)} · ${entries.length} pol.</div>
-              ${entries.map((e) => {
-                totalKcal += e.kcal;
-                return `
-                  <div class="qr-preview-entry">
-                    <div>
-                      <div class="qr-preview-entry-name">${escapeHtml(e.name)}</div>
-                      <div class="qr-preview-entry-detail">${e.grams}${e.liquid ? "ml" : "g"} · B:${e.protein}g S:${e.carbs}g T:${e.fat}g</div>
+        // Render preview immediately
+        function renderPreview() {
+          let totalKcal = 0;
+          el.innerHTML = days.map((day) => {
+            const entries = data[day];
+            const parts = day.split("-");
+            const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+            const label = date.toLocaleDateString("cs-CZ", {
+              weekday: "short", day: "numeric", month: "long", year: "numeric",
+            });
+            return `
+              <div class="qr-preview-day">
+                <div class="qr-preview-day-label">${escapeHtml(label)} · ${entries.length} pol.</div>
+                ${entries.map((e) => {
+                  const loading = e._needsFetch && !e._fetched;
+                  totalKcal += e.kcal || 0;
+                  return `
+                    <div class="qr-preview-entry">
+                      <div>
+                        <div class="qr-preview-entry-name">${escapeHtml(e.name)}</div>
+                        <div class="qr-preview-entry-detail">${loading
+                          ? `${e.grams}g · Načítání...`
+                          : `${e.grams}${e.liquid ? "ml" : "g"} · B:${e.protein}g S:${e.carbs}g T:${e.fat}g`
+                        }</div>
+                      </div>
+                      <div class="qr-preview-entry-kcal">${loading ? "···" : `${e.kcal} kcal`}</div>
                     </div>
-                    <div class="qr-preview-entry-kcal">${e.kcal} kcal</div>
-                  </div>
-                `;
-              }).join("")}
-            </div>
-          `;
-        }).join("");
+                  `;
+                }).join("")}
+              </div>
+            `;
+          }).join("");
+          const label = totalEntries === 1 ? "záznam" : totalEntries < 5 ? "záznamy" : "záznamů";
+          summaryEl.textContent = needsFetch.some(e => !e._fetched)
+            ? `Celkem: ${totalEntries} ${label} · Načítání hodnot...`
+            : `Celkem: ${totalEntries} ${label} · ${totalKcal} kcal`;
+        }
 
-        document.getElementById("qr-preview-summary").textContent =
-          `Celkem: ${totalEntries} ${totalEntries === 1 ? "záznam" : totalEntries < 5 ? "záznamy" : "záznamů"} · ${totalKcal} kcal`;
-
+        renderPreview();
+        btn.disabled = needsFetch.length > 0;
         document.getElementById("qr-preview-modal").classList.add("active");
+
+        // Fetch nutrition for reference entries in parallel
+        if (needsFetch.length > 0) {
+          await Promise.all(needsFetch.map(async (e) => {
+            try {
+              const detail = await apiDetail({ guid: e.guid, kcal: 0 });
+              if (detail.name) e.name = detail.name;
+              const ratio = e.grams / 100;
+              e.kcal = Math.round((detail.kcal || 0) * ratio);
+              e.protein = +((detail.protein || 0) * ratio).toFixed(1);
+              e.carbs = +((detail.carbs || 0) * ratio).toFixed(1);
+              e.fat = +((detail.fat || 0) * ratio).toFixed(1);
+              e.fiber = +((detail.fiber || 0) * ratio).toFixed(1);
+              e.liquid = detail.liquid || false;
+              e.source = "api";
+              e._fetched = true;
+            } catch {
+              // Fallback: mark as fetched with zeros
+              e.kcal = 0; e.protein = 0; e.carbs = 0; e.fat = 0; e.fiber = 0;
+              e.liquid = false;
+              e._fetched = true;
+            }
+          }));
+          renderPreview();
+          btn.disabled = false;
+        }
       }
 
       function closeQrPreviewModal() {
@@ -7598,18 +7680,21 @@
         for (const [day, entries] of Object.entries(qrPendingImport)) {
           if (!state.log[day]) state.log[day] = [];
           entries.forEach((e) => {
-            state.log[day].push({
+            const entry = {
               name: e.name,
               grams: e.grams,
-              liquid: e.liquid,
-              kcal: e.kcal,
-              protein: e.protein,
-              carbs: e.carbs,
-              fat: e.fat,
+              liquid: !!e.liquid,
+              kcal: e.kcal || 0,
+              protein: e.protein || 0,
+              carbs: e.carbs || 0,
+              fat: e.fat || 0,
               fiber: e.fiber || 0,
               time: e.time,
               meal: e.meal || "",
-            });
+            };
+            if (e.guid) entry.guid = e.guid;
+            if (e.source) entry.source = e.source;
+            state.log[day].push(entry);
             totalAdded++;
           });
         }
