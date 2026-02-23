@@ -1916,8 +1916,274 @@
       .offline-banner.online {
         background: var(--green);
       }
+
+      /* ── QR Share ── */
+      .share-fab {
+        position: fixed;
+        bottom: calc(62px + var(--safe-bottom));
+        right: 78px;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        border: none;
+        background: var(--blue);
+        color: #fff;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow:
+          0 4px 16px rgba(59, 130, 246, 0.35),
+          0 2px 6px rgba(0, 0, 0, 0.1);
+        z-index: 99;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .share-fab:active {
+        transform: scale(0.92);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+      }
+      .qr-share-actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .qr-share-actions button {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        transition: border-color 0.15s, background 0.15s;
+      }
+      .qr-share-actions button.active {
+        border-color: var(--green);
+        background: var(--green-light);
+      }
+      .qr-share-actions button svg {
+        width: 28px;
+        height: 28px;
+      }
+      .qr-select-list {
+        max-height: 50vh;
+        overflow-y: auto;
+        margin-bottom: 16px;
+      }
+      .qr-day-group {
+        margin-bottom: 12px;
+      }
+      .qr-day-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .qr-day-header input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--green);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .qr-entry-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0 6px 30px;
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .qr-entry-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--green);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .qr-entry-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .qr-entry-name {
+        color: var(--text);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .qr-entry-detail {
+        font-size: 12px;
+      }
+      .qr-entry-kcal {
+        font-weight: 600;
+        color: var(--green);
+        white-space: nowrap;
+      }
+      .qr-display-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+      }
+      .qr-display-wrap canvas,
+      .qr-display-wrap img {
+        border-radius: 12px;
+        max-width: 260px;
+        width: 100%;
+        height: auto;
+      }
+      .qr-display-info {
+        margin-top: 12px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+      .qr-scan-wrap {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: #000;
+        aspect-ratio: 1;
+      }
+      .qr-scan-wrap video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .qr-scan-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .qr-scan-frame {
+        width: 60%;
+        aspect-ratio: 1;
+        border: 3px solid rgba(255,255,255,0.7);
+        border-radius: 16px;
+      }
+      .qr-preview-list {
+        max-height: 50vh;
+        overflow-y: auto;
+        margin-bottom: 16px;
+      }
+      .qr-preview-day {
+        margin-bottom: 12px;
+      }
+      .qr-preview-day-label {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text);
+        margin-bottom: 6px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+      .qr-preview-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        font-size: 13px;
+      }
+      .qr-preview-entry-name {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .qr-preview-entry-detail {
+        color: var(--text-secondary);
+        font-size: 12px;
+      }
+      .qr-preview-entry-kcal {
+        color: var(--green);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .qr-size-warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        color: #92400e;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 12px;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+      [data-theme="dark"] .qr-size-warning,
+      [data-theme="midnight"] .qr-size-warning,
+      [data-theme="amoled"] .qr-size-warning {
+        background: #451a03;
+        border-color: #b45309;
+        color: #fbbf24;
+      }
+      .btn-generate-qr {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: var(--green);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.15s;
+      }
+      .btn-generate-qr:active {
+        background: var(--green-dark);
+      }
+      .btn-generate-qr:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-import-qr {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: var(--green);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.15s;
+      }
+      .btn-import-qr:active {
+        background: var(--green-dark);
+      }
+      .qr-scan-status {
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-secondary);
+        padding: 8px 0;
+      }
     </style>
     <script src="https://fastly.jsdelivr.net/npm/barcode-detector@3/dist/iife/polyfill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   </head>
   <body>
     <div class="offline-banner" id="offline-banner">Jste offline</div>
@@ -2007,6 +2273,16 @@
       <h1 class="page-header">Historie</h1>
       <div id="trends-section"></div>
       <div id="history-list"></div>
+      <button class="share-fab" id="share-fab" title="Sdílet přes QR">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="8" height="8" rx="1"/>
+          <rect x="14" y="2" width="8" height="8" rx="1"/>
+          <rect x="2" y="14" width="8" height="8" rx="1"/>
+          <rect x="14" y="14" width="4" height="4" rx="0.5"/>
+          <line x1="22" y1="14" x2="22" y2="18"/>
+          <line x1="18" y1="22" x2="22" y2="22"/>
+        </svg>
+      </button>
       <button class="history-fab" id="history-fab">
         <svg
           width="22"
@@ -2050,6 +2326,102 @@
             Pokračovat
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: QR Share - Action selection ===== -->
+    <div class="modal-overlay" id="qr-share-modal">
+      <div class="modal" style="min-height: auto">
+        <div class="modal-handle"></div>
+        <h2>QR Sdílení</h2>
+        <p class="modal-sub">Sdílejte záznamy přes QR kód nebo naskenujte kód od někoho jiného</p>
+        <div class="qr-share-actions">
+          <button id="qr-action-send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="8" height="8" rx="1"/>
+              <rect x="14" y="2" width="8" height="8" rx="1"/>
+              <rect x="2" y="14" width="8" height="8" rx="1"/>
+              <rect x="14" y="14" width="4" height="4" rx="0.5"/>
+              <line x1="22" y1="14" x2="22" y2="18"/>
+              <line x1="18" y1="22" x2="22" y2="22"/>
+            </svg>
+            Odeslat
+          </button>
+          <button id="qr-action-scan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+              <rect x="7" y="7" width="10" height="10" rx="1"/>
+            </svg>
+            Skenovat
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: QR Select entries to share ===== -->
+    <div class="modal-overlay" id="qr-select-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Vyberte záznamy</h2>
+        <p class="modal-sub">Vyberte dny nebo jednotlivé záznamy ke sdílení</p>
+        <div id="qr-select-list" class="qr-select-list"></div>
+        <div id="qr-size-warning" class="qr-size-warning" style="display:none"></div>
+        <button class="btn-generate-qr" id="btn-generate-qr" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="8" height="8" rx="1"/>
+            <rect x="14" y="2" width="8" height="8" rx="1"/>
+            <rect x="2" y="14" width="8" height="8" rx="1"/>
+            <rect x="14" y="14" width="4" height="4" rx="0.5"/>
+          </svg>
+          Vytvořit QR kód
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: QR Display ===== -->
+    <div class="modal-overlay" id="qr-display-modal">
+      <div class="modal" style="min-height: auto">
+        <div class="modal-handle"></div>
+        <h2>QR kód</h2>
+        <p class="modal-sub">Nechte druhého uživatele naskenovat tento kód</p>
+        <div class="qr-display-wrap" id="qr-display-wrap"></div>
+        <div id="qr-display-info" class="qr-display-info"></div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: QR Scan ===== -->
+    <div class="modal-overlay" id="qr-scan-modal">
+      <div class="modal" style="min-height: auto">
+        <div class="modal-handle"></div>
+        <h2>Skenovat QR kód</h2>
+        <p class="modal-sub">Namiřte fotoaparát na QR kód</p>
+        <div class="qr-scan-wrap">
+          <video id="qr-scan-video" autoplay playsinline></video>
+          <div class="qr-scan-overlay"><div class="qr-scan-frame"></div></div>
+        </div>
+        <p id="qr-scan-status" class="qr-scan-status">Spouštění kamery...</p>
+        <button class="btn-add" id="qr-scan-cancel" style="background: var(--border); color: var(--text); margin-top: 8px">Zrušit</button>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: QR Import Preview ===== -->
+    <div class="modal-overlay" id="qr-preview-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Náhled importu</h2>
+        <p class="modal-sub">Zkontrolujte záznamy před přidáním</p>
+        <div id="qr-preview-list" class="qr-preview-list"></div>
+        <div id="qr-preview-summary" style="font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:12px"></div>
+        <button class="btn-import-qr" id="btn-confirm-import">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Přidat záznamy
+        </button>
+        <button class="btn-add" id="btn-cancel-import" style="background: var(--border); color: var(--text); margin-top: 8px">Zrušit</button>
       </div>
     </div>
 
@@ -2662,7 +3034,7 @@
           margin-top: 24px;
         "
       >
-        Calclone v2.6<br />
+        Calclone v2.7<br />
         Všechna data uložena lokálně v zařízení
       </p>
     </div>
@@ -5901,6 +6273,8 @@
         if (pageId === "page-settings") loadSettingsUI();
         document.getElementById("history-fab").style.display =
           pageId === "page-history" ? "flex" : "none";
+        document.getElementById("share-fab").style.display =
+          pageId === "page-history" ? "flex" : "none";
       }
 
       // ═══════════════════════════════════════════
@@ -6819,6 +7193,408 @@
         setSearchLoading(false);
         handleSearch(code);
       }
+
+      // ═══════════════════════════════════════════
+      // QR SHARE FEATURE
+      // ═══════════════════════════════════════════
+      let qrSelectedEntries = {}; // { "YYYY-MM-DD": Set of indices }
+      let qrScanStream = null;
+      let qrScanInterval = null;
+      let qrPendingImport = null; // parsed data waiting for confirmation
+
+      // --- Compact data format for QR ---
+      function compressLogForQR(selected) {
+        const d = {};
+        for (const [day, indices] of Object.entries(selected)) {
+          const entries = state.log[day];
+          if (!entries) continue;
+          const idxArr = Array.from(indices).sort((a, b) => a - b);
+          d[day] = idxArr.map((i) => {
+            const e = entries[i];
+            if (!e) return null;
+            const item = {
+              n: e.name,
+              g: e.grams,
+              k: e.kcal,
+              p: e.protein,
+              c: e.carbs,
+              f: e.fat,
+            };
+            if (e.fiber) item.fb = e.fiber;
+            if (e.liquid) item.l = 1;
+            if (e.time) item.t = e.time;
+            if (e.meal) item.m = e.meal;
+            return item;
+          }).filter(Boolean);
+        }
+        return JSON.stringify({ v: 1, d });
+      }
+
+      function decompressQRData(jsonStr) {
+        try {
+          const obj = JSON.parse(jsonStr);
+          if (!obj || obj.v !== 1 || !obj.d) return null;
+          const result = {};
+          for (const [day, items] of Object.entries(obj.d)) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+            result[day] = items.map((e) => ({
+              name: e.n || "?",
+              grams: e.g || 0,
+              kcal: e.k || 0,
+              protein: e.p || 0,
+              carbs: e.c || 0,
+              fat: e.f || 0,
+              fiber: e.fb || 0,
+              liquid: !!e.l,
+              time: e.t || "00:00",
+              meal: e.m || "",
+            }));
+          }
+          return result;
+        } catch {
+          return null;
+        }
+      }
+
+      // --- Selection modal ---
+      function openQrShareModal() {
+        document.getElementById("qr-share-modal").classList.add("active");
+      }
+      function closeQrShareModal() {
+        document.getElementById("qr-share-modal").classList.remove("active");
+      }
+
+      function openQrSelectModal() {
+        closeQrShareModal();
+        qrSelectedEntries = {};
+        renderQrSelectList();
+        document.getElementById("qr-select-modal").classList.add("active");
+      }
+      function closeQrSelectModal() {
+        document.getElementById("qr-select-modal").classList.remove("active");
+      }
+
+      function renderQrSelectList() {
+        const el = document.getElementById("qr-select-list");
+        const days = Object.keys(state.log).sort().reverse();
+
+        if (days.length === 0) {
+          el.innerHTML = '<div class="empty-state"><p>Žádná historie k sdílení.</p></div>';
+          document.getElementById("btn-generate-qr").disabled = true;
+          return;
+        }
+
+        el.innerHTML = days.map((day) => {
+          const entries = state.log[day];
+          const parts = day.split("-");
+          const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+          const label = date.toLocaleDateString("cs-CZ", {
+            weekday: "short",
+            day: "numeric",
+            month: "long",
+          });
+          const totals = entries.reduce((a, e) => {
+            a.kcal += e.kcal; return a;
+          }, { kcal: 0 });
+
+          const selectedSet = qrSelectedEntries[day] || new Set();
+          const allSelected = entries.length > 0 && selectedSet.size === entries.length;
+
+          return `
+            <div class="qr-day-group">
+              <label class="qr-day-header">
+                <input type="checkbox" data-qr-day="${day}" ${allSelected ? "checked" : ""}>
+                <span>${escapeHtml(label)} · ${entries.length} pol. · ${totals.kcal} kcal</span>
+              </label>
+              ${entries.map((e, i) => `
+                <div class="qr-entry-item">
+                  <input type="checkbox" data-qr-day="${day}" data-qr-idx="${i}" ${selectedSet.has(i) ? "checked" : ""}>
+                  <div class="qr-entry-info">
+                    <div class="qr-entry-name">${escapeHtml(e.name)}</div>
+                    <div class="qr-entry-detail">${e.grams}${e.liquid ? "ml" : "g"} · ${e.time || ""}</div>
+                  </div>
+                  <div class="qr-entry-kcal">${e.kcal} kcal</div>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }).join("");
+
+        updateQrGenerateButton();
+      }
+
+      function updateQrSelection(day, idx, checked) {
+        if (!qrSelectedEntries[day]) qrSelectedEntries[day] = new Set();
+        if (idx !== null) {
+          if (checked) qrSelectedEntries[day].add(idx);
+          else qrSelectedEntries[day].delete(idx);
+          if (qrSelectedEntries[day].size === 0) delete qrSelectedEntries[day];
+        } else {
+          // Toggle all entries for this day
+          const entries = state.log[day];
+          if (!entries) return;
+          if (checked) {
+            qrSelectedEntries[day] = new Set(entries.map((_, i) => i));
+          } else {
+            delete qrSelectedEntries[day];
+          }
+        }
+        renderQrSelectList();
+      }
+
+      function getSelectedEntryCount() {
+        let count = 0;
+        for (const s of Object.values(qrSelectedEntries)) count += s.size;
+        return count;
+      }
+
+      function updateQrGenerateButton() {
+        const count = getSelectedEntryCount();
+        const btn = document.getElementById("btn-generate-qr");
+        btn.disabled = count === 0;
+        const label = count === 0
+          ? "Vytvořit QR kód"
+          : `Vytvořit QR kód (${count} ${count === 1 ? "záznam" : count < 5 ? "záznamy" : "záznamů"})`;
+        const svg = btn.querySelector("svg");
+        btn.textContent = label;
+        if (svg) btn.prepend(svg);
+
+        // Check data size for warnings
+        const warning = document.getElementById("qr-size-warning");
+        if (count > 0) {
+          const data = compressLogForQR(qrSelectedEntries);
+          const bytes = new Blob([data]).size;
+          if (bytes > 2300) {
+            warning.style.display = "block";
+            warning.textContent = `Data jsou příliš velká (${bytes} B). Maximální kapacita QR kódu je ~2300 B. Vyberte méně záznamů.`;
+            btn.disabled = true;
+          } else if (bytes > 1800) {
+            warning.style.display = "block";
+            warning.textContent = `Data: ${bytes} B — blízko limitu QR kódu. Kód může být obtížně skenovatelný.`;
+          } else {
+            warning.style.display = "none";
+          }
+        } else {
+          warning.style.display = "none";
+        }
+      }
+
+      // --- QR code generation ---
+      function generateQrCode() {
+        const data = compressLogForQR(qrSelectedEntries);
+        const bytes = new Blob([data]).size;
+        if (bytes > 2300) {
+          showToast("Data příliš velká pro QR kód");
+          return;
+        }
+
+        closeQrSelectModal();
+
+        // Determine QR type number based on data length
+        let typeNumber = 0; // auto
+        try {
+          const qr = qrcode(typeNumber, "L");
+          qr.addData(data);
+          qr.make();
+
+          const wrap = document.getElementById("qr-display-wrap");
+          wrap.innerHTML = "";
+          const img = document.createElement("img");
+          img.src = qr.createDataURL(6, 4);
+          img.alt = "QR kód";
+          wrap.appendChild(img);
+
+          const count = getSelectedEntryCount();
+          const dayCount = Object.keys(qrSelectedEntries).length;
+          document.getElementById("qr-display-info").textContent =
+            `${count} ${count === 1 ? "záznam" : count < 5 ? "záznamy" : "záznamů"} z ${dayCount} ${dayCount === 1 ? "dne" : "dnů"} · ${bytes} B`;
+
+          document.getElementById("qr-display-modal").classList.add("active");
+        } catch (err) {
+          showToast("Chyba při generování QR kódu");
+          console.error("QR generation error:", err);
+        }
+      }
+
+      // --- QR code scanning ---
+      function openQrScanModal() {
+        closeQrShareModal();
+        document.getElementById("qr-scan-modal").classList.add("active");
+        document.getElementById("qr-scan-status").textContent = "Spouštění kamery...";
+        startQrScanning();
+      }
+
+      function closeQrScanModal() {
+        document.getElementById("qr-scan-modal").classList.remove("active");
+        stopQrScanning();
+      }
+
+      async function startQrScanning() {
+        try {
+          const video = document.getElementById("qr-scan-video");
+          qrScanStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+          });
+          video.srcObject = qrScanStream;
+          await video.play();
+          document.getElementById("qr-scan-status").textContent = "Hledám QR kód...";
+
+          const detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+          qrScanInterval = setInterval(async () => {
+            try {
+              if (video.readyState < 2) return;
+              const barcodes = await detector.detect(video);
+              if (barcodes.length > 0) {
+                const raw = barcodes[0].rawValue;
+                const parsed = decompressQRData(raw);
+                if (parsed && Object.keys(parsed).length > 0) {
+                  closeQrScanModal();
+                  openQrPreviewModal(parsed);
+                } else {
+                  document.getElementById("qr-scan-status").textContent =
+                    "Neplatný QR kód. Zkuste Calclone QR kód.";
+                }
+              }
+            } catch {}
+          }, 300);
+        } catch (err) {
+          console.error("Camera error:", err);
+          document.getElementById("qr-scan-status").textContent =
+            "Nepodařilo se spustit kameru. Zkontrolujte oprávnění.";
+        }
+      }
+
+      function stopQrScanning() {
+        if (qrScanInterval) {
+          clearInterval(qrScanInterval);
+          qrScanInterval = null;
+        }
+        if (qrScanStream) {
+          qrScanStream.getTracks().forEach((t) => t.stop());
+          qrScanStream = null;
+        }
+        const video = document.getElementById("qr-scan-video");
+        video.srcObject = null;
+      }
+
+      // --- Import preview ---
+      function openQrPreviewModal(data) {
+        qrPendingImport = data;
+        const el = document.getElementById("qr-preview-list");
+        const days = Object.keys(data).sort().reverse();
+        let totalEntries = 0;
+        let totalKcal = 0;
+
+        el.innerHTML = days.map((day) => {
+          const entries = data[day];
+          totalEntries += entries.length;
+          const parts = day.split("-");
+          const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+          const label = date.toLocaleDateString("cs-CZ", {
+            weekday: "short",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+
+          return `
+            <div class="qr-preview-day">
+              <div class="qr-preview-day-label">${escapeHtml(label)} · ${entries.length} pol.</div>
+              ${entries.map((e) => {
+                totalKcal += e.kcal;
+                return `
+                  <div class="qr-preview-entry">
+                    <div>
+                      <div class="qr-preview-entry-name">${escapeHtml(e.name)}</div>
+                      <div class="qr-preview-entry-detail">${e.grams}${e.liquid ? "ml" : "g"} · B:${e.protein}g S:${e.carbs}g T:${e.fat}g</div>
+                    </div>
+                    <div class="qr-preview-entry-kcal">${e.kcal} kcal</div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          `;
+        }).join("");
+
+        document.getElementById("qr-preview-summary").textContent =
+          `Celkem: ${totalEntries} ${totalEntries === 1 ? "záznam" : totalEntries < 5 ? "záznamy" : "záznamů"} · ${totalKcal} kcal`;
+
+        document.getElementById("qr-preview-modal").classList.add("active");
+      }
+
+      function closeQrPreviewModal() {
+        document.getElementById("qr-preview-modal").classList.remove("active");
+        qrPendingImport = null;
+      }
+
+      function confirmQrImport() {
+        if (!qrPendingImport) return;
+        let totalAdded = 0;
+        for (const [day, entries] of Object.entries(qrPendingImport)) {
+          if (!state.log[day]) state.log[day] = [];
+          entries.forEach((e) => {
+            state.log[day].push({
+              name: e.name,
+              grams: e.grams,
+              liquid: e.liquid,
+              kcal: e.kcal,
+              protein: e.protein,
+              carbs: e.carbs,
+              fat: e.fat,
+              fiber: e.fiber || 0,
+              time: e.time,
+              meal: e.meal || "",
+            });
+            totalAdded++;
+          });
+        }
+        saveState();
+        closeQrPreviewModal();
+        if (state.activePage === "page-history") renderHistory();
+        if (state.activePage === "page-today") renderToday();
+        showToast(`Přidáno ${totalAdded} ${totalAdded === 1 ? "záznam" : totalAdded < 5 ? "záznamy" : "záznamů"}`);
+      }
+
+      // --- QR Event Listeners ---
+      document.getElementById("share-fab").addEventListener("click", openQrShareModal);
+      document.getElementById("qr-action-send").addEventListener("click", openQrSelectModal);
+      document.getElementById("qr-action-scan").addEventListener("click", openQrScanModal);
+
+      document.getElementById("qr-share-modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) closeQrShareModal();
+      });
+
+      document.getElementById("qr-select-modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) closeQrSelectModal();
+      });
+
+      document.getElementById("qr-display-modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) e.currentTarget.classList.remove("active");
+      });
+
+      document.getElementById("qr-scan-modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) closeQrScanModal();
+      });
+
+      document.getElementById("qr-scan-cancel").addEventListener("click", closeQrScanModal);
+
+      document.getElementById("qr-preview-modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) closeQrPreviewModal();
+      });
+
+      document.getElementById("btn-generate-qr").addEventListener("click", generateQrCode);
+      document.getElementById("btn-confirm-import").addEventListener("click", confirmQrImport);
+      document.getElementById("btn-cancel-import").addEventListener("click", closeQrPreviewModal);
+
+      // Delegated checkbox handler for selection list
+      document.getElementById("qr-select-list").addEventListener("change", (e) => {
+        const cb = e.target.closest("input[type='checkbox'][data-qr-day]");
+        if (!cb) return;
+        const day = cb.dataset.qrDay;
+        const idx = cb.dataset.qrIdx !== undefined ? parseInt(cb.dataset.qrIdx) : null;
+        updateQrSelection(day, idx, cb.checked);
+      });
 
       // ═══════════════════════════════════════════
       // BARCODE EVENT LISTENERS
