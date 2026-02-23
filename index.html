@@ -1140,6 +1140,14 @@
         text-align: center;
         transition: border-color 0.15s;
       }
+      .chip-with-time .chip-time-input::-webkit-calendar-picker-indicator {
+        filter: invert(0);
+      }
+      [data-theme="dark"] .chip-with-time .chip-time-input::-webkit-calendar-picker-indicator,
+      [data-theme="midnight"] .chip-with-time .chip-time-input::-webkit-calendar-picker-indicator,
+      [data-theme="amoled"] .chip-with-time .chip-time-input::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+      }
       .chip-with-time .chip-time-input:focus {
         outline: none;
         border-bottom-color: var(--green);
