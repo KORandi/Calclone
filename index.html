@@ -347,6 +347,7 @@
         border-radius: 20px;
         border: 1px solid var(--border);
         background: var(--card);
+        color: var(--text);
         font-size: 13px;
         cursor: pointer;
         transition: all 0.15s;
@@ -1704,6 +1705,7 @@
         border-radius: 10px;
         border: 1px solid var(--border);
         background: var(--card);
+        color: var(--text);
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
@@ -1964,7 +1966,9 @@
         flex-direction: column;
         align-items: center;
         gap: 6px;
-        transition: border-color 0.15s, background 0.15s;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
       }
       .qr-share-actions button.active {
         border-color: var(--green);
@@ -2075,7 +2079,7 @@
       .qr-scan-frame {
         width: 60%;
         aspect-ratio: 1;
-        border: 3px solid rgba(255,255,255,0.7);
+        border: 3px solid rgba(255, 255, 255, 0.7);
         border-radius: 16px;
       }
       .qr-preview-list {
@@ -2274,13 +2278,22 @@
       <div id="trends-section"></div>
       <div id="history-list"></div>
       <button class="share-fab" id="share-fab" title="Sdílet přes QR">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="2" width="8" height="8" rx="1"/>
-          <rect x="14" y="2" width="8" height="8" rx="1"/>
-          <rect x="2" y="14" width="8" height="8" rx="1"/>
-          <rect x="14" y="14" width="4" height="4" rx="0.5"/>
-          <line x1="22" y1="14" x2="22" y2="18"/>
-          <line x1="18" y1="22" x2="22" y2="22"/>
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="2" width="8" height="8" rx="1" />
+          <rect x="14" y="2" width="8" height="8" rx="1" />
+          <rect x="2" y="14" width="8" height="8" rx="1" />
+          <rect x="14" y="14" width="4" height="4" rx="0.5" />
+          <line x1="22" y1="14" x2="22" y2="18" />
+          <line x1="18" y1="22" x2="22" y2="22" />
         </svg>
       </button>
       <button class="history-fab" id="history-fab">
@@ -2334,29 +2347,66 @@
       <div class="modal" style="min-height: auto">
         <div class="modal-handle"></div>
         <h2>QR Sdílení</h2>
-        <p class="modal-sub">Sdílejte záznamy přes QR kód nebo naskenujte kód od někoho jiného</p>
+        <p class="modal-sub">
+          Sdílejte záznamy přes QR kód nebo naskenujte kód od někoho jiného
+        </p>
         <div class="qr-share-actions">
           <button id="qr-action-send">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="2" width="8" height="8" rx="1"/>
-              <rect x="14" y="2" width="8" height="8" rx="1"/>
-              <rect x="2" y="14" width="8" height="8" rx="1"/>
-              <rect x="14" y="14" width="4" height="4" rx="0.5"/>
-              <line x1="22" y1="14" x2="22" y2="18"/>
-              <line x1="18" y1="22" x2="22" y2="22"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="2" width="8" height="8" rx="1" />
+              <rect x="14" y="2" width="8" height="8" rx="1" />
+              <rect x="2" y="14" width="8" height="8" rx="1" />
+              <rect x="14" y="14" width="4" height="4" rx="0.5" />
+              <line x1="22" y1="14" x2="22" y2="18" />
+              <line x1="18" y1="22" x2="22" y2="22" />
             </svg>
             Odeslat
           </button>
           <button id="qr-action-scan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
-              <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
-              <rect x="7" y="7" width="10" height="10" rx="1"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+              <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+              <rect x="7" y="7" width="10" height="10" rx="1" />
             </svg>
             Skenovat
           </button>
+          <button id="qr-action-image">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="m21 15-5-5L5 21" />
+            </svg>
+            Načíst z obrázku
+          </button>
+          <input
+            type="file"
+            id="qr-image-input"
+            accept="image/*"
+            style="display: none"
+          />
         </div>
       </div>
     </div>
@@ -2368,13 +2418,26 @@
         <h2>Vyberte záznamy</h2>
         <p class="modal-sub">Vyberte dny nebo jednotlivé záznamy ke sdílení</p>
         <div id="qr-select-list" class="qr-select-list"></div>
-        <div id="qr-size-warning" class="qr-size-warning" style="display:none"></div>
+        <div
+          id="qr-size-warning"
+          class="qr-size-warning"
+          style="display: none"
+        ></div>
         <button class="btn-generate-qr" id="btn-generate-qr" disabled>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="8" height="8" rx="1"/>
-            <rect x="14" y="2" width="8" height="8" rx="1"/>
-            <rect x="2" y="14" width="8" height="8" rx="1"/>
-            <rect x="14" y="14" width="4" height="4" rx="0.5"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="2" width="8" height="8" rx="1" />
+            <rect x="14" y="2" width="8" height="8" rx="1" />
+            <rect x="2" y="14" width="8" height="8" rx="1" />
+            <rect x="14" y="14" width="4" height="4" rx="0.5" />
           </svg>
           Vytvořit QR kód
         </button>
@@ -2403,7 +2466,13 @@
           <div class="qr-scan-overlay"><div class="qr-scan-frame"></div></div>
         </div>
         <p id="qr-scan-status" class="qr-scan-status">Spouštění kamery...</p>
-        <button class="btn-add" id="qr-scan-cancel" style="background: var(--border); color: var(--text); margin-top: 8px">Zrušit</button>
+        <button
+          class="btn-add"
+          id="qr-scan-cancel"
+          style="background: var(--border); color: var(--text); margin-top: 8px"
+        >
+          Zrušit
+        </button>
       </div>
     </div>
 
@@ -2414,14 +2483,37 @@
         <h2>Náhled importu</h2>
         <p class="modal-sub">Zkontrolujte záznamy před přidáním</p>
         <div id="qr-preview-list" class="qr-preview-list"></div>
-        <div id="qr-preview-summary" style="font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:12px"></div>
+        <div
+          id="qr-preview-summary"
+          style="
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 12px;
+          "
+        ></div>
         <button class="btn-import-qr" id="btn-confirm-import">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
           </svg>
           Přidat záznamy
         </button>
-        <button class="btn-add" id="btn-cancel-import" style="background: var(--border); color: var(--text); margin-top: 8px">Zrušit</button>
+        <button
+          class="btn-add"
+          id="btn-cancel-import"
+          style="background: var(--border); color: var(--text); margin-top: 8px"
+        >
+          Zrušit
+        </button>
       </div>
     </div>
 
@@ -7254,10 +7346,53 @@
       let qrPendingImport = null; // parsed data waiting for confirmation
 
       // --- Diacritics encoding for QR (ASCII-safe) ---
-      const _qrDiacMap = {"á":"a~","č":"c~","ď":"d~","é":"e~","ě":"e~~","í":"i~","ň":"n~","ó":"o~","ř":"r~","š":"s~","ť":"t~","ú":"u~","ů":"u~~","ý":"y~","ž":"z~","Á":"A~","Č":"C~","Ď":"D~","É":"E~","Ě":"E~~","Í":"I~","Ň":"N~","Ó":"O~","Ř":"R~","Š":"S~","Ť":"T~","Ú":"U~","Ů":"U~~","Ý":"Y~","Ž":"Z~"};
-      const _qrDiacMapRev = Object.fromEntries(Object.entries(_qrDiacMap).map(([k,v])=>[v,k]));
-      function qrEncDiac(s) { return s.replace(/[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g, m => _qrDiacMap[m] || m); }
-      function qrDecDiac(s) { return s.replace(/([A-Za-z])~~|([A-Za-z])~/g, (m) => _qrDiacMapRev[m] || m); }
+      const _qrDiacMap = {
+        á: "a~",
+        č: "c~",
+        ď: "d~",
+        é: "e~",
+        ě: "e~~",
+        í: "i~",
+        ň: "n~",
+        ó: "o~",
+        ř: "r~",
+        š: "s~",
+        ť: "t~",
+        ú: "u~",
+        ů: "u~~",
+        ý: "y~",
+        ž: "z~",
+        Á: "A~",
+        Č: "C~",
+        Ď: "D~",
+        É: "E~",
+        Ě: "E~~",
+        Í: "I~",
+        Ň: "N~",
+        Ó: "O~",
+        Ř: "R~",
+        Š: "S~",
+        Ť: "T~",
+        Ú: "U~",
+        Ů: "U~~",
+        Ý: "Y~",
+        Ž: "Z~",
+      };
+      const _qrDiacMapRev = Object.fromEntries(
+        Object.entries(_qrDiacMap).map(([k, v]) => [v, k]),
+      );
+      function qrEncDiac(s) {
+        return s.replace(
+          /[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g,
+          (m) => _qrDiacMap[m] || m,
+        );
+      }
+      function qrDecDiac(s) {
+        return s.replace(
+          /([A-Za-z])~~|([A-Za-z])~/g,
+          (m) => _qrDiacMapRev[m] || m,
+        );
+      }
 
       // --- Compact data format for QR ---
       // Format: "K\nDYYYYMMDD\n..." with two line types:
@@ -7278,13 +7413,29 @@
             const ml = qrEncDiac(e.meal || "");
             if (e.guid && e.source === "api") {
               // Reference line — just ID, short name, grams, time, meal
-              lines.push("R|" + [e.guid, qrEncDiac(e.name.slice(0, 6)), e.grams, t, ml].join("|"));
+              lines.push(
+                "R|" +
+                  [e.guid, qrEncDiac(e.name.slice(0, 6)), e.grams, t, ml].join(
+                    "|",
+                  ),
+              );
             } else {
               // Full data line
-              lines.push("F|" + [
-                qrEncDiac(e.name), e.grams, e.kcal, e.protein, e.carbs, e.fat,
-                e.fiber || 0, e.liquid ? 1 : 0, t, ml,
-              ].join("|"));
+              lines.push(
+                "F|" +
+                  [
+                    qrEncDiac(e.name),
+                    e.grams,
+                    e.kcal,
+                    e.protein,
+                    e.carbs,
+                    e.fat,
+                    e.fiber || 0,
+                    e.liquid ? 1 : 0,
+                    t,
+                    ml,
+                  ].join("|"),
+              );
             }
           }
         }
@@ -7302,8 +7453,12 @@
             if (!line) continue;
             if (line.startsWith("D") && line.length === 9) {
               const ds = line.slice(1);
-              currentDay = ds.slice(0, 4) + "-" + ds.slice(4, 6) + "-" + ds.slice(6, 8);
-              if (!/^\d{4}-\d{2}-\d{2}$/.test(currentDay)) { currentDay = null; continue; }
+              currentDay =
+                ds.slice(0, 4) + "-" + ds.slice(4, 6) + "-" + ds.slice(6, 8);
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(currentDay)) {
+                currentDay = null;
+                continue;
+              }
               result[currentDay] = [];
               continue;
             }
@@ -7312,9 +7467,12 @@
             if (p[0] === "R" && p.length >= 4) {
               // Reference entry — needs API fetch
               const timeRaw = p[4] || "";
-              const time = timeRaw.length >= 3
-                ? timeRaw.slice(0, -2).padStart(2, "0") + ":" + timeRaw.slice(-2)
-                : "00:00";
+              const time =
+                timeRaw.length >= 3
+                  ? timeRaw.slice(0, -2).padStart(2, "0") +
+                    ":" +
+                    timeRaw.slice(-2)
+                  : "00:00";
               result[currentDay].push({
                 guid: p[1],
                 name: qrDecDiac(p[2] || "?"),
@@ -7326,9 +7484,12 @@
             } else if (p[0] === "F" && p.length >= 7) {
               // Full inline entry
               const timeRaw = p[9] || "";
-              const time = timeRaw.length >= 3
-                ? timeRaw.slice(0, -2).padStart(2, "0") + ":" + timeRaw.slice(-2)
-                : "00:00";
+              const time =
+                timeRaw.length >= 3
+                  ? timeRaw.slice(0, -2).padStart(2, "0") +
+                    ":" +
+                    timeRaw.slice(-2)
+                  : "00:00";
               result[currentDay].push({
                 name: qrDecDiac(p[1] || "?"),
                 grams: +p[2] || 0,
@@ -7372,34 +7533,43 @@
         const days = Object.keys(state.log).sort().reverse();
 
         if (days.length === 0) {
-          el.innerHTML = '<div class="empty-state"><p>Žádná historie k sdílení.</p></div>';
+          el.innerHTML =
+            '<div class="empty-state"><p>Žádná historie k sdílení.</p></div>';
           document.getElementById("btn-generate-qr").disabled = true;
           return;
         }
 
-        el.innerHTML = days.map((day) => {
-          const entries = state.log[day];
-          const parts = day.split("-");
-          const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-          const label = date.toLocaleDateString("cs-CZ", {
-            weekday: "short",
-            day: "numeric",
-            month: "long",
-          });
-          const totals = entries.reduce((a, e) => {
-            a.kcal += e.kcal; return a;
-          }, { kcal: 0 });
+        el.innerHTML = days
+          .map((day) => {
+            const entries = state.log[day];
+            const parts = day.split("-");
+            const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+            const label = date.toLocaleDateString("cs-CZ", {
+              weekday: "short",
+              day: "numeric",
+              month: "long",
+            });
+            const totals = entries.reduce(
+              (a, e) => {
+                a.kcal += e.kcal;
+                return a;
+              },
+              { kcal: 0 },
+            );
 
-          const selectedSet = qrSelectedEntries[day] || new Set();
-          const allSelected = entries.length > 0 && selectedSet.size === entries.length;
+            const selectedSet = qrSelectedEntries[day] || new Set();
+            const allSelected =
+              entries.length > 0 && selectedSet.size === entries.length;
 
-          return `
+            return `
             <div class="qr-day-group">
               <label class="qr-day-header">
                 <input type="checkbox" data-qr-day="${day}" ${allSelected ? "checked" : ""}>
                 <span>${escapeHtml(label)} · ${entries.length} pol. · ${totals.kcal} kcal</span>
               </label>
-              ${entries.map((e, i) => `
+              ${entries
+                .map(
+                  (e, i) => `
                 <div class="qr-entry-item">
                   <input type="checkbox" data-qr-day="${day}" data-qr-idx="${i}" ${selectedSet.has(i) ? "checked" : ""}>
                   <div class="qr-entry-info">
@@ -7408,10 +7578,13 @@
                   </div>
                   <div class="qr-entry-kcal">${e.kcal} kcal</div>
                 </div>
-              `).join("")}
+              `,
+                )
+                .join("")}
             </div>
           `;
-        }).join("");
+          })
+          .join("");
 
         updateQrGenerateButton();
       }
@@ -7445,9 +7618,10 @@
         const count = getSelectedEntryCount();
         const btn = document.getElementById("btn-generate-qr");
         btn.disabled = count === 0;
-        const label = count === 0
-          ? "Vytvořit QR kód"
-          : `Vytvořit QR kód (${count} ${count === 1 ? "záznam" : count < 5 ? "záznamy" : "záznamů"})`;
+        const label =
+          count === 0
+            ? "Vytvořit QR kód"
+            : `Vytvořit QR kód (${count} ${count === 1 ? "záznam" : count < 5 ? "záznamy" : "záznamů"})`;
         const svg = btn.querySelector("svg");
         btn.textContent = label;
         if (svg) btn.prepend(svg);
@@ -7513,7 +7687,8 @@
       function openQrScanModal() {
         closeQrShareModal();
         document.getElementById("qr-scan-modal").classList.add("active");
-        document.getElementById("qr-scan-status").textContent = "Spouštění kamery...";
+        document.getElementById("qr-scan-status").textContent =
+          "Spouštění kamery...";
         startQrScanning();
       }
 
@@ -7526,11 +7701,16 @@
         try {
           const video = document.getElementById("qr-scan-video");
           qrScanStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+            video: {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
           });
           video.srcObject = qrScanStream;
           await video.play();
-          document.getElementById("qr-scan-status").textContent = "Hledám QR kód...";
+          document.getElementById("qr-scan-status").textContent =
+            "Hledám QR kód...";
 
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -7542,10 +7722,20 @@
               canvas.width = video.videoWidth;
               canvas.height = video.videoHeight;
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-              const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                inversionAttempts: "dontInvert",
-              });
+              const imageData = ctx.getImageData(
+                0,
+                0,
+                canvas.width,
+                canvas.height,
+              );
+              const code = jsQR(
+                imageData.data,
+                imageData.width,
+                imageData.height,
+                {
+                  inversionAttempts: "dontInvert",
+                },
+              );
               if (code && code.data) {
                 const parsed = decompressQRData(code.data);
                 if (parsed && Object.keys(parsed).length > 0) {
@@ -7603,37 +7793,50 @@
         // Render preview immediately
         function renderPreview() {
           let totalKcal = 0;
-          el.innerHTML = days.map((day) => {
-            const entries = data[day];
-            const parts = day.split("-");
-            const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-            const label = date.toLocaleDateString("cs-CZ", {
-              weekday: "short", day: "numeric", month: "long", year: "numeric",
-            });
-            return `
+          el.innerHTML = days
+            .map((day) => {
+              const entries = data[day];
+              const parts = day.split("-");
+              const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+              const label = date.toLocaleDateString("cs-CZ", {
+                weekday: "short",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              });
+              return `
               <div class="qr-preview-day">
                 <div class="qr-preview-day-label">${escapeHtml(label)} · ${entries.length} pol.</div>
-                ${entries.map((e) => {
-                  const loading = e._needsFetch && !e._fetched;
-                  totalKcal += e.kcal || 0;
-                  return `
+                ${entries
+                  .map((e) => {
+                    const loading = e._needsFetch && !e._fetched;
+                    totalKcal += e.kcal || 0;
+                    return `
                     <div class="qr-preview-entry">
                       <div>
                         <div class="qr-preview-entry-name">${escapeHtml(e.name)}</div>
-                        <div class="qr-preview-entry-detail">${loading
-                          ? `${e.grams}g · Načítání...`
-                          : `${e.grams}${e.liquid ? "ml" : "g"} · B:${e.protein}g S:${e.carbs}g T:${e.fat}g`
+                        <div class="qr-preview-entry-detail">${
+                          loading
+                            ? `${e.grams}g · Načítání...`
+                            : `${e.grams}${e.liquid ? "ml" : "g"} · B:${e.protein}g S:${e.carbs}g T:${e.fat}g`
                         }</div>
                       </div>
                       <div class="qr-preview-entry-kcal">${loading ? "···" : `${e.kcal} kcal`}</div>
                     </div>
                   `;
-                }).join("")}
+                  })
+                  .join("")}
               </div>
             `;
-          }).join("");
-          const label = totalEntries === 1 ? "záznam" : totalEntries < 5 ? "záznamy" : "záznamů";
-          summaryEl.textContent = needsFetch.some(e => !e._fetched)
+            })
+            .join("");
+          const label =
+            totalEntries === 1
+              ? "záznam"
+              : totalEntries < 5
+                ? "záznamy"
+                : "záznamů";
+          summaryEl.textContent = needsFetch.some((e) => !e._fetched)
             ? `Celkem: ${totalEntries} ${label} · Načítání hodnot...`
             : `Celkem: ${totalEntries} ${label} · ${totalKcal} kcal`;
         }
@@ -7644,26 +7847,32 @@
 
         // Fetch nutrition for reference entries in parallel
         if (needsFetch.length > 0) {
-          await Promise.all(needsFetch.map(async (e) => {
-            try {
-              const detail = await apiDetail({ guid: e.guid, kcal: 0 });
-              if (detail.name) e.name = detail.name;
-              const ratio = e.grams / 100;
-              e.kcal = Math.round((detail.kcal || 0) * ratio);
-              e.protein = +((detail.protein || 0) * ratio).toFixed(1);
-              e.carbs = +((detail.carbs || 0) * ratio).toFixed(1);
-              e.fat = +((detail.fat || 0) * ratio).toFixed(1);
-              e.fiber = +((detail.fiber || 0) * ratio).toFixed(1);
-              e.liquid = detail.liquid || false;
-              e.source = "api";
-              e._fetched = true;
-            } catch {
-              // Fallback: mark as fetched with zeros
-              e.kcal = 0; e.protein = 0; e.carbs = 0; e.fat = 0; e.fiber = 0;
-              e.liquid = false;
-              e._fetched = true;
-            }
-          }));
+          await Promise.all(
+            needsFetch.map(async (e) => {
+              try {
+                const detail = await apiDetail({ guid: e.guid, kcal: 0 });
+                if (detail.name) e.name = detail.name;
+                const ratio = e.grams / 100;
+                e.kcal = Math.round((detail.kcal || 0) * ratio);
+                e.protein = +((detail.protein || 0) * ratio).toFixed(1);
+                e.carbs = +((detail.carbs || 0) * ratio).toFixed(1);
+                e.fat = +((detail.fat || 0) * ratio).toFixed(1);
+                e.fiber = +((detail.fiber || 0) * ratio).toFixed(1);
+                e.liquid = detail.liquid || false;
+                e.source = "api";
+                e._fetched = true;
+              } catch {
+                // Fallback: mark as fetched with zeros
+                e.kcal = 0;
+                e.protein = 0;
+                e.carbs = 0;
+                e.fat = 0;
+                e.fiber = 0;
+                e.liquid = false;
+                e._fetched = true;
+              }
+            }),
+          );
           renderPreview();
           btn.disabled = false;
         }
@@ -7702,48 +7911,119 @@
         closeQrPreviewModal();
         if (state.activePage === "page-history") renderHistory();
         if (state.activePage === "page-today") renderToday();
-        showToast(`Přidáno ${totalAdded} ${totalAdded === 1 ? "záznam" : totalAdded < 5 ? "záznamy" : "záznamů"}`);
+        showToast(
+          `Přidáno ${totalAdded} ${totalAdded === 1 ? "záznam" : totalAdded < 5 ? "záznamy" : "záznamů"}`,
+        );
+      }
+
+      // --- QR from image ---
+      function handleQrImageFile(file) {
+        if (!file || !file.type.startsWith("image/")) return;
+        closeQrShareModal();
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+          if (code && code.data) {
+            const parsed = decompressQRData(code.data);
+            if (parsed && Object.keys(parsed).length > 0) {
+              openQrPreviewModal(parsed);
+              return;
+            }
+          }
+          showToast("QR kód nebyl nalezen v obrázku");
+        };
+        img.onerror = () => showToast("Nepodařilo se načíst obrázek");
+        img.src = URL.createObjectURL(file);
       }
 
       // --- QR Event Listeners ---
-      document.getElementById("share-fab").addEventListener("click", openQrShareModal);
-      document.getElementById("qr-action-send").addEventListener("click", openQrSelectModal);
-      document.getElementById("qr-action-scan").addEventListener("click", openQrScanModal);
+      document
+        .getElementById("share-fab")
+        .addEventListener("click", openQrShareModal);
+      document
+        .getElementById("qr-action-send")
+        .addEventListener("click", openQrSelectModal);
+      document
+        .getElementById("qr-action-scan")
+        .addEventListener("click", openQrScanModal);
 
-      document.getElementById("qr-share-modal").addEventListener("click", (e) => {
-        if (e.target === e.currentTarget) closeQrShareModal();
-      });
+      document
+        .getElementById("qr-action-image")
+        .addEventListener("click", () => {
+          document.getElementById("qr-image-input").click();
+        });
+      document
+        .getElementById("qr-image-input")
+        .addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          if (file) handleQrImageFile(file);
+          e.target.value = "";
+        });
 
-      document.getElementById("qr-select-modal").addEventListener("click", (e) => {
-        if (e.target === e.currentTarget) closeQrSelectModal();
-      });
+      document
+        .getElementById("qr-share-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeQrShareModal();
+        });
 
-      document.getElementById("qr-display-modal").addEventListener("click", (e) => {
-        if (e.target === e.currentTarget) e.currentTarget.classList.remove("active");
-      });
+      document
+        .getElementById("qr-select-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeQrSelectModal();
+        });
 
-      document.getElementById("qr-scan-modal").addEventListener("click", (e) => {
-        if (e.target === e.currentTarget) closeQrScanModal();
-      });
+      document
+        .getElementById("qr-display-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget)
+            e.currentTarget.classList.remove("active");
+        });
 
-      document.getElementById("qr-scan-cancel").addEventListener("click", closeQrScanModal);
+      document
+        .getElementById("qr-scan-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeQrScanModal();
+        });
 
-      document.getElementById("qr-preview-modal").addEventListener("click", (e) => {
-        if (e.target === e.currentTarget) closeQrPreviewModal();
-      });
+      document
+        .getElementById("qr-scan-cancel")
+        .addEventListener("click", closeQrScanModal);
 
-      document.getElementById("btn-generate-qr").addEventListener("click", generateQrCode);
-      document.getElementById("btn-confirm-import").addEventListener("click", confirmQrImport);
-      document.getElementById("btn-cancel-import").addEventListener("click", closeQrPreviewModal);
+      document
+        .getElementById("qr-preview-modal")
+        .addEventListener("click", (e) => {
+          if (e.target === e.currentTarget) closeQrPreviewModal();
+        });
+
+      document
+        .getElementById("btn-generate-qr")
+        .addEventListener("click", generateQrCode);
+      document
+        .getElementById("btn-confirm-import")
+        .addEventListener("click", confirmQrImport);
+      document
+        .getElementById("btn-cancel-import")
+        .addEventListener("click", closeQrPreviewModal);
 
       // Delegated checkbox handler for selection list
-      document.getElementById("qr-select-list").addEventListener("change", (e) => {
-        const cb = e.target.closest("input[type='checkbox'][data-qr-day]");
-        if (!cb) return;
-        const day = cb.dataset.qrDay;
-        const idx = cb.dataset.qrIdx !== undefined ? parseInt(cb.dataset.qrIdx) : null;
-        updateQrSelection(day, idx, cb.checked);
-      });
+      document
+        .getElementById("qr-select-list")
+        .addEventListener("change", (e) => {
+          const cb = e.target.closest("input[type='checkbox'][data-qr-day]");
+          if (!cb) return;
+          const day = cb.dataset.qrDay;
+          const idx =
+            cb.dataset.qrIdx !== undefined ? parseInt(cb.dataset.qrIdx) : null;
+          updateQrSelection(day, idx, cb.checked);
+        });
 
       // ═══════════════════════════════════════════
       // BARCODE EVENT LISTENERS
