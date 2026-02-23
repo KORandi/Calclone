@@ -921,7 +921,9 @@
         padding: 10px 6px 8px;
         text-align: center;
         cursor: pointer;
-        transition: border-color 0.2s, transform 0.15s;
+        transition:
+          border-color 0.2s,
+          transform 0.15s;
         background: var(--card);
       }
       .theme-option:active {
@@ -1105,6 +1107,72 @@
         cursor: pointer;
         padding: 0;
         line-height: 1;
+      }
+      .chip-list-vertical {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .chip-with-time {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        font-size: 14px;
+      }
+      .chip-with-time .chip-time-input {
+        width: 72px;
+        padding: 6px 0;
+        border: none;
+        border-bottom: 2px solid var(--border);
+        border-radius: 0;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        background: transparent;
+        color: var(--text);
+        text-align: center;
+        transition: border-color 0.15s;
+      }
+      .chip-with-time .chip-time-input:focus {
+        outline: none;
+        border-bottom-color: var(--green);
+      }
+      .chip-with-time .chip-time-label {
+        color: var(--text-secondary);
+        font-size: 11px;
+        min-width: 0;
+      }
+      .chip-with-time .chip-name {
+        flex: 1;
+        font-weight: 600;
+      }
+      .chip-with-time .chip-remove {
+        width: 26px;
+        height: 26px;
+        border: none;
+        background: none;
+        color: var(--text-secondary);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition:
+          background 0.15s,
+          color 0.15s;
+        flex-shrink: 0;
+      }
+      .chip-with-time .chip-remove:active {
+        background: #fee2e2;
+        color: var(--red);
       }
       .add-chip-row {
         display: flex;
@@ -2457,12 +2525,12 @@
             >
               Upravte kategorie jídel
             </p>
-            <div class="chip-list" id="meal-categories-chips"></div>
+            <div class="chip-list-vertical" id="meal-categories-chips"></div>
             <div class="add-chip-row">
               <input
                 type="text"
                 id="new-meal-category"
-                placeholder="Např. Druhá večeře"
+                placeholder="Např. Svačina"
               />
               <button class="btn-add-small" id="btn-add-meal-category">
                 Přidat
@@ -2548,7 +2616,9 @@
           <div class="cache-limit-row">
             <label
               >Limit
-              <span class="info-icon tooltip-right" data-tooltip="cache-limit-info"
+              <span
+                class="info-icon tooltip-right"
+                data-tooltip="cache-limit-info"
                 >i
                 <span class="tooltip"
                   >Prohlížeč umožňuje uložit max. 5 MB dat na doménu
@@ -2821,7 +2891,9 @@
               const req = store.put(value, key);
               req.onsuccess = () => resolve();
               req.onerror = (e) => reject(e.target.error);
-            } catch (e) { reject(e); }
+            } catch (e) {
+              reject(e);
+            }
           });
         }
 
@@ -2832,7 +2904,9 @@
               const req = store.get(key);
               req.onsuccess = () => resolve(req.result);
               req.onerror = (e) => reject(e.target.error);
-            } catch (e) { reject(e); }
+            } catch (e) {
+              reject(e);
+            }
           });
         }
 
@@ -2852,7 +2926,9 @@
                 }
               };
               cursorReq.onerror = (e) => reject(e.target.error);
-            } catch (e) { reject(e); }
+            } catch (e) {
+              reject(e);
+            }
           });
         }
 
@@ -2863,7 +2939,9 @@
               const req = store.delete(key);
               req.onsuccess = () => resolve();
               req.onerror = (e) => reject(e.target.error);
-            } catch (e) { reject(e); }
+            } catch (e) {
+              reject(e);
+            }
           });
         }
 
@@ -2874,15 +2952,19 @@
               const req = store.clear();
               req.onsuccess = () => resolve();
               req.onerror = (e) => reject(e.target.error);
-            } catch (e) { reject(e); }
+            } catch (e) {
+              reject(e);
+            }
           });
         }
 
         // Estimate size of a store in bytes
         function storeSize(storeName) {
-          return getAll(storeName).then((data) => {
-            return new Blob([JSON.stringify(data)]).size;
-          }).catch(() => 0);
+          return getAll(storeName)
+            .then((data) => {
+              return new Blob([JSON.stringify(data)]).size;
+            })
+            .catch(() => 0);
         }
 
         // Save all logs at once (batch put)
@@ -3500,6 +3582,12 @@
         autoFavEnabled: true,
         mealCategoriesEnabled: false,
         mealCategories: ["Snídaně", "Oběd", "Večeře", "Svačina"],
+        mealCategoryTimes: {
+          Snídaně: "06:00",
+          Oběd: "11:00",
+          Svačina: "14:00",
+          Večeře: "17:00",
+        },
         trendsEnabled: false,
         trendsPeriod: 7,
         copyDayEnabled: false,
@@ -3532,17 +3620,30 @@
 
       // ─── Settings keys stored in localStorage (small, sync) ───
       const SETTINGS_KEYS = [
-        "goals", "customMeasurementsEnabled", "customMeasurements",
-        "customQuickGramsEnabled", "quickGrams", "rohlikSearchEnabled",
-        "cacheSizeLimitMB", "autoFavEnabled", "mealCategoriesEnabled",
-        "mealCategories", "trendsEnabled", "trendsPeriod",
-        "copyDayEnabled", "theme",
+        "goals",
+        "customMeasurementsEnabled",
+        "customMeasurements",
+        "customQuickGramsEnabled",
+        "quickGrams",
+        "rohlikSearchEnabled",
+        "cacheSizeLimitMB",
+        "autoFavEnabled",
+        "mealCategoriesEnabled",
+        "mealCategories",
+        "mealCategoryTimes",
+        "trendsEnabled",
+        "trendsPeriod",
+        "copyDayEnabled",
+        "theme",
       ];
 
       // ─── Data keys stored in IndexedDB (large, async) ───
       const USERDATA_KEYS = [
-        "customFoods", "portionMemory", "favorites",
-        "foodUsage", "foodRelevance",
+        "customFoods",
+        "portionMemory",
+        "favorites",
+        "foodUsage",
+        "foodRelevance",
       ];
 
       function loadState() {
@@ -3584,6 +3685,12 @@
               "Večeře",
               "Svačina",
             ];
+            state.mealCategoryTimes = parsed.mealCategoryTimes || {
+              Snídaně: "06:00",
+              Oběd: "11:00",
+              Svačina: "14:00",
+              Večeře: "17:00",
+            };
             state.trendsEnabled =
               parsed.trendsEnabled !== undefined ? parsed.trendsEnabled : false;
             state.trendsPeriod = parsed.trendsPeriod || 7;
@@ -3628,7 +3735,10 @@
             state.barcodeCache = caches.barcodeCache || {};
           }
         } catch (e) {
-          console.warn("IndexedDB load failed, falling back to localStorage:", e);
+          console.warn(
+            "IndexedDB load failed, falling back to localStorage:",
+            e,
+          );
           _loadLegacyData();
         }
       }
@@ -3665,13 +3775,22 @@
         const parsed = JSON.parse(saved);
         // If old state has logs or user data, we need migration
         const hasLog = parsed.log && Object.keys(parsed.log).length > 0;
-        const hasCustomFoods = parsed.customFoods && parsed.customFoods.length > 0;
+        const hasCustomFoods =
+          parsed.customFoods && parsed.customFoods.length > 0;
         const hasFavorites = parsed.favorites && parsed.favorites.length > 0;
-        const hasUsage = parsed.foodUsage && Object.keys(parsed.foodUsage).length > 0;
-        const hasRelevance = parsed.foodRelevance && Object.keys(parsed.foodRelevance).length > 0;
-        const hasPortion = parsed.portionMemory && Object.keys(parsed.portionMemory).length > 0;
-        const hasLegacyData = hasLog || hasCustomFoods || hasFavorites ||
-          hasUsage || hasRelevance || hasPortion;
+        const hasUsage =
+          parsed.foodUsage && Object.keys(parsed.foodUsage).length > 0;
+        const hasRelevance =
+          parsed.foodRelevance && Object.keys(parsed.foodRelevance).length > 0;
+        const hasPortion =
+          parsed.portionMemory && Object.keys(parsed.portionMemory).length > 0;
+        const hasLegacyData =
+          hasLog ||
+          hasCustomFoods ||
+          hasFavorites ||
+          hasUsage ||
+          hasRelevance ||
+          hasPortion;
         if (!hasLegacyData) return false;
         // Only migrate if IndexedDB logs store is empty
         const existingLogs = await KaltabDB.getAll("logs");
@@ -3715,7 +3834,9 @@
           state.detailCache = detailCache;
           state.barcodeCache = barcodeCache;
           await KaltabDB.put("cache", "apiCaches", {
-            searchCache, detailCache, barcodeCache,
+            searchCache,
+            detailCache,
+            barcodeCache,
           });
 
           // Clean up: remove large data from localStorage, keep only settings
@@ -3938,6 +4059,12 @@
               "Večeře",
               "Svačina",
             ];
+            state.mealCategoryTimes = parsed.mealCategoryTimes || {
+              Snídaně: "06:00",
+              Oběd: "11:00",
+              Svačina: "14:00",
+              Večeře: "17:00",
+            };
             state.trendsEnabled =
               parsed.trendsEnabled !== undefined ? parsed.trendsEnabled : false;
             state.trendsPeriod = parsed.trendsPeriod || 7;
@@ -4320,10 +4447,10 @@
         // 3. Recency — up to 30 points, decaying over 30 days
         const rel = state.foodRelevance[food.name];
         if (rel && rel.lastUsed) {
-          const daysSince =
-            (Date.now() - rel.lastUsed) / (1000 * 60 * 60 * 24);
+          const daysSince = (Date.now() - rel.lastUsed) / (1000 * 60 * 60 * 24);
           if (daysSince < 1) score += 30;
-          else if (daysSince < 30) score += Math.round(30 * (1 - daysSince / 30));
+          else if (daysSince < 30)
+            score += Math.round(30 * (1 - daysSince / 30));
         }
 
         // 4. Click/selection count — up to 15 points
@@ -4579,18 +4706,31 @@
       }
 
       function getDefaultMealByTime() {
-        const h = new Date().getHours();
-        const cats = state.mealCategories;
-        if (h >= 6 && h < 10 && cats.includes("Snídaně")) return "Snídaně";
-        if (h >= 10 && h < 14 && cats.includes("Oběd")) return "Oběd";
-        if (h >= 14 && h < 17 && cats.includes("Svačina")) return "Svačina";
-        if (h >= 17 && h < 22 && cats.includes("Večeře")) return "Večeře";
-        return "";
+        const now = new Date();
+        const nowStr =
+          now.getHours().toString().padStart(2, "0") +
+          ":" +
+          now.getMinutes().toString().padStart(2, "0");
+        const catsWithTime = state.mealCategories
+          .filter((c) => state.mealCategoryTimes[c])
+          .sort((a, b) =>
+            state.mealCategoryTimes[a].localeCompare(
+              state.mealCategoryTimes[b],
+            ),
+          );
+        if (catsWithTime.length === 0) return "";
+        let result = "";
+        for (const cat of catsWithTime) {
+          if (nowStr >= state.mealCategoryTimes[cat]) {
+            result = cat;
+          }
+        }
+        return result;
       }
 
       function buildMealSelectHtml(selectedMeal) {
         if (!state.mealCategoriesEnabled) return "";
-        const options = ["", ...state.mealCategories];
+        const options = ["", ...getSortedMealCategories()];
         return options
           .map(
             (m) =>
@@ -5057,7 +5197,11 @@
         const circumference = 2 * Math.PI * 65;
         const offset = circumference * (1 - pct);
         const ringColor =
-          kcalRatio > 1.10 ? "var(--red)" : kcalRatio > 1.05 ? "var(--orange)" : "var(--green)";
+          kcalRatio > 1.1
+            ? "var(--red)"
+            : kcalRatio > 1.05
+              ? "var(--orange)"
+              : "var(--green)";
 
         document.getElementById("daily-ring").innerHTML = `
     <svg viewBox="0 0 160 160">
@@ -5120,7 +5264,7 @@
             if (!groups[key]) groups[key] = [];
             groups[key].push({ entry: e, idx: i });
           });
-          const order = [...state.mealCategories, ""];
+          const order = [...getSortedMealCategories(), ""];
           const sortedKeys = Object.keys(groups).sort((a, b) => {
             const ai = order.indexOf(a);
             const bi = order.indexOf(b);
@@ -5364,7 +5508,8 @@
           amoled: "#000000",
         };
         const meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", themeColors[themeId] || "#22c55e");
+        if (meta)
+          meta.setAttribute("content", themeColors[themeId] || "#22c55e");
       }
 
       function loadSettingsUI() {
@@ -5454,16 +5599,30 @@
           .join("");
       }
 
+      function getSortedMealCategories() {
+        return [...state.mealCategories].sort((a, b) => {
+          const ta = state.mealCategoryTimes[a] || "";
+          const tb = state.mealCategoryTimes[b] || "";
+          if (ta && tb) return ta.localeCompare(tb);
+          if (ta && !tb) return -1;
+          if (!ta && tb) return 1;
+          return 0;
+        });
+      }
+
       function renderMealCategoriesChips() {
         const el = document.getElementById("meal-categories-chips");
-        el.innerHTML = state.mealCategories
-          .map(
-            (c, i) =>
-              `<div class="chip">
-                <span>${escapeHtml(c)}</span>
-                <button class="chip-remove" data-mc-idx="${i}">&times;</button>
-              </div>`,
-          )
+        const sorted = getSortedMealCategories();
+        el.innerHTML = sorted
+          .map((c) => {
+            const origIdx = state.mealCategories.indexOf(c);
+            const time = state.mealCategoryTimes[c] || "";
+            return `<div class="chip-with-time">
+                <input type="time" class="chip-time-input" data-mc-name="${escapeHtml(c)}" value="${time}" title="Čas od kdy platí">
+                <span class="chip-name">${escapeHtml(c)}</span>
+                <button class="chip-remove" data-mc-idx="${origIdx}">&times;</button>
+              </div>`;
+          })
           .join("");
       }
 
@@ -5818,15 +5977,17 @@
         renderFoodList();
 
         // Phase 2: Load large data from IndexedDB (async, re-render when ready)
-        loadFromIndexedDB().then(() => {
-          renderCategories();
-          renderFoodList();
-          if (state.activePage === "page-today") renderToday();
-          if (state.activePage === "page-history") renderHistory();
-          updateCacheUsageUI();
-        }).catch((e) => {
-          console.warn("IndexedDB init failed:", e);
-        });
+        loadFromIndexedDB()
+          .then(() => {
+            renderCategories();
+            renderFoodList();
+            if (state.activePage === "page-today") renderToday();
+            if (state.activePage === "page-history") renderHistory();
+            updateCacheUsageUI();
+          })
+          .catch((e) => {
+            console.warn("IndexedDB init failed:", e);
+          });
 
         // Tab bar
         document.querySelector(".tab-bar").addEventListener("click", (e) => {
@@ -6061,19 +6222,17 @@
           });
 
         // Theme picker
-        document
-          .getElementById("theme-grid")
-          .addEventListener("click", (e) => {
-            const option = e.target.closest(".theme-option[data-theme-id]");
-            if (!option) return;
-            const themeId = option.dataset.themeId;
-            state.theme = themeId;
-            applyTheme(themeId);
-            document.querySelectorAll(".theme-option").forEach((el) => {
-              el.classList.toggle("active", el.dataset.themeId === themeId);
-            });
-            saveState();
+        document.getElementById("theme-grid").addEventListener("click", (e) => {
+          const option = e.target.closest(".theme-option[data-theme-id]");
+          if (!option) return;
+          const themeId = option.dataset.themeId;
+          state.theme = themeId;
+          applyTheme(themeId);
+          document.querySelectorAll(".theme-option").forEach((el) => {
+            el.classList.toggle("active", el.dataset.themeId === themeId);
           });
+          saveState();
+        });
 
         // Settings goals
         ["goal-kcal", "goal-protein", "goal-carbs", "goal-fat"].forEach(
@@ -6295,7 +6454,26 @@
             const btn = e.target.closest(".chip-remove[data-mc-idx]");
             if (!btn) return;
             const idx = parseInt(btn.dataset.mcIdx);
+            const removed = state.mealCategories[idx];
             state.mealCategories.splice(idx, 1);
+            delete state.mealCategoryTimes[removed];
+            saveState();
+            renderMealCategoriesChips();
+          });
+
+        // Change meal category time (delegated)
+        document
+          .getElementById("meal-categories-chips")
+          .addEventListener("change", (e) => {
+            const input = e.target.closest(".chip-time-input[data-mc-name]");
+            if (!input) return;
+            const name = input.dataset.mcName;
+            const time = input.value;
+            if (time) {
+              state.mealCategoryTimes[name] = time;
+            } else {
+              delete state.mealCategoryTimes[name];
+            }
             saveState();
             renderMealCategoriesChips();
           });
@@ -6305,6 +6483,12 @@
           .getElementById("btn-reset-meal-categories")
           .addEventListener("click", () => {
             state.mealCategories = ["Snídaně", "Oběd", "Večeře", "Svačina"];
+            state.mealCategoryTimes = {
+              Snídaně: "06:00",
+              Oběd: "11:00",
+              Svačina: "14:00",
+              Večeře: "17:00",
+            };
             saveState();
             renderMealCategoriesChips();
           });
@@ -6337,8 +6521,7 @@
             if (isNaN(val) || val === "")
               msgEl.textContent = "Zadejte platnou hodnotu";
             else if (val < 0.5) msgEl.textContent = "Minimum je 0.5 MB";
-            else
-              msgEl.textContent = "Maximum je 50 MB";
+            else msgEl.textContent = "Maximum je 50 MB";
             return;
           }
           cacheLimitInput.classList.remove("invalid");
