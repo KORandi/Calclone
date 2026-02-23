@@ -2182,7 +2182,7 @@
         padding: 8px 0;
       }
     </style>
-    <script src="https://fastly.jsdelivr.net/npm/barcode-detector@3/dist/iife/polyfill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   </head>
   <body>
@@ -7411,11 +7411,11 @@
         if (count > 0) {
           const data = compressLogForQR(qrSelectedEntries);
           const bytes = new Blob([data]).size;
-          if (bytes > 2300) {
+          if (bytes > 1800) {
             warning.style.display = "block";
-            warning.textContent = `Data jsou příliš velká (${bytes} B). Maximální kapacita QR kódu je ~2300 B. Vyberte méně záznamů.`;
+            warning.textContent = `Data jsou příliš velká (${bytes} B). Maximální kapacita QR kódu je ~1800 B. Vyberte méně záznamů.`;
             btn.disabled = true;
-          } else if (bytes > 1800) {
+          } else if (bytes > 1400) {
             warning.style.display = "block";
             warning.textContent = `Data: ${bytes} B — blízko limitu QR kódu. Kód může být obtížně skenovatelný.`;
           } else {
@@ -7430,7 +7430,7 @@
       function generateQrCode() {
         const data = compressLogForQR(qrSelectedEntries);
         const bytes = new Blob([data]).size;
-        if (bytes > 2300) {
+        if (bytes > 1800) {
           showToast("Data příliš velká pro QR kód");
           return;
         }
@@ -7440,7 +7440,7 @@
         // Determine QR type number based on data length
         let typeNumber = 0; // auto
         try {
-          const qr = qrcode(typeNumber, "L");
+          const qr = qrcode(typeNumber, "M");
           qr.addData(data);
           qr.make();
 
@@ -7480,31 +7480,42 @@
         try {
           const video = document.getElementById("qr-scan-video");
           qrScanStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
+            video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
           });
           video.srcObject = qrScanStream;
           await video.play();
           document.getElementById("qr-scan-status").textContent = "Hledám QR kód...";
 
-          const detector = new BarcodeDetector({ formats: ["qr_code"] });
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          let lastInvalidTime = 0;
 
-          qrScanInterval = setInterval(async () => {
+          qrScanInterval = setInterval(() => {
             try {
               if (video.readyState < 2) return;
-              const barcodes = await detector.detect(video);
-              if (barcodes.length > 0) {
-                const raw = barcodes[0].rawValue;
-                const parsed = decompressQRData(raw);
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+              });
+              if (code && code.data) {
+                const parsed = decompressQRData(code.data);
                 if (parsed && Object.keys(parsed).length > 0) {
                   closeQrScanModal();
                   openQrPreviewModal(parsed);
                 } else {
-                  document.getElementById("qr-scan-status").textContent =
-                    "Neplatný QR kód. Zkuste Calclone QR kód.";
+                  const now = Date.now();
+                  if (now - lastInvalidTime > 3000) {
+                    lastInvalidTime = now;
+                    document.getElementById("qr-scan-status").textContent =
+                      "Neplatný QR kód. Zkuste Calclone QR kód.";
+                  }
                 }
               }
             } catch {}
-          }, 300);
+          }, 200);
         } catch (err) {
           console.error("Camera error:", err);
           document.getElementById("qr-scan-status").textContent =
