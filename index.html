@@ -141,6 +141,61 @@
         --purple: #c084fc;
       }
 
+      /* ── Theme: Pixel ── */
+      [data-theme="pixel"] {
+        --green: #83e04c;
+        --green-dark: #5abf2a;
+        --green-light: #d4f5c0;
+        --bg: #e8e4d8;
+        --card: #f5f2e8;
+        --text: #2b2b2b;
+        --text-secondary: #6b6b5e;
+        --border: #c8c4b4;
+        --red: #e8413c;
+        --orange: #f0a030;
+        --blue: #3898e8;
+        --purple: #a058d0;
+        --pixel-radius: 4px;
+        --pixel-font: "Courier New", "Lucida Console", monospace;
+      }
+      [data-theme="pixel"] body,
+      [data-theme="pixel"] input,
+      [data-theme="pixel"] button,
+      [data-theme="pixel"] select,
+      [data-theme="pixel"] textarea {
+        font-family: var(--pixel-font) !important;
+        -webkit-font-smoothing: none;
+        -moz-osx-font-smoothing: unset;
+      }
+      [data-theme="pixel"] .search-wrap input,
+      [data-theme="pixel"] .setting-card,
+      [data-theme="pixel"] .food-item,
+      [data-theme="pixel"] .cat-pill,
+      [data-theme="pixel"] .modal,
+      [data-theme="pixel"] .theme-option,
+      [data-theme="pixel"] .theme-preview,
+      [data-theme="pixel"] .btn,
+      [data-theme="pixel"] .goals-display,
+      [data-theme="pixel"] .today-entry,
+      [data-theme="pixel"] .barcode-btn,
+      [data-theme="pixel"] .daily-ring-wrap,
+      [data-theme="pixel"] .history-card,
+      [data-theme="pixel"] .setting-row input[type="text"],
+      [data-theme="pixel"] .setting-row input[type="number"],
+      [data-theme="pixel"] .chip {
+        border-radius: var(--pixel-radius) !important;
+      }
+      [data-theme="pixel"] .tab-bar {
+        border-top: 2px solid var(--border);
+      }
+      [data-theme="pixel"] .setting-card,
+      [data-theme="pixel"] .food-item,
+      [data-theme="pixel"] .goals-display,
+      [data-theme="pixel"] .today-entry,
+      [data-theme="pixel"] .history-card {
+        box-shadow: 3px 3px 0 var(--border);
+      }
+
       body {
         font-family:
           -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -302,21 +357,23 @@
 
       .search-wrap .search-spinner {
         position: absolute;
-        right: 36px;
+        right: 16px;
         top: 50%;
         transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         display: none;
+        align-items: center;
+        justify-content: center;
       }
       .search-wrap .search-spinner.active {
-        display: block;
+        display: flex;
       }
       .search-wrap .search-spinner::after {
         content: "";
         display: block;
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         border: 2px solid var(--border);
         border-top-color: var(--green);
         border-radius: 50%;
@@ -2962,6 +3019,12 @@
                 <div class="tp-stripe" style="background: #4ade80"></div>
               </div>
               <div class="theme-label">AMOLED</div>
+            </div>
+            <div class="theme-option" data-theme-id="pixel">
+              <div class="theme-preview" style="background: #e8e4d8; border-radius: 4px">
+                <div class="tp-stripe" style="background: #83e04c"></div>
+              </div>
+              <div class="theme-label">Pixel</div>
             </div>
           </div>
         </div>
@@ -6551,6 +6614,7 @@
           lavender: "#8b5cf6",
           midnight: "#0c0a1d",
           amoled: "#000000",
+          pixel: "#83e04c",
         };
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta)
@@ -7339,14 +7403,17 @@
       function setSearchLoading(loading) {
         const spinner = document.getElementById("search-spinner");
         const clear = document.getElementById("search-clear");
+        const barcodeBtn = document.getElementById("barcode-btn");
         const hasText =
           document.getElementById("search-input").value.length > 0;
         if (loading) {
           spinner.classList.add("active");
           clear.classList.remove("active");
+          barcodeBtn.style.display = "none";
         } else {
           spinner.classList.remove("active");
           clear.classList.toggle("active", hasText);
+          barcodeBtn.style.display = "flex";
         }
       }
 
