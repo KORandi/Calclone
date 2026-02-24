@@ -924,9 +924,25 @@ document
 // LOCK BODY SCROLL WHEN MODAL IS OPEN
 // ═══════════════════════════════════════════
 (function () {
+  var scrollY = 0;
+  function lockBody() {
+    scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = "-" + scrollY + "px";
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+  }
+  function unlockBody() {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    window.scrollTo(0, scrollY);
+  }
   function updateBodyLock() {
     var anyOpen = !!document.querySelector(".modal-overlay.active");
-    document.body.classList.toggle("modal-open", anyOpen);
+    if (anyOpen) lockBody();
+    else unlockBody();
   }
   var observer = new MutationObserver(updateBodyLock);
   document.querySelectorAll(".modal-overlay").forEach(function (el) {
@@ -1020,17 +1036,13 @@ document
 })();
 
 // ═══════════════════════════════════════════
-// PULL-TO-REFRESH
+// PULL-TO-REFRESH (no visual indicator)
 // ═══════════════════════════════════════════
 (function () {
-  var ptrEl = document.getElementById("ptr-indicator");
-  if (!ptrEl) return;
   var startY = 0;
   var pulling = false;
-  var threshold = 80;
 
   document.addEventListener("touchstart", function (e) {
-    // Don't activate if a modal is open
     if (document.querySelector(".modal-overlay.active")) return;
     if (document.scrollingElement.scrollTop > 0) return;
     startY = e.touches[0].clientY;
@@ -1039,53 +1051,13 @@ document
 
   document.addEventListener("touchmove", function (e) {
     if (!pulling) return;
-    // Cancel if a modal opened during the gesture
-    if (document.querySelector(".modal-overlay.active")) { pulling = false; return; }
-    var delta = e.touches[0].clientY - startY;
-    if (delta < 0) {
-      ptrEl.classList.remove("visible");
-      ptrEl.style.transform = "";
-      return;
-    }
-    // Check scroll position again (might have scrolled during move)
-    if (document.scrollingElement.scrollTop > 0) {
-      pulling = false;
-      ptrEl.classList.remove("visible");
-      ptrEl.style.transform = "";
-      return;
-    }
-    var progress = Math.min(delta / threshold, 1);
-    var translateY = -50 + (progress * 66); // from -50px to +16px
-    ptrEl.style.transform = "translateX(-50%) translateY(" + translateY + "px)";
-    ptrEl.style.opacity = progress;
-    if (progress > 0.1) ptrEl.classList.add("visible");
-    // Rotate the arrow based on progress
-    if (progress >= 1) {
-      ptrEl.textContent = "↻";
-      ptrEl.style.color = "var(--green)";
-    } else {
-      ptrEl.textContent = "↓";
-      ptrEl.style.color = "";
-    }
+    if (document.scrollingElement.scrollTop > 0) { pulling = false; return; }
   }, { passive: true });
 
-  document.addEventListener("touchend", function () {
+  document.addEventListener("touchend", function (e) {
     if (!pulling) return;
     pulling = false;
-    var currentOpacity = parseFloat(ptrEl.style.opacity) || 0;
-    if (currentOpacity >= 1) {
-      // Trigger refresh
-      ptrEl.classList.add("refreshing");
-      ptrEl.textContent = "↻";
-      setTimeout(function () { location.reload(); }, 400);
-    } else {
-      // Snap back
-      ptrEl.classList.remove("visible");
-      ptrEl.style.transform = "";
-      ptrEl.style.opacity = "";
-      ptrEl.style.color = "";
-      ptrEl.textContent = "↓";
-    }
+    var delta = e.changedTouches[0].clientY - startY;
+    if (delta > 80) location.reload();
   });
 })();
-
