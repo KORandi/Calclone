@@ -920,3 +920,172 @@ document
     if (e.target === e.currentTarget) closeBarcodeScanner();
   });
 
+// ═══════════════════════════════════════════
+// LOCK BODY SCROLL WHEN MODAL IS OPEN
+// ═══════════════════════════════════════════
+(function () {
+  function updateBodyLock() {
+    var anyOpen = !!document.querySelector(".modal-overlay.active");
+    document.body.classList.toggle("modal-open", anyOpen);
+  }
+  var observer = new MutationObserver(updateBodyLock);
+  document.querySelectorAll(".modal-overlay").forEach(function (el) {
+    observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+  });
+})();
+
+// ═══════════════════════════════════════════
+// MODAL SWIPE-TO-DISMISS
+// ═══════════════════════════════════════════
+(function () {
+  var modalClosers = {
+    "food-modal": closeModal,
+    "edit-modal": closeEditModal,
+    "goals-wizard-modal": closeGoalsWizard,
+    "custom-food-wizard-modal": closeCfwWizard,
+    "qr-share-modal": closeQrShareModal,
+    "qr-select-modal": closeQrSelectModal,
+    "qr-preview-modal": closeQrPreviewModal,
+    "barcode-modal": closeBarcodeScanner,
+  };
+  var dragState = null;
+
+  document.addEventListener("touchstart", function (e) {
+    var modal = e.target.closest(".modal");
+    if (!modal) return;
+    // Only start drag if modal is scrolled to top
+    if (modal.scrollTop > 0) return;
+    var overlay = modal.closest(".modal-overlay");
+    if (!overlay || !modalClosers[overlay.id]) return;
+    dragState = {
+      modal: modal,
+      overlayId: overlay.id,
+      startY: e.touches[0].clientY,
+      startTime: Date.now(),
+      currentY: 0,
+      dragging: false,
+    };
+  }, { passive: true });
+
+  document.addEventListener("touchmove", function (e) {
+    if (!dragState) return;
+    var delta = e.touches[0].clientY - dragState.startY;
+    // Only track downward movement
+    if (delta < 0) {
+      if (dragState.dragging) {
+        dragState.modal.style.transform = "";
+        dragState.modal.classList.remove("dragging");
+        dragState.dragging = false;
+      }
+      return;
+    }
+    // Start dragging after 10px threshold
+    if (!dragState.dragging && delta > 10) {
+      dragState.dragging = true;
+      dragState.modal.classList.add("dragging");
+    }
+    if (dragState.dragging) {
+      dragState.currentY = delta;
+      dragState.modal.style.transform = "translateY(" + delta + "px)";
+      // Prevent scroll while dragging
+      if (dragState.modal.scrollTop <= 0) e.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener("touchend", function () {
+    if (!dragState) return;
+    var s = dragState;
+    dragState = null;
+    if (!s.dragging) return;
+    s.modal.classList.remove("dragging");
+    var velocity = s.currentY / (Date.now() - s.startTime);
+    // Dismiss if dragged far enough or fast enough
+    if (s.currentY > 100 || velocity > 0.5) {
+      s.modal.classList.add("dismissing");
+      s.modal.style.transform = "";
+      setTimeout(function () {
+        s.modal.classList.remove("dismissing");
+        var closer = modalClosers[s.overlayId];
+        if (closer) closer();
+      }, 200);
+    } else {
+      // Snap back
+      s.modal.style.transition = "transform 0.2s ease-out";
+      s.modal.style.transform = "";
+      setTimeout(function () {
+        s.modal.style.transition = "";
+      }, 200);
+    }
+  });
+})();
+
+// ═══════════════════════════════════════════
+// PULL-TO-REFRESH
+// ═══════════════════════════════════════════
+(function () {
+  var ptrEl = document.getElementById("ptr-indicator");
+  if (!ptrEl) return;
+  var startY = 0;
+  var pulling = false;
+  var threshold = 80;
+
+  document.addEventListener("touchstart", function (e) {
+    // Don't activate if a modal is open
+    if (document.querySelector(".modal-overlay.active")) return;
+    if (document.scrollingElement.scrollTop > 0) return;
+    startY = e.touches[0].clientY;
+    pulling = true;
+  }, { passive: true });
+
+  document.addEventListener("touchmove", function (e) {
+    if (!pulling) return;
+    // Cancel if a modal opened during the gesture
+    if (document.querySelector(".modal-overlay.active")) { pulling = false; return; }
+    var delta = e.touches[0].clientY - startY;
+    if (delta < 0) {
+      ptrEl.classList.remove("visible");
+      ptrEl.style.transform = "";
+      return;
+    }
+    // Check scroll position again (might have scrolled during move)
+    if (document.scrollingElement.scrollTop > 0) {
+      pulling = false;
+      ptrEl.classList.remove("visible");
+      ptrEl.style.transform = "";
+      return;
+    }
+    var progress = Math.min(delta / threshold, 1);
+    var translateY = -50 + (progress * 66); // from -50px to +16px
+    ptrEl.style.transform = "translateX(-50%) translateY(" + translateY + "px)";
+    ptrEl.style.opacity = progress;
+    if (progress > 0.1) ptrEl.classList.add("visible");
+    // Rotate the arrow based on progress
+    if (progress >= 1) {
+      ptrEl.textContent = "↻";
+      ptrEl.style.color = "var(--green)";
+    } else {
+      ptrEl.textContent = "↓";
+      ptrEl.style.color = "";
+    }
+  }, { passive: true });
+
+  document.addEventListener("touchend", function () {
+    if (!pulling) return;
+    pulling = false;
+    var currentOpacity = parseFloat(ptrEl.style.opacity) || 0;
+    if (currentOpacity >= 1) {
+      // Trigger refresh
+      ptrEl.classList.add("refreshing");
+      ptrEl.textContent = "↻";
+      setTimeout(function () { location.reload(); }, 400);
+    } else {
+      // Snap back
+      ptrEl.classList.remove("visible");
+      ptrEl.style.transform = "";
+      ptrEl.style.opacity = "";
+      ptrEl.style.color = "";
+      ptrEl.textContent = "↓";
+    }
+  });
+})();
+
