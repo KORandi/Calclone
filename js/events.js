@@ -1036,28 +1036,99 @@ document
 })();
 
 // ═══════════════════════════════════════════
-// PULL-TO-REFRESH (no visual indicator)
+// PULL-TO-REFRESH (circle progress + resistance)
 // ═══════════════════════════════════════════
 (function () {
+  var THRESHOLD = 110;       // px of damped distance to trigger refresh
+  var MAX_PULL = 140;        // max damped distance (visual cap)
+  var RESISTANCE = 0.4;      // exponential damping coefficient
+  var CIRCUMFERENCE = 106.81; // 2 * PI * 17 (SVG circle r=17)
+
+  var container = document.getElementById("ptr-container");
+  var progressCircle = container ? container.querySelector(".ptr-progress") : null;
+
   var startY = 0;
   var pulling = false;
+  var armed = false;
+
+  // Exponential resistance: caps at MAX_PULL no matter how far you pull
+  function dampen(rawDelta) {
+    return MAX_PULL * (1 - Math.exp(-RESISTANCE * rawDelta / MAX_PULL));
+  }
+
+  function setProgress(dampedY) {
+    if (!container || !progressCircle) return;
+    // Move container into view (from -60px start)
+    container.style.transform = "translateY(" + (dampedY - 20) + "px)";
+    // Fill circle proportionally (0 at 0, full at THRESHOLD)
+    var ratio = Math.min(dampedY / THRESHOLD, 1);
+    var offset = CIRCUMFERENCE * (1 - ratio);
+    progressCircle.style.strokeDashoffset = offset;
+  }
+
+  function resetIndicator(animate) {
+    if (!container) return;
+    if (animate) {
+      container.classList.add("snapping");
+    }
+    container.style.transform = "translateY(-60px)";
+    if (progressCircle) progressCircle.style.strokeDashoffset = CIRCUMFERENCE;
+    container.classList.remove("spinning");
+    if (animate) {
+      var onEnd = function () {
+        container.removeEventListener("transitionend", onEnd);
+        container.classList.remove("snapping");
+      };
+      container.addEventListener("transitionend", onEnd);
+    }
+  }
 
   document.addEventListener("touchstart", function (e) {
     if (document.querySelector(".modal-overlay.active")) return;
     if (document.scrollingElement.scrollTop > 0) return;
     startY = e.touches[0].clientY;
     pulling = true;
+    armed = false;
+    // Remove any lingering transition so drag is instant
+    if (container) {
+      container.classList.remove("snapping");
+      container.classList.remove("refreshing");
+      container.classList.remove("spinning");
+    }
   }, { passive: true });
 
   document.addEventListener("touchmove", function (e) {
     if (!pulling) return;
-    if (document.scrollingElement.scrollTop > 0) { pulling = false; return; }
+    if (document.scrollingElement.scrollTop > 0) {
+      pulling = false;
+      resetIndicator(false);
+      return;
+    }
+    var rawDelta = e.touches[0].clientY - startY;
+    if (rawDelta <= 0) {
+      resetIndicator(false);
+      return;
+    }
+    var dampedY = dampen(rawDelta);
+    setProgress(dampedY);
+    armed = dampedY >= THRESHOLD;
   }, { passive: true });
 
   document.addEventListener("touchend", function (e) {
     if (!pulling) return;
     pulling = false;
-    var delta = e.changedTouches[0].clientY - startY;
-    if (delta > 80) location.reload();
+
+    if (armed && container) {
+      // Show spinning state, hold position, then reload
+      container.classList.add("spinning");
+      container.classList.add("refreshing");
+      container.style.transform = "translateY(" + (THRESHOLD * 0.45) + "px)";
+      setTimeout(function () {
+        location.reload();
+      }, 400);
+    } else {
+      // Snap back
+      resetIndicator(true);
+    }
   });
 })();

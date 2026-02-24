@@ -25,6 +25,14 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   </head>
   <body>
+    <!-- Pull-to-refresh indicator -->
+    <div class="ptr-container" id="ptr-container">
+      <svg class="ptr-circle" viewBox="0 0 40 40">
+        <circle class="ptr-track" cx="20" cy="20" r="17" />
+        <circle class="ptr-progress" cx="20" cy="20" r="17" />
+      </svg>
+    </div>
+
     <div class="offline-banner" id="offline-banner">Jste offline</div>
 
     <!-- ===== PAGE: Databáze ===== -->

@@ -186,6 +186,55 @@
         overscroll-behavior-y: contain;
       }
 
+      /* ── Pull-to-refresh ── */
+      .ptr-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+        transform: translateY(-60px);
+        transition: none;
+      }
+      .ptr-container.snapping {
+        transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
+      }
+      .ptr-container.refreshing {
+        transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+      }
+      .ptr-circle {
+        width: 36px;
+        height: 36px;
+        margin-top: 12px;
+        filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+      }
+      .ptr-track {
+        fill: var(--card);
+        stroke: var(--border);
+        stroke-width: 2.5;
+      }
+      .ptr-progress {
+        fill: none;
+        stroke: var(--green);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-dasharray: 106.81;
+        stroke-dashoffset: 106.81;
+        transform: rotate(-90deg);
+        transform-origin: center;
+      }
+      .ptr-container.spinning .ptr-progress {
+        stroke-dashoffset: 26.7;
+        animation: ptr-spin 0.75s linear infinite;
+      }
+      @keyframes ptr-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
       /* ── Tab bar ── */
       .tab-bar {
         position: fixed;
