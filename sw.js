@@ -1,5 +1,5 @@
-const CACHE_NAME = "kaltab-v19";
-const API_CACHE = "kaltab-api-v19";
+const CACHE_NAME = "kaltab-v20";
+const API_CACHE = "kaltab-api-v20";
 
 const ASSETS = [
   "./",
@@ -7,6 +7,28 @@ const ASSETS = [
   "./manifest.json",
   "./icons/icon-192x192.png",
   "./icons/icon-512x512.png",
+  "./css/styles.css",
+  "./js/db.js",
+  "./js/api-config.js",
+  "./js/local-foods.js",
+  "./js/state.js",
+  "./js/search.js",
+  "./js/favorites.js",
+  "./js/relevance.js",
+  "./js/food-list.js",
+  "./js/modal.js",
+  "./js/log-food.js",
+  "./js/edit-entry.js",
+  "./js/today.js",
+  "./js/history.js",
+  "./js/settings.js",
+  "./js/goals-wizard.js",
+  "./js/barcode.js",
+  "./js/custom-food.js",
+  "./js/navigation.js",
+  "./js/qr-share.js",
+  "./js/offline.js",
+  "./js/events.js",
 ];
 
 const API_HOST = "corsproxy.io";
