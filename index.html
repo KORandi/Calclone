@@ -4661,6 +4661,7 @@
         barcodeResults: [],
         detailCache: {},
         searchCache: {},
+        foodIndex: {},
         barcodeCache: {},
         portionMemory: {},
         favorites: [],
@@ -4827,12 +4828,16 @@
             if (val !== undefined) state[key] = val;
           }
 
-          // Load caches
+          // Load caches (invalidate if version mismatch)
           const caches = await KaltabDB.get("cache", "apiCaches");
-          if (caches) {
+          if (caches && caches._v === CACHE_VERSION) {
             state.searchCache = caches.searchCache || {};
+            state.foodIndex = caches.foodIndex || {};
             state.detailCache = caches.detailCache || {};
             state.barcodeCache = caches.barcodeCache || {};
+          } else if (caches) {
+            console.log("Cache version mismatch, clearing caches");
+            await KaltabDB.put("cache", "apiCaches", { _v: CACHE_VERSION });
           }
         } catch (e) {
           console.warn(
@@ -4862,6 +4867,7 @@
           if (saved) {
             const parsed = JSON.parse(saved);
             state.searchCache = parsed.searchCache || {};
+            state.foodIndex = parsed.foodIndex || {};
             state.detailCache = parsed.detailCache || {};
             state.barcodeCache = parsed.barcodeCache || {};
           }
@@ -4931,10 +4937,13 @@
             }
           } catch (e) {}
           state.searchCache = searchCache;
+          state.foodIndex = {};
           state.detailCache = detailCache;
           state.barcodeCache = barcodeCache;
           await KaltabDB.put("cache", "apiCaches", {
+            _v: CACHE_VERSION,
             searchCache,
+            foodIndex: state.foodIndex,
             detailCache,
             barcodeCache,
           });
@@ -4984,31 +4993,32 @@
         }
       }
 
+      let _saveCacheTimer = null;
       function saveCache() {
-        // Save caches to IndexedDB
-        _saveCacheToIndexedDB();
-        updateCacheUsageUI();
+        if (_saveCacheTimer) return;
+        _saveCacheTimer = setTimeout(() => {
+          _saveCacheTimer = null;
+          _saveCacheToIndexedDB();
+          updateCacheUsageUI();
+        }, 500);
       }
+
+      let _cachedSizeBytes = null;
 
       async function _saveCacheToIndexedDB() {
         try {
           await KaltabDB.open();
 
-          const cacheData = {
-            searchCache: state.searchCache,
-            detailCache: state.detailCache,
-            barcodeCache: state.barcodeCache,
-          };
-
-          // Evict if over limit (check in-memory size)
-          const sizeBytes = new Blob([JSON.stringify(cacheData)]).size;
           const limitBytes = state.cacheSizeLimitMB * 1024 * 1024;
-          if (sizeBytes > limitBytes) {
+          const currentSize = getCacheSizeBytes();
+          if (currentSize > limitBytes) {
             evictCacheEntries(limitBytes);
           }
 
           await KaltabDB.put("cache", "apiCaches", {
+            _v: CACHE_VERSION,
             searchCache: state.searchCache,
+            foodIndex: state.foodIndex,
             detailCache: state.detailCache,
             barcodeCache: state.barcodeCache,
           });
@@ -5018,7 +5028,7 @@
       }
 
       function evictCacheEntries(targetBytes) {
-        // Collect all cache entries with timestamps across all caches
+        // Collect all cache entries with estimated sizes
         const allEntries = [];
         for (const [cacheName, cache] of [
           ["searchCache", state.searchCache],
@@ -5026,37 +5036,54 @@
           ["barcodeCache", state.barcodeCache],
         ]) {
           for (const key of Object.keys(cache)) {
+            const entryJson = JSON.stringify(cache[key]);
             allEntries.push({
               cacheName,
               key,
               ts: cache[key].ts || 0,
+              size: entryJson.length * 2 + key.length * 2, // approximate bytes (UTF-16)
             });
           }
         }
         // Sort oldest first
         allEntries.sort((a, b) => a.ts - b.ts);
 
-        // Remove oldest entries until under target
+        // Remove oldest entries, tracking freed bytes
+        let currentSize = getCacheSizeBytes();
         for (const entry of allEntries) {
-          const currentSize = new Blob([
-            JSON.stringify({
-              searchCache: state.searchCache,
-              detailCache: state.detailCache,
-              barcodeCache: state.barcodeCache,
-            }),
-          ]).size;
           if (currentSize <= targetBytes) break;
+          currentSize -= entry.size;
           delete state[entry.cacheName][entry.key];
+        }
+        // Clean up orphaned foodIndex entries
+        pruneOrphanedFoodIndex();
+        _cachedSizeBytes = null; // invalidate cached size
+      }
+
+      function pruneOrphanedFoodIndex() {
+        // Collect all refs still used by searchCache
+        const usedRefs = new Set();
+        for (const entry of Object.values(state.searchCache)) {
+          if (entry.refs) {
+            for (const ref of entry.refs) usedRefs.add(ref);
+          }
+        }
+        // Remove foodIndex entries not referenced by any searchCache entry
+        for (const key of Object.keys(state.foodIndex)) {
+          if (!usedRefs.has(key)) delete state.foodIndex[key];
         }
       }
 
       function getCacheSizeBytes() {
+        if (_cachedSizeBytes !== null) return _cachedSizeBytes;
         const json = JSON.stringify({
           searchCache: state.searchCache,
+          foodIndex: state.foodIndex,
           detailCache: state.detailCache,
           barcodeCache: state.barcodeCache,
         });
-        return new Blob([json]).size;
+        _cachedSizeBytes = new Blob([json]).size;
+        return _cachedSizeBytes;
       }
 
       function formatBytes(bytes) {
@@ -5100,6 +5127,7 @@
         merged.log = state.log;
         // Caches
         merged.searchCache = state.searchCache;
+        merged.foodIndex = state.foodIndex;
         merged.detailCache = state.detailCache;
         merged.barcodeCache = state.barcodeCache;
 
@@ -5187,6 +5215,7 @@
             state.foodUsage = parsed.foodUsage || {};
             state.foodRelevance = parsed.foodRelevance || {};
             state.searchCache = parsed.searchCache || {};
+            state.foodIndex = parsed.foodIndex || {};
             state.detailCache = parsed.detailCache || {};
             state.barcodeCache = parsed.barcodeCache || {};
 
@@ -5234,20 +5263,33 @@
       // ═══════════════════════════════════════════
       // API CACHE HELPERS
       // ═══════════════════════════════════════════
+      const CACHE_VERSION = 2;
       const CACHE_TTL = 1 * 24 * 60 * 60 * 1000; // 1 day
+
+      function normalizeCacheKey(key) {
+        return key
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[^a-z0-9 ]/g, "")
+          .trim();
+      }
 
       function getCached(cache, key) {
         const entry = cache[key];
         if (!entry) return null;
         if (Date.now() - entry.ts > CACHE_TTL) {
           delete cache[key];
+          _cachedSizeBytes = null;
           return null;
         }
+        // searchCache entries store refs → resolve from foodIndex
+        if (entry.refs) return resolveSearchCache(entry);
         return entry.data;
       }
 
       function setCache(cache, key, data) {
         cache[key] = { data, ts: Date.now() };
+        _cachedSizeBytes = null;
         saveCache();
       }
 
@@ -5257,12 +5299,46 @@
       let searchAbort = null;
       let searchTimeout = null;
 
+      function hashStr(s) {
+        let h = 0;
+        for (let i = 0; i < s.length; i++) {
+          h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+        }
+        return (h >>> 0).toString(36);
+      }
+
+      function foodIndexKey(item) {
+        return item.id || ("t:" + hashStr(item.title || ""));
+      }
+
+      function storeSearchResults(normKey, items) {
+        if (!Array.isArray(items)) items = [];
+        const refs = [];
+        for (const item of items) {
+          const key = foodIndexKey(item);
+          if (!key || key === "t:") continue;
+          state.foodIndex[key] = item;
+          refs.push(key);
+        }
+        state.searchCache[normKey] = { refs, ts: Date.now() };
+        _cachedSizeBytes = null;
+        saveCache();
+      }
+
+      function resolveSearchCache(entry) {
+        if (!entry || !entry.refs) return entry ? entry.data || null : null;
+        return entry.refs
+          .map((ref) => state.foodIndex[ref])
+          .filter(Boolean);
+      }
+
       async function apiSearch(query) {
         // Check search cache first
-        const cached = getCached(state.searchCache, query.toLowerCase());
-        if (cached) {
+        const cacheKeyNorm = normalizeCacheKey(query);
+        const entry = getCached(state.searchCache, cacheKeyNorm);
+        if (entry !== null) {
           apiAvailable = true;
-          return cached;
+          return entry;
         }
 
         if (searchAbort) searchAbort.abort();
@@ -5275,8 +5351,8 @@
           const data = await resp.json();
           apiAvailable = true;
 
-          // Cache the search result (setCache calls saveCache automatically)
-          setCache(state.searchCache, query.toLowerCase(), data);
+          // Store items in foodIndex, refs in searchCache
+          storeSearchResults(cacheKeyNorm, data);
 
           return data;
         } catch (e) {
@@ -5284,27 +5360,24 @@
           console.warn("API search failed:", e);
           apiAvailable = false;
 
-          // Offline fallback: search through all cached results
+          // Offline fallback: search through all foodIndex items
           const q = query
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
           const seen = new Set();
           const offlineResults = [];
-          for (const entry of Object.values(state.searchCache)) {
-            const items = Array.isArray(entry.data) ? entry.data : [];
-            for (const item of items) {
-              if (!item.title || (item.clazz && item.clazz !== "foodstuff"))
-                continue;
-              if (item.id && seen.has(item.id)) continue;
-              const title = item.title
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-              if (title.includes(q)) {
-                if (item.id) seen.add(item.id);
-                offlineResults.push(item);
-              }
+          for (const item of Object.values(state.foodIndex)) {
+            if (!item.title || (item.clazz && item.clazz !== "foodstuff"))
+              continue;
+            if (item.id && seen.has(item.id)) continue;
+            const title = item.title
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
+            if (title.includes(q)) {
+              if (item.id) seen.add(item.id);
+              offlineResults.push(item);
             }
           }
           return offlineResults.length > 0 ? offlineResults : null;
@@ -7105,7 +7178,7 @@
         cfwRenderSearchResults(localResults);
 
         // Also search APIs (debounced by the caller) if query is long enough
-        if (query.length >= 2) {
+        if (query.length >= 3) {
           const gen = ++cfwSearchGen;
           (async () => {
             const searches = [apiSearch(query)];
@@ -7428,7 +7501,7 @@
 
         if (searchTimeout) clearTimeout(searchTimeout);
 
-        if (!query || query.length < 2) {
+        if (!query || query.length < 3) {
           searchGen++;
           state.apiResults = [];
           state.rohlikResults = [];
@@ -8075,7 +8148,9 @@
               state.log = {};
               state.detailCache = {};
               state.searchCache = {};
+              state.foodIndex = {};
               state.barcodeCache = {};
+              _cachedSizeBytes = null;
               state.portionMemory = {};
               state.foodUsage = {};
               state.foodRelevance = {};
@@ -8280,8 +8355,10 @@
           .addEventListener("click", async () => {
             if (!confirm("Vymazat mezipaměť vyhledávání?")) return;
             state.searchCache = {};
+            state.foodIndex = {};
             state.detailCache = {};
             state.barcodeCache = {};
+            _cachedSizeBytes = null;
             saveCache();
             showToast("Mezipaměť vymazána");
           });
