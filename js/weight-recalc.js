@@ -117,8 +117,9 @@ function getStreakDailyIntake() {
  * Recalculate calories using empirical TDEE from actual food log data.
  *
  * With 14 days of intake data + weight change we can derive actual TDEE:
- *   1 kg body mass ≈ 7700 kcal
- *   daily_energy_balance = (weight_change_kg * 7700) / days
+ *   1 kg body mass ≈ 6000 kcal (mixed-composition weight change;
+ *     accounts for ~75% fat + ~25% lean/water loss per CALERIE study data)
+ *   daily_energy_balance = (weight_change_kg * 6000) / days
  *   empirical_TDEE = avg_daily_intake - daily_energy_balance
  *
  * The new calorie goal is set to the empirical TDEE (true maintenance).
@@ -132,7 +133,7 @@ function recalculateFromWeight(previousWeight, currentWeight) {
   if (intake.days < WEIGHT_RECALC_REQUIRED_DAYS) return null;
 
   var weightChange = currentWeight - previousWeight;
-  var totalEnergyBalance = weightChange * 7700;
+  var totalEnergyBalance = weightChange * 6000;
   var dailyEnergyBalance = totalEnergyBalance / intake.days;
 
   // empirical TDEE = avg intake - daily energy balance
