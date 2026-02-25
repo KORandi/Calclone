@@ -76,6 +76,9 @@ function loadSettingsUI() {
   document.querySelectorAll(".theme-option").forEach((el) => {
     el.classList.toggle("active", el.dataset.themeId === state.theme);
   });
+
+  // Weight recalculation
+  if (typeof updateWeightRecalcUI === "function") updateWeightRecalcUI();
 }
 
 function renderMeasurementsList() {

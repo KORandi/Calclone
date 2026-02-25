@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (state.activePage === "page-today") renderToday();
       if (state.activePage === "page-history") renderHistory();
       updateCacheUsageUI();
+      if (typeof updateWeightRecalcUI === "function") updateWeightRecalcUI();
     })
     .catch((e) => {
       console.warn("IndexedDB init failed:", e);
@@ -264,6 +265,22 @@ document.addEventListener("DOMContentLoaded", () => {
       el.classList.toggle("active", el.dataset.themeId === themeId);
     });
     saveState();
+  });
+
+  // Weight recalculation
+  document.getElementById("btn-weight-recalc").addEventListener("click", () => {
+    if (!isWeightRecalcAvailable()) return;
+    openWeightRecalcModal();
+  });
+  document.getElementById("weight-recalc-modal").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeWeightRecalcModal();
+  });
+  document.getElementById("btn-recalc-preview").addEventListener("click", previewWeightRecalc);
+  document.getElementById("btn-recalc-cancel").addEventListener("click", closeWeightRecalcModal);
+  document.getElementById("btn-recalc-approve").addEventListener("click", approveWeightRecalc);
+  document.getElementById("btn-recalc-back").addEventListener("click", () => {
+    document.getElementById("recalc-step-input").style.display = "block";
+    document.getElementById("recalc-step-preview").style.display = "none";
   });
 
   // Goals wizard - open
@@ -618,6 +635,9 @@ document.addEventListener("DOMContentLoaded", () => {
         state.favorites = [];
         state.customFoods = [];
         state.goals = { kcal: 2000, protein: 120, carbs: 250, fat: 65 };
+        state.weightRecalcLastUsed = null;
+        state.weightRecalcLastWeight = null;
+        state.weightHistory = [];
         state.theme = "default";
         applyTheme("default");
         saveState();
@@ -958,6 +978,7 @@ document
     "food-modal": closeModal,
     "edit-modal": closeEditModal,
     "goals-wizard-modal": closeGoalsWizard,
+    "weight-recalc-modal": closeWeightRecalcModal,
     "custom-food-wizard-modal": closeCfwWizard,
     "qr-share-modal": closeQrShareModal,
     "qr-select-modal": closeQrSelectModal,

@@ -50,6 +50,9 @@ var state = {
   qrShareEnabled: false,
   logTargetDate: null, // null = today, or "YYYY-MM-DD" for specific date
   theme: "default",
+  weightRecalcLastUsed: null, // ISO date string of last recalculation
+  weightRecalcLastWeight: null, // last recorded weight in kg
+  weightHistory: [], // array of { date, weight, previousWeight, kcal, protein, carbs, fat }
 };
 
 function escapeHtml(str) {
@@ -93,6 +96,9 @@ var SETTINGS_KEYS = [
   "copyDayEnabled",
   "qrShareEnabled",
   "theme",
+  "weightRecalcLastUsed",
+  "weightRecalcLastWeight",
+  "weightHistory",
 ];
 
 // ─── Data keys stored in IndexedDB (large, async) ───
@@ -161,6 +167,9 @@ function loadState() {
           ? parsed.qrShareEnabled
           : false;
       state.theme = parsed.theme || "default";
+      state.weightRecalcLastUsed = parsed.weightRecalcLastUsed || null;
+      state.weightRecalcLastWeight = parsed.weightRecalcLastWeight || null;
+      state.weightHistory = parsed.weightHistory || [];
     }
   } catch (e) {}
 }
@@ -567,6 +576,9 @@ function importData(file) {
           ? parsed.qrShareEnabled
           : false;
       state.theme = parsed.theme || state.theme;
+      state.weightRecalcLastUsed = parsed.weightRecalcLastUsed || null;
+      state.weightRecalcLastWeight = parsed.weightRecalcLastWeight || null;
+      state.weightHistory = parsed.weightHistory || [];
 
       // Data (stored in IndexedDB)
       state.log = parsed.log || {};

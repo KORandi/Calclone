@@ -2683,3 +2683,150 @@
         color: var(--text-secondary);
         padding: 8px 0;
       }
+
+      /* ═══════════════════════════════════════════ */
+      /* WEIGHT-BASED RECALCULATION                 */
+      /* ═══════════════════════════════════════════ */
+      .weight-recalc-wrap {
+        margin-top: 12px;
+      }
+      .btn-weight-recalc {
+        width: 100%;
+        padding: 14px;
+        border: 2px dashed var(--border);
+        border-radius: 14px;
+        background: var(--card);
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+      .btn-weight-recalc:not(:disabled) {
+        border-color: var(--green);
+        color: var(--green);
+        background: var(--green-light);
+      }
+      .btn-weight-recalc:not(:disabled):active {
+        background: var(--green);
+        color: white;
+      }
+      .btn-weight-recalc:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .weight-recalc-status {
+        font-size: 12px;
+        margin-top: 8px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .weight-recalc-status.locked {
+        color: var(--text-secondary);
+        background: var(--border);
+      }
+      .weight-recalc-status.available {
+        color: var(--green-dark);
+        background: var(--green-light);
+        font-weight: 600;
+      }
+
+      /* Recalc modal */
+      .recalc-info-box {
+        display: flex;
+        gap: 10px;
+        padding: 12px 14px;
+        background: var(--green-light);
+        border-radius: 10px;
+        margin-bottom: 16px;
+        align-items: flex-start;
+      }
+      .recalc-info-box svg {
+        color: var(--green);
+      }
+      .recalc-info-box p {
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.5;
+        margin: 0;
+      }
+      .recalc-weight-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      .recalc-delta {
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .recalc-delta.loss {
+        color: var(--green);
+      }
+      .recalc-delta.gain {
+        color: var(--orange);
+      }
+      .recalc-comparison {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .recalc-col {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        text-align: center;
+      }
+      .recalc-col.highlight {
+        border-color: var(--green);
+        background: var(--green-light);
+      }
+      .recalc-col-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+      }
+      .recalc-col.highlight .recalc-col-title {
+        color: var(--green-dark);
+      }
+      .recalc-val {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .recalc-col.highlight .recalc-val {
+        color: var(--green-dark);
+      }
+      .recalc-macro {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+      .recalc-arrow {
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+      .recalc-kcal-delta-row {
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+      }
