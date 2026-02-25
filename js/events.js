@@ -978,6 +978,27 @@ document
 })();
 
 // ═══════════════════════════════════════════
+// LOCK MODAL SCROLL WHEN CFW DROPDOWN IS OPEN
+// ═══════════════════════════════════════════
+(function () {
+  var modal = document.querySelector("#custom-food-wizard-modal .modal");
+  var dropdown = document.getElementById("cfw-search-results");
+  if (!modal || !dropdown) return;
+
+  function isOpen() {
+    return dropdown.classList.contains("visible");
+  }
+
+  modal.addEventListener("touchmove", function (e) {
+    if (isOpen() && !dropdown.contains(e.target)) e.preventDefault();
+  }, { passive: false });
+
+  modal.addEventListener("wheel", function (e) {
+    if (isOpen() && !dropdown.contains(e.target)) e.preventDefault();
+  }, { passive: false });
+})();
+
+// ═══════════════════════════════════════════
 // MODAL SWIPE-TO-DISMISS
 // ═══════════════════════════════════════════
 (function () {
