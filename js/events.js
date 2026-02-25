@@ -1022,6 +1022,11 @@ document
     if (modal.scrollTop > 0) return;
     var overlay = modal.closest(".modal-overlay");
     if (!overlay || !modalClosers[overlay.id]) return;
+    // Disable drag when CFW ingredient dropdown is open
+    if (overlay.id === "custom-food-wizard-modal") {
+      var dd = document.getElementById("cfw-search-results");
+      if (dd && dd.classList.contains("visible")) return;
+    }
     dragState = {
       modal: modal,
       overlayId: overlay.id,
