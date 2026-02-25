@@ -2755,17 +2755,31 @@
         line-height: 1.5;
         margin: 0;
       }
-      .recalc-weight-summary {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 14px;
+      .recalc-stats {
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
+        padding: 4px 0;
         margin-bottom: 16px;
+      }
+      .recalc-stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 14px;
+        font-size: 13px;
+        color: var(--text);
+      }
+      .recalc-stat-row + .recalc-stat-row {
+        border-top: 1px solid var(--border);
+      }
+      .recalc-stat-highlight {
+        background: var(--green-light);
+        font-weight: 600;
+      }
+      .recalc-stat-highlight strong {
+        color: var(--green-dark);
+        font-size: 15px;
       }
       .recalc-delta {
         font-weight: 700;

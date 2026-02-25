@@ -1182,9 +1182,25 @@
 
         <!-- Step 2: Preview & approve -->
         <div id="recalc-step-preview" style="display:none;">
-          <div class="recalc-weight-summary">
-            <span>Změna hmotnosti:</span>
-            <span class="recalc-delta" id="recalc-weight-change">-</span>
+          <h3 style="font-size:14px;margin:0 0 10px;color:var(--text-secondary);">Analýza za posledních <span id="recalc-tracked-days">14</span></h3>
+
+          <div class="recalc-stats">
+            <div class="recalc-stat-row">
+              <span>Průměrný denní příjem</span>
+              <span id="recalc-avg-intake">-</span>
+            </div>
+            <div class="recalc-stat-row">
+              <span>Změna hmotnosti</span>
+              <span class="recalc-delta" id="recalc-weight-change">-</span>
+            </div>
+            <div class="recalc-stat-row">
+              <span>Denní energetická bilance</span>
+              <span class="recalc-delta" id="recalc-daily-balance">-</span>
+            </div>
+            <div class="recalc-stat-row recalc-stat-highlight">
+              <span>Váš skutečný výdej (TDEE)</span>
+              <strong id="recalc-tdee">-</strong>
+            </div>
           </div>
 
           <div class="recalc-comparison">
@@ -1201,7 +1217,7 @@
               </svg>
             </div>
             <div class="recalc-col highlight">
-              <div class="recalc-col-title">Nové cíle</div>
+              <div class="recalc-col-title">Nové cíle (TDEE)</div>
               <div class="recalc-val"><span id="recalc-new-kcal">-</span> kcal</div>
               <div class="recalc-macro">B: <span id="recalc-new-protein">-</span>g</div>
               <div class="recalc-macro">S: <span id="recalc-new-carbs">-</span>g</div>
@@ -1217,7 +1233,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="flex-shrink:0;margin-top:2px;">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            <p>Po schválení se tato funkce znovu zamkne a bude dostupná až po dalších 14 dnech konzistentního záznamu stravy.</p>
+            <p>Nové cíle odpovídají vašemu skutečnému výdeji vypočítanému z reálných dat. Po schválení se tato funkce znovu zamkne na 14 dní.</p>
           </div>
 
           <button class="wizard-btn-next" id="btn-recalc-approve">Schválit a uložit</button>

@@ -70,29 +70,78 @@ function isWeightRecalcAvailable() {
 }
 
 /**
- * Recalculate calories based on weight change using the same
- * Mifflin-St Jeor approach from the goals wizard.
- * If we don't have full body stats, use a proportional scaling approach.
+ * Sum calorie and macro intake from the 14-day logging streak.
+ * Returns { days, totalKcal, avgKcal, avgProtein, avgCarbs, avgFat }
+ */
+function getStreakDailyIntake() {
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var totalKcal = 0;
+  var totalProtein = 0;
+  var totalCarbs = 0;
+  var totalFat = 0;
+  var days = 0;
+
+  for (var i = 1; i <= WEIGHT_RECALC_REQUIRED_DAYS; i++) {
+    var d = new Date(today);
+    d.setDate(d.getDate() - i);
+    var key =
+      d.getFullYear() +
+      "-" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(d.getDate()).padStart(2, "0");
+    var entries = state.log[key];
+    if (entries && entries.length > 0) {
+      days++;
+      for (var j = 0; j < entries.length; j++) {
+        totalKcal += entries[j].kcal || 0;
+        totalProtein += entries[j].protein || 0;
+        totalCarbs += entries[j].carbs || 0;
+        totalFat += entries[j].fat || 0;
+      }
+    }
+  }
+
+  return {
+    days: days,
+    totalKcal: totalKcal,
+    avgKcal: days > 0 ? Math.round(totalKcal / days) : 0,
+    avgProtein: days > 0 ? Math.round(totalProtein / days) : 0,
+    avgCarbs: days > 0 ? Math.round(totalCarbs / days) : 0,
+    avgFat: days > 0 ? Math.round(totalFat / days) : 0,
+  };
+}
+
+/**
+ * Recalculate calories using empirical TDEE from actual food log data.
+ *
+ * With 14 days of intake data + weight change we can derive actual TDEE:
+ *   1 kg body mass ≈ 7700 kcal
+ *   daily_energy_balance = (weight_change_kg * 7700) / days
+ *   empirical_TDEE = avg_daily_intake - daily_energy_balance
+ *
+ * The new calorie goal is set to the empirical TDEE (true maintenance).
  */
 function recalculateFromWeight(previousWeight, currentWeight) {
   if (!previousWeight || !currentWeight || previousWeight <= 0 || currentWeight <= 0) {
     return null;
   }
 
-  // Use proportional approach: scale current kcal by weight ratio
-  // The BMR formula (Mifflin-St Jeor): BMR = 10*weight + 6.25*height - 5*age +/- offset
-  // The weight component is linear, so a weight change proportionally affects BMR
-  // We scale the current goals proportionally to the weight change
-  var weightRatio = currentWeight / previousWeight;
+  var intake = getStreakDailyIntake();
+  if (intake.days < WEIGHT_RECALC_REQUIRED_DAYS) return null;
 
-  // Calculate new calorie target
-  // We use a dampened ratio since not all of TDEE scales linearly with weight
-  // ~60% of TDEE comes from BMR, and weight is only one factor in BMR
-  // A simpler approach: adjust by the actual BMR weight component difference
-  var bmrDelta = 10 * (currentWeight - previousWeight); // Mifflin-St Jeor weight coefficient is 10
-  var currentKcal = state.goals.kcal;
-  var newKcal = Math.round(currentKcal + bmrDelta);
-  newKcal = Math.max(800, newKcal); // Safety floor
+  var weightChange = currentWeight - previousWeight;
+  var totalEnergyBalance = weightChange * 7700;
+  var dailyEnergyBalance = totalEnergyBalance / intake.days;
+
+  // empirical TDEE = avg intake - daily energy balance
+  // Lost weight → balance negative → TDEE > intake (body burned more than eaten)
+  // Gained weight → balance positive → TDEE < intake (body stored excess)
+  var empiricalTDEE = Math.round(intake.avgKcal - dailyEnergyBalance);
+  empiricalTDEE = Math.max(800, empiricalTDEE);
+
+  var newKcal = empiricalTDEE;
 
   // Keep the same macro ratios
   var totalMacroKcal =
@@ -118,7 +167,11 @@ function recalculateFromWeight(previousWeight, currentWeight) {
     previousWeight: previousWeight,
     currentWeight: currentWeight,
     weightDelta: +(currentWeight - previousWeight).toFixed(1),
-    kcalDelta: newKcal - currentKcal,
+    kcalDelta: newKcal - state.goals.kcal,
+    avgDailyIntake: intake.avgKcal,
+    empiricalTDEE: empiricalTDEE,
+    dailyBalance: Math.round(dailyEnergyBalance),
+    trackedDays: intake.days,
   };
 }
 
@@ -182,11 +235,25 @@ function previewWeightRecalc() {
   document.getElementById("recalc-step-input").style.display = "none";
   document.getElementById("recalc-step-preview").style.display = "block";
 
-  // Fill preview values
+  // Fill empirical analysis
+  document.getElementById("recalc-avg-intake").textContent =
+    result.avgDailyIntake + " kcal";
+  document.getElementById("recalc-tracked-days").textContent =
+    result.trackedDays + " dní";
+
   document.getElementById("recalc-weight-change").textContent =
     (result.weightDelta >= 0 ? "+" : "") + result.weightDelta + " kg";
   document.getElementById("recalc-weight-change").className =
     "recalc-delta " + (result.weightDelta >= 0 ? "gain" : "loss");
+
+  var balanceEl = document.getElementById("recalc-daily-balance");
+  balanceEl.textContent =
+    (result.dailyBalance >= 0 ? "+" : "") + result.dailyBalance + " kcal/den";
+  balanceEl.className =
+    "recalc-delta " + (result.dailyBalance >= 0 ? "gain" : "loss");
+
+  document.getElementById("recalc-tdee").textContent =
+    result.empiricalTDEE + " kcal";
 
   // Current goals
   document.getElementById("recalc-old-kcal").textContent = state.goals.kcal;
