@@ -2555,6 +2555,27 @@
         color: var(--text-secondary);
         text-align: center;
       }
+      .btn-share-qr {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.15s;
+        margin-top: 4px;
+      }
+      .btn-share-qr:active {
+        background: var(--blue-dark, #2563eb);
+      }
       .qr-scan-wrap {
         position: relative;
         border-radius: 12px;

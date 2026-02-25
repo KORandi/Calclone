@@ -344,6 +344,32 @@ function generateQrCode() {
   }
 }
 
+// --- Share QR image ---
+async function shareQrImage() {
+  var img = document.querySelector("#qr-display-wrap img");
+  if (!img) return;
+  try {
+    var resp = await fetch(img.src);
+    var blob = await resp.blob();
+    var file = new File([blob], "qr-kod.png", { type: "image/png" });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "QR kód – Calclone" });
+    } else {
+      var a = document.createElement("a");
+      a.href = img.src;
+      a.download = "qr-kod.png";
+      a.click();
+    }
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      var a = document.createElement("a");
+      a.href = img.src;
+      a.download = "qr-kod.png";
+      a.click();
+    }
+  }
+}
+
 // --- QR code scanning ---
 function openQrScanModal() {
   closeQrShareModal();
@@ -647,6 +673,9 @@ document
     if (e.target === e.currentTarget)
       e.currentTarget.classList.remove("active");
   });
+document
+  .getElementById("btn-share-qr")
+  .addEventListener("click", shareQrImage);
 
 document
   .getElementById("qr-scan-modal")
