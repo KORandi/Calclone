@@ -2784,40 +2784,46 @@
       .recalc-goal-mode {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
         margin-bottom: 16px;
       }
       .recalc-goal-option {
         display: flex;
-        align-items: flex-start;
-        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
         padding: 10px 12px;
         border-radius: 10px;
         border: 1px solid var(--border);
         background: var(--card);
         cursor: pointer;
-        transition: border-color 0.15s;
+        transition: border-color 0.15s, background 0.15s;
       }
-      .recalc-goal-option:has(input:checked) {
+      .recalc-goal-option.selected {
         border-color: var(--green);
         background: var(--green-light);
       }
-      .recalc-goal-option input[type="radio"] {
-        margin-top: 3px;
-        accent-color: var(--green);
-      }
-      .recalc-goal-option div {
+      .recalc-goal-label {
         display: flex;
         flex-direction: column;
-        gap: 2px;
-      }
-      .recalc-goal-option strong {
         font-size: 13px;
+        font-weight: 600;
         color: var(--text);
       }
-      .recalc-goal-option span {
+      .recalc-goal-label span {
         font-size: 11px;
+        font-weight: 400;
         color: var(--text-secondary);
+      }
+      .recalc-goal-option.selected .recalc-goal-label span {
+        color: var(--green-dark);
+      }
+      .recalc-goal-kcal {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-secondary);
+      }
+      .recalc-goal-option.selected .recalc-goal-kcal {
+        color: var(--green-dark);
       }
       .recalc-delta {
         font-weight: 700;

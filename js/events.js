@@ -278,6 +278,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-recalc-preview").addEventListener("click", previewWeightRecalc);
   document.getElementById("btn-recalc-cancel").addEventListener("click", closeWeightRecalcModal);
   document.getElementById("btn-recalc-approve").addEventListener("click", approveWeightRecalc);
+  document.getElementById("recalc-goal-list").addEventListener("click", (e) => {
+    var opt = e.target.closest(".recalc-goal-option");
+    if (!opt) return;
+    document.querySelectorAll(".recalc-goal-option").forEach(el => el.classList.remove("selected"));
+    opt.classList.add("selected");
+    updateRecalcPreviewGoals();
+  });
   document.getElementById("btn-recalc-back").addEventListener("click", () => {
     document.getElementById("recalc-step-input").style.display = "block";
     document.getElementById("recalc-step-preview").style.display = "none";

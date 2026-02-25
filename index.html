@@ -1203,21 +1203,28 @@
             </div>
           </div>
 
-          <div class="recalc-goal-mode">
-            <label class="recalc-goal-option">
-              <input type="radio" name="recalc-goal-mode" value="maintenance" checked />
-              <div>
-                <strong>Udržovací (TDEE)</strong>
-                <span id="recalc-mode-maintenance-desc">Nastavit cíl na váš skutečný výdej</span>
-              </div>
-            </label>
-            <label class="recalc-goal-option">
-              <input type="radio" name="recalc-goal-mode" value="keep-deficit" />
-              <div>
-                <strong>Zachovat současný režim</strong>
-                <span id="recalc-mode-keep-desc">Ponechat stejný denní deficit/přebytek</span>
-              </div>
-            </label>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">Jaký je váš cíl?</p>
+          <div class="recalc-goal-mode" id="recalc-goal-list">
+            <div class="recalc-goal-option" data-goal="-750">
+              <div class="recalc-goal-label">Rychlé hubnutí<span>−750 kcal</span></div>
+              <div class="recalc-goal-kcal">-</div>
+            </div>
+            <div class="recalc-goal-option" data-goal="-300">
+              <div class="recalc-goal-label">Mírné hubnutí<span>−300 kcal</span></div>
+              <div class="recalc-goal-kcal">-</div>
+            </div>
+            <div class="recalc-goal-option selected" data-goal="0">
+              <div class="recalc-goal-label">Udržení váhy<span>TDEE</span></div>
+              <div class="recalc-goal-kcal">-</div>
+            </div>
+            <div class="recalc-goal-option" data-goal="300">
+              <div class="recalc-goal-label">Mírné nabírání<span>+300 kcal</span></div>
+              <div class="recalc-goal-kcal">-</div>
+            </div>
+            <div class="recalc-goal-option" data-goal="750">
+              <div class="recalc-goal-label">Rychlé nabírání<span>+750 kcal</span></div>
+              <div class="recalc-goal-kcal">-</div>
+            </div>
           </div>
 
           <div class="recalc-comparison">
@@ -1234,7 +1241,7 @@
               </svg>
             </div>
             <div class="recalc-col highlight">
-              <div class="recalc-col-title">Nové cíle (TDEE)</div>
+              <div class="recalc-col-title">Nové cíle</div>
               <div class="recalc-val"><span id="recalc-new-kcal">-</span> kcal</div>
               <div class="recalc-macro">B: <span id="recalc-new-protein">-</span>g</div>
               <div class="recalc-macro">S: <span id="recalc-new-carbs">-</span>g</div>
