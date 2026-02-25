@@ -2781,6 +2781,44 @@
         color: var(--green-dark);
         font-size: 15px;
       }
+      .recalc-goal-mode {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .recalc-goal-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
+      .recalc-goal-option:has(input:checked) {
+        border-color: var(--green);
+        background: var(--green-light);
+      }
+      .recalc-goal-option input[type="radio"] {
+        margin-top: 3px;
+        accent-color: var(--green);
+      }
+      .recalc-goal-option div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .recalc-goal-option strong {
+        font-size: 13px;
+        color: var(--text);
+      }
+      .recalc-goal-option span {
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
       .recalc-delta {
         font-weight: 700;
         font-size: 15px;
