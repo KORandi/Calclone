@@ -117,8 +117,9 @@ function getStreakDailyIntake() {
  * Recalculate calories using empirical TDEE from actual food log data.
  *
  * With 14 days of intake data + weight change we can derive actual TDEE:
- *   1 kg body mass ≈ 7700 kcal
- *   daily_energy_balance = (weight_change_kg * 7700) / days
+ *   1 kg body mass ≈ 6000 kcal (mixed-composition weight change;
+ *     accounts for ~75% fat + ~25% lean/water loss per CALERIE study data)
+ *   daily_energy_balance = (weight_change_kg * 6000) / days
  *   empirical_TDEE = avg_daily_intake - daily_energy_balance
  *
  * The new calorie goal is set to the empirical TDEE (true maintenance).
@@ -132,7 +133,7 @@ function recalculateFromWeight(previousWeight, currentWeight) {
   if (intake.days < WEIGHT_RECALC_REQUIRED_DAYS) return null;
 
   var weightChange = currentWeight - previousWeight;
-  var totalEnergyBalance = weightChange * 7700;
+  var totalEnergyBalance = weightChange * 6000;
   var dailyEnergyBalance = totalEnergyBalance / intake.days;
 
   // empirical TDEE = avg intake - daily energy balance
@@ -141,9 +142,7 @@ function recalculateFromWeight(previousWeight, currentWeight) {
   var empiricalTDEE = Math.round(intake.avgKcal - dailyEnergyBalance);
   empiricalTDEE = Math.max(800, empiricalTDEE);
 
-  var newKcal = empiricalTDEE;
-
-  // Keep the same macro ratios
+  // Macro ratios from current goals
   var totalMacroKcal =
     state.goals.protein * 4 + state.goals.carbs * 4 + state.goals.fat * 9;
   var ratios;
@@ -157,22 +156,25 @@ function recalculateFromWeight(previousWeight, currentWeight) {
     ratios = { protein: 0.25, carbs: 0.5, fat: 0.25 };
   }
 
-  var newMacros = calcMacrosFromKcal(newKcal, ratios);
-
   return {
-    kcal: newKcal,
-    protein: newMacros.protein,
-    carbs: newMacros.carbs,
-    fat: newMacros.fat,
     previousWeight: previousWeight,
     currentWeight: currentWeight,
     weightDelta: +(currentWeight - previousWeight).toFixed(1),
-    kcalDelta: newKcal - state.goals.kcal,
     avgDailyIntake: intake.avgKcal,
     empiricalTDEE: empiricalTDEE,
     dailyBalance: Math.round(dailyEnergyBalance),
     trackedDays: intake.days,
+    ratios: ratios,
   };
+}
+
+/**
+ * Compute kcal + macros for a given goal adjustment relative to TDEE
+ */
+function computeGoalFromAdj(tdee, adj, ratios) {
+  var kcal = Math.max(800, tdee + adj);
+  var macros = calcMacrosFromKcal(kcal, ratios);
+  return { kcal: kcal, protein: macros.protein, carbs: macros.carbs, fat: macros.fat };
 }
 
 /**
@@ -255,6 +257,19 @@ function previewWeightRecalc() {
   document.getElementById("recalc-tdee").textContent =
     result.empiricalTDEE + " kcal";
 
+  // Fill kcal values into the goal options
+  var goalOptions = document.querySelectorAll(".recalc-goal-option");
+  goalOptions.forEach(function (opt) {
+    var adj = parseInt(opt.dataset.goal);
+    var kcal = Math.max(800, result.empiricalTDEE + adj);
+    opt.querySelector(".recalc-goal-kcal").textContent = kcal + " kcal";
+  });
+
+  // Default: select the maintenance option (data-goal="0")
+  goalOptions.forEach(function (opt) { opt.classList.remove("selected"); });
+  var defaultOpt = document.querySelector('.recalc-goal-option[data-goal="0"]');
+  if (defaultOpt) defaultOpt.classList.add("selected");
+
   // Current goals
   document.getElementById("recalc-old-kcal").textContent = state.goals.kcal;
   document.getElementById("recalc-old-protein").textContent =
@@ -262,18 +277,39 @@ function previewWeightRecalc() {
   document.getElementById("recalc-old-carbs").textContent = state.goals.carbs;
   document.getElementById("recalc-old-fat").textContent = state.goals.fat;
 
-  // New goals
-  document.getElementById("recalc-new-kcal").textContent = result.kcal;
-  document.getElementById("recalc-new-protein").textContent = result.protein;
-  document.getElementById("recalc-new-carbs").textContent = result.carbs;
-  document.getElementById("recalc-new-fat").textContent = result.fat;
+  // Fill new goals based on selected option
+  updateRecalcPreviewGoals();
+}
 
-  // Kcal delta
+/**
+ * Get the currently selected goal adjustment value
+ */
+function getSelectedRecalcAdj() {
+  var sel = document.querySelector(".recalc-goal-option.selected");
+  return sel ? parseInt(sel.dataset.goal) : 0;
+}
+
+/**
+ * Update the "new goals" column based on which goal option is selected
+ */
+function updateRecalcPreviewGoals() {
+  var result = document.getElementById("weight-recalc-modal")._pendingResult;
+  if (!result) return;
+
+  var adj = getSelectedRecalcAdj();
+  var chosen = computeGoalFromAdj(result.empiricalTDEE, adj, result.ratios);
+
+  document.getElementById("recalc-new-kcal").textContent = chosen.kcal;
+  document.getElementById("recalc-new-protein").textContent = chosen.protein;
+  document.getElementById("recalc-new-carbs").textContent = chosen.carbs;
+  document.getElementById("recalc-new-fat").textContent = chosen.fat;
+
+  var kcalDelta = chosen.kcal - state.goals.kcal;
   var kcalDeltaEl = document.getElementById("recalc-kcal-delta");
   kcalDeltaEl.textContent =
-    (result.kcalDelta >= 0 ? "+" : "") + result.kcalDelta + " kcal";
+    (kcalDelta >= 0 ? "+" : "") + kcalDelta + " kcal";
   kcalDeltaEl.className =
-    "recalc-delta " + (result.kcalDelta >= 0 ? "gain" : "loss");
+    "recalc-delta " + (kcalDelta >= 0 ? "gain" : "loss");
 }
 
 /**
@@ -284,11 +320,14 @@ function approveWeightRecalc() {
   var result = modal._pendingResult;
   if (!result) return;
 
-  // Apply new goals
-  state.goals.kcal = result.kcal;
-  state.goals.protein = result.protein;
-  state.goals.carbs = result.carbs;
-  state.goals.fat = result.fat;
+  // Apply new goals based on selected goal option
+  var adj = getSelectedRecalcAdj();
+  var chosen = computeGoalFromAdj(result.empiricalTDEE, adj, result.ratios);
+
+  state.goals.kcal = chosen.kcal;
+  state.goals.protein = chosen.protein;
+  state.goals.carbs = chosen.carbs;
+  state.goals.fat = chosen.fat;
 
   // Record the recalculation
   state.weightRecalcLastUsed = new Date().toISOString();
@@ -300,10 +339,11 @@ function approveWeightRecalc() {
     date: new Date().toISOString(),
     weight: result.currentWeight,
     previousWeight: result.previousWeight,
-    kcal: result.kcal,
-    protein: result.protein,
-    carbs: result.carbs,
-    fat: result.fat,
+    tdee: result.empiricalTDEE,
+    kcal: chosen.kcal,
+    protein: chosen.protein,
+    carbs: chosen.carbs,
+    fat: chosen.fat,
   });
 
   saveState();
