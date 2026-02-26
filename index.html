@@ -20,11 +20,69 @@
     />
     <title>Calclone</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://fastly.jsdelivr.net/npm/barcode-detector@3/dist/iife/polyfill.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script defer src="https://fastly.jsdelivr.net/npm/barcode-detector@3/dist/iife/polyfill.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   </head>
   <body>
+    <!-- ===== Loading Screen (inline for instant paint) ===== -->
+    <div id="app-loader">
+      <style>
+        #app-loader {
+          position: fixed;
+          inset: 0;
+          z-index: 99999;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: #f8fafc;
+          transition: opacity .35s ease, visibility .35s ease;
+        }
+        #app-loader.hide {
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+        }
+        #app-loader .loader-icon {
+          font-size: 52px;
+          margin-bottom: 32px;
+          animation: loader-pulse 1.2s ease-in-out infinite;
+        }
+        #app-loader .loader-bar-track {
+          width: 200px;
+          height: 4px;
+          border-radius: 4px;
+          background: #e2e8f0;
+          overflow: hidden;
+          position: relative;
+        }
+        #app-loader .loader-bar-fill {
+          position: absolute;
+          inset: 0;
+          border-radius: 4px;
+          background: linear-gradient(90deg, #22c55e, #4ade80, #22c55e);
+          background-size: 200% 100%;
+          animation: loader-shimmer 1s ease-in-out infinite;
+        }
+        @keyframes loader-shimmer {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes loader-pulse {
+          0%, 100% { transform: scale(1); }
+          50%      { transform: scale(1.08); }
+        }
+        @media (prefers-color-scheme: dark) {
+          #app-loader { background: #111827; }
+          #app-loader .loader-bar-track { background: #374151; }
+          #app-loader .loader-bar-fill { background: linear-gradient(90deg, #34d399, #6ee7b7, #34d399); background-size: 200% 100%; animation: loader-shimmer 1s ease-in-out infinite; }
+        }
+      </style>
+      <div class="loader-icon">🥗</div>
+      <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+    </div>
+
     <!-- Pull-to-refresh indicator -->
     <div class="ptr-container" id="ptr-container">
       <svg class="ptr-circle" viewBox="0 0 40 40">

@@ -8,6 +8,17 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCategories();
   renderFoodList();
 
+  // Dismiss loading screen as soon as Phase 1 renders
+  const loader = document.getElementById("app-loader");
+  if (loader) {
+    // Match loader background to active theme
+    const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg");
+    if (bg) loader.style.background = bg.trim();
+
+    loader.classList.add("hide");
+    loader.addEventListener("transitionend", () => loader.remove(), { once: true });
+  }
+
   // Phase 2: Load large data from IndexedDB (async, re-render when ready)
   loadFromIndexedDB()
     .then(() => {
