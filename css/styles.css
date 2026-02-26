@@ -688,31 +688,6 @@
           transform: translateY(100%);
         }
       }
-      .modal-handle {
-        width: 36px;
-        height: 4px;
-        background: var(--border);
-        border-radius: 2px;
-        margin: 0 auto 16px;
-        cursor: grab;
-      }
-      .modal-handle::before {
-        content: "";
-        display: block;
-        width: 100%;
-        height: 24px;
-        position: relative;
-        top: -10px;
-      }
-      .modal.dragging {
-        animation: none !important;
-        transition: none !important;
-      }
-      .modal.dismissing {
-        animation: none !important;
-        transition: transform 0.2s ease-in !important;
-        transform: translateY(100%) !important;
-      }
       .modal h2 {
         font-size: 20px;
         margin-bottom: 4px;
