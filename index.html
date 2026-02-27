@@ -1458,43 +1458,39 @@
     </div>
 
     <!-- ===== EASTER EGG MODAL ===== -->
-    <div class="modal-overlay" id="ee-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Tap Challenge!</h2>
-          <button class="ee-close-btn" id="ee-close">&times;</button>
+    <div class="ee-fullscreen" id="ee-modal">
+      <button class="ee-close-btn" id="ee-close">&times;</button>
+      <h2 class="ee-title">Tap Challenge!</h2>
+      <div class="ee-stats-bar">
+        <div class="ee-stat">
+          <span class="ee-stat-label">Score</span>
+          <span class="ee-stat-val" id="ee-score">0</span>
         </div>
-        <div class="ee-stats-bar">
-          <div class="ee-stat">
-            <span class="ee-stat-label">Score</span>
-            <span class="ee-stat-val" id="ee-score">0</span>
+        <div class="ee-stat">
+          <span class="ee-stat-label">Time</span>
+          <span class="ee-stat-val" id="ee-timer">5.0</span>
+        </div>
+      </div>
+      <div id="ee-countdown" style="display:none"></div>
+      <div id="ee-tap-area" style="display:none">
+        <div class="ee-tap-hint">👆</div>
+        <div class="ee-tap-text">TAP TAP TAP!</div>
+      </div>
+      <div id="ee-result" style="display:none">
+        <div class="ee-result-emoji">🎉</div>
+        <div class="ee-result-title">Hotovo!</div>
+        <div id="ee-new-record">Novy rekord!</div>
+        <div class="ee-result-scores">
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Score</span>
+            <span class="ee-result-score-val" id="ee-final-score">0</span>
           </div>
-          <div class="ee-stat">
-            <span class="ee-stat-label">Time</span>
-            <span class="ee-stat-val" id="ee-timer">5.0</span>
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Rekord</span>
+            <span class="ee-result-score-val" id="ee-best-score">0</span>
           </div>
         </div>
-        <div id="ee-countdown" style="display:none"></div>
-        <div id="ee-tap-area" style="display:none">
-          <div class="ee-tap-hint">👆</div>
-          <div class="ee-tap-text">TAP TAP TAP!</div>
-        </div>
-        <div id="ee-result" style="display:none">
-          <div class="ee-result-emoji">🎉</div>
-          <div class="ee-result-title">Hotovo!</div>
-          <div id="ee-new-record">Novy rekord!</div>
-          <div class="ee-result-scores">
-            <div class="ee-result-score-item">
-              <span class="ee-result-score-label">Score</span>
-              <span class="ee-result-score-val" id="ee-final-score">0</span>
-            </div>
-            <div class="ee-result-score-item">
-              <span class="ee-result-score-label">Rekord</span>
-              <span class="ee-result-score-val" id="ee-best-score">0</span>
-            </div>
-          </div>
-          <button class="ee-retry-btn" id="ee-retry">Znovu</button>
-        </div>
+        <button class="ee-retry-btn" id="ee-retry">Znovu</button>
       </div>
     </div>
 
