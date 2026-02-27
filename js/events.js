@@ -280,8 +280,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Weight recalculation
   document.getElementById("btn-weight-recalc").addEventListener("click", () => {
-    if (!isWeightRecalcAvailable()) return;
-    openWeightRecalcModal();
+    var dryRun = !isWeightRecalcAvailable();
+    openWeightRecalcModal(dryRun);
   });
   document.getElementById("weight-recalc-modal").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) closeWeightRecalcModal();

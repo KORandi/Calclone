@@ -71,9 +71,10 @@ function isWeightRecalcAvailable() {
 
 /**
  * Sum calorie and macro intake from the 14-day logging streak.
+ * When collectAll is true, gathers all days with data (not just consecutive streak).
  * Returns { days, totalKcal, avgKcal, avgProtein, avgCarbs, avgFat }
  */
-function getStreakDailyIntake() {
+function getStreakDailyIntake(collectAll) {
   var today = new Date();
   today.setHours(0, 0, 0, 0);
   var totalKcal = 0;
@@ -100,6 +101,8 @@ function getStreakDailyIntake() {
         totalCarbs += entries[j].carbs || 0;
         totalFat += entries[j].fat || 0;
       }
+    } else if (!collectAll) {
+      break;
     }
   }
 
@@ -124,13 +127,14 @@ function getStreakDailyIntake() {
  *
  * The new calorie goal is set to the empirical TDEE (true maintenance).
  */
-function recalculateFromWeight(previousWeight, currentWeight) {
+function recalculateFromWeight(previousWeight, currentWeight, dryRun) {
   if (!previousWeight || !currentWeight || previousWeight <= 0 || currentWeight <= 0) {
     return null;
   }
 
-  var intake = getStreakDailyIntake();
-  if (intake.days < WEIGHT_RECALC_REQUIRED_DAYS) return null;
+  var intake = getStreakDailyIntake(!!dryRun);
+  if (!dryRun && intake.days < WEIGHT_RECALC_REQUIRED_DAYS) return null;
+  if (intake.days < 1) return null;
 
   var weightChange = currentWeight - previousWeight;
   var totalEnergyBalance = weightChange * 6000;
@@ -180,8 +184,9 @@ function computeGoalFromAdj(tdee, adj, ratios) {
 /**
  * Open the weight recalculation modal
  */
-function openWeightRecalcModal() {
+function openWeightRecalcModal(dryRun) {
   var modal = document.getElementById("weight-recalc-modal");
+  modal._dryRun = !!dryRun;
 
   // Pre-fill previous weight if available
   var prevWeightInput = document.getElementById("recalc-prev-weight");
@@ -197,6 +202,7 @@ function openWeightRecalcModal() {
   // Reset to input step
   document.getElementById("recalc-step-input").style.display = "block";
   document.getElementById("recalc-step-preview").style.display = "none";
+  document.getElementById("recalc-dry-run-banner").style.display = "none";
 
   modal.classList.add("active");
 }
@@ -209,6 +215,9 @@ function closeWeightRecalcModal() {
  * Calculate and show preview of new goals
  */
 function previewWeightRecalc() {
+  var modal = document.getElementById("weight-recalc-modal");
+  var dryRun = modal._dryRun;
+
   var prevWeight =
     parseFloat(document.getElementById("recalc-prev-weight").value) || 0;
   var curWeight =
@@ -224,14 +233,29 @@ function previewWeightRecalc() {
     return;
   }
 
-  var result = recalculateFromWeight(prevWeight, curWeight);
+  var result = recalculateFromWeight(prevWeight, curWeight, dryRun);
   if (!result) {
-    showToast("Chyba ve výpočtu");
+    showToast(dryRun ? "Nejsou dostupná žádná data pro výpočet" : "Chyba ve výpočtu");
     return;
   }
 
   // Store for approval
-  document.getElementById("weight-recalc-modal")._pendingResult = result;
+  modal._pendingResult = result;
+
+  // Dry run banner and approve button
+  var banner = document.getElementById("recalc-dry-run-banner");
+  var approveBtn = document.getElementById("btn-recalc-approve");
+  if (dryRun) {
+    banner.style.display = "flex";
+    document.getElementById("recalc-dry-run-days").textContent = result.trackedDays;
+    document.getElementById("recalc-dry-run-required").textContent = WEIGHT_RECALC_REQUIRED_DAYS;
+    approveBtn.disabled = true;
+    approveBtn.style.opacity = "0.5";
+  } else {
+    banner.style.display = "none";
+    approveBtn.disabled = false;
+    approveBtn.style.opacity = "";
+  }
 
   // Show preview
   document.getElementById("recalc-step-input").style.display = "none";
@@ -367,7 +391,7 @@ function updateWeightRecalcUI() {
   var available = isWeightRecalcAvailable();
   var streakInfo = checkFoodLoggingStreak();
 
-  btn.disabled = !available;
+  btn.classList.toggle("locked", !available);
 
   if (available) {
     statusEl.textContent = "K dispozici — 14 dní konzistentního záznamu dosaženo";
