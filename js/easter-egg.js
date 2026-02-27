@@ -208,13 +208,7 @@
     var closeBtn = document.getElementById("ee-close");
     if (closeBtn) closeBtn.addEventListener("click", closeGame);
 
-    // Overlay close
-    var modal = document.getElementById("ee-modal");
-    if (modal) {
-      modal.addEventListener("click", function (e) {
-        if (e.target === e.currentTarget) closeGame();
-      });
-    }
+    // (fullscreen mode – no overlay dismiss)
 
     // Retry button
     var retryBtn = document.getElementById("ee-retry");
