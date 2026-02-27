@@ -1466,40 +1466,114 @@
       </div>
     </div>
 
-    <!-- ===== EASTER EGG MODAL ===== -->
+    <!-- ===== EASTER EGG: TAP CHALLENGE (tap daily ring 5×) ===== -->
     <div class="ee-fullscreen" id="ee-modal">
       <button class="ee-close-btn" id="ee-close">&times;</button>
       <h2 class="ee-title">Tap Challenge!</h2>
       <div class="ee-stats-bar">
         <div class="ee-stat">
           <span class="ee-stat-label">Score</span>
-          <span class="ee-stat-val" id="ee-score">0</span>
+          <span class="ee-stat-val" id="ee-tap-score">0</span>
         </div>
         <div class="ee-stat">
           <span class="ee-stat-label">Time</span>
-          <span class="ee-stat-val" id="ee-timer">5.0</span>
+          <span class="ee-stat-val" id="ee-tap-timer">5.0</span>
         </div>
       </div>
-      <div id="ee-countdown" style="display:none"></div>
+      <div id="ee-tap-countdown" style="display:none"></div>
       <div id="ee-tap-area" style="display:none">
         <div class="ee-tap-hint">👆</div>
         <div class="ee-tap-text">TAP TAP TAP!</div>
       </div>
-      <div id="ee-result" style="display:none">
+      <div id="ee-tap-result" style="display:none">
         <div class="ee-result-emoji">🎉</div>
         <div class="ee-result-title">Hotovo!</div>
-        <div id="ee-new-record">Novy rekord!</div>
+        <div id="ee-tap-new-record" class="ee-new-record">Novy rekord!</div>
         <div class="ee-result-scores">
           <div class="ee-result-score-item">
             <span class="ee-result-score-label">Score</span>
-            <span class="ee-result-score-val" id="ee-final-score">0</span>
+            <span class="ee-result-score-val" id="ee-tap-final">0</span>
           </div>
           <div class="ee-result-score-item">
             <span class="ee-result-score-label">Rekord</span>
-            <span class="ee-result-score-val" id="ee-best-score">0</span>
+            <span class="ee-result-score-val" id="ee-tap-best">0</span>
           </div>
         </div>
-        <button class="ee-retry-btn" id="ee-retry">Znovu</button>
+        <button class="ee-retry-btn" id="ee-tap-retry">Znovu</button>
+      </div>
+    </div>
+
+    <!-- ===== EASTER EGG: FOOD CATCH (type "hesoyam" in search) ===== -->
+    <div class="ee-fullscreen" id="ee-catch-modal">
+      <button class="ee-close-btn" id="ee-catch-close">&times;</button>
+      <h2 class="ee-title">Food Catch!</h2>
+      <div class="ee-stats-bar">
+        <div class="ee-stat">
+          <span class="ee-stat-label">Score</span>
+          <span class="ee-stat-val" id="ee-catch-score">0</span>
+        </div>
+        <div class="ee-stat">
+          <span class="ee-stat-label">Time</span>
+          <span class="ee-stat-val" id="ee-catch-timer">20.0</span>
+        </div>
+      </div>
+      <div id="ee-catch-countdown" style="display:none"></div>
+      <div id="ee-catch-area">
+        <div class="ee-catch-hint">🍎</div>
+        <div class="ee-tap-text">Chytej jidlo!</div>
+      </div>
+      <div id="ee-catch-result" style="display:none">
+        <div class="ee-result-emoji">🍽️</div>
+        <div class="ee-result-title">Hotovo!</div>
+        <div id="ee-catch-new-record" class="ee-new-record">Novy rekord!</div>
+        <div class="ee-result-scores">
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Score</span>
+            <span class="ee-result-score-val" id="ee-catch-final">0</span>
+          </div>
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Rekord</span>
+            <span class="ee-result-score-val" id="ee-catch-best-val">0</span>
+          </div>
+        </div>
+        <button class="ee-retry-btn" id="ee-catch-retry">Znovu</button>
+      </div>
+    </div>
+
+    <!-- ===== EASTER EGG: EMOJI MEMORY (tap "Nastavení" header 7×) ===== -->
+    <div class="ee-fullscreen" id="ee-memory-modal">
+      <button class="ee-close-btn" id="ee-memory-close">&times;</button>
+      <h2 class="ee-title">Pametovka!</h2>
+      <div class="ee-stats-bar">
+        <div class="ee-stat">
+          <span class="ee-stat-label">Tahy</span>
+          <span class="ee-stat-val" id="ee-memory-moves">0</span>
+        </div>
+        <div class="ee-stat">
+          <span class="ee-stat-label">Cas</span>
+          <span class="ee-stat-val" id="ee-memory-time">0:00</span>
+        </div>
+      </div>
+      <div id="ee-memory-board" class="ee-memory-board"></div>
+      <div id="ee-memory-result" style="display:none">
+        <div class="ee-result-emoji">🧠</div>
+        <div class="ee-result-title">Vsechny pary!</div>
+        <div id="ee-memory-new-record" class="ee-new-record">Novy rekord!</div>
+        <div class="ee-result-scores">
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Tahy</span>
+            <span class="ee-result-score-val" id="ee-memory-final-moves">0</span>
+          </div>
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Cas</span>
+            <span class="ee-result-score-val" id="ee-memory-final-time">0:00</span>
+          </div>
+          <div class="ee-result-score-item">
+            <span class="ee-result-score-label">Rekord</span>
+            <span class="ee-result-score-val" id="ee-memory-best-val">0</span>
+          </div>
+        </div>
+        <button class="ee-retry-btn" id="ee-memory-retry">Znovu</button>
       </div>
     </div>
 
