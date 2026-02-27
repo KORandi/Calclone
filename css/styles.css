@@ -2885,3 +2885,216 @@
         color: var(--text-secondary);
         margin-bottom: 12px;
       }
+
+      /* ═══════════════════════════════════════════ */
+      /* EASTER EGG – Tap Challenge Minigame        */
+      /* ═══════════════════════════════════════════ */
+      .daily-ring-wrap {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      #ee-modal .modal {
+        max-width: 360px;
+        text-align: center;
+        overflow: hidden;
+      }
+      #ee-modal .modal-header {
+        justify-content: center;
+        position: relative;
+      }
+      .ee-close-btn {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: var(--bg);
+        border-radius: 50%;
+        font-size: 18px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ee-stats-bar {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-bottom: 16px;
+      }
+      .ee-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .ee-stat-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+      .ee-stat-val {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--green);
+        line-height: 1.1;
+      }
+      #ee-timer {
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Countdown */
+      #ee-countdown {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+        font-weight: 800;
+        color: var(--green);
+        height: 200px;
+      }
+      .ee-pulse {
+        animation: eePulse 0.7s ease-in-out infinite;
+      }
+      @keyframes eePulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.6; }
+      }
+
+      /* Tap area */
+      #ee-tap-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 220px;
+        background: var(--bg);
+        border-radius: 16px;
+        border: 2px dashed var(--border);
+        position: relative;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        cursor: pointer;
+      }
+      #ee-tap-area:active {
+        background: var(--green-light);
+        border-color: var(--green);
+      }
+      .ee-tap-hint {
+        font-size: 40px;
+        margin-bottom: 8px;
+        pointer-events: none;
+      }
+      .ee-tap-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        pointer-events: none;
+      }
+
+      /* Emoji particles */
+      .ee-emoji {
+        position: absolute;
+        pointer-events: none;
+        animation: eeFloat 0.7s ease-out forwards;
+        z-index: 10;
+      }
+      @keyframes eeFloat {
+        0% {
+          opacity: 1;
+          transform: translate(0, 0) scale(1) rotate(0deg);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(45deg);
+        }
+      }
+
+      /* Score bump */
+      .ee-bump {
+        animation: eeBump 0.15s ease-out;
+      }
+      @keyframes eeBump {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+        100% { transform: scale(1); }
+      }
+
+      /* Result screen */
+      #ee-result {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 0;
+      }
+      .ee-result-emoji {
+        font-size: 48px;
+      }
+      .ee-result-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .ee-result-scores {
+        display: flex;
+        gap: 20px;
+      }
+      .ee-result-score-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .ee-result-score-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+      .ee-result-score-val {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--green);
+        line-height: 1.1;
+      }
+      #ee-new-record {
+        display: none;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 16px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        animation: eeRecordPulse 0.6s ease-in-out infinite alternate;
+      }
+      @keyframes eeRecordPulse {
+        from { transform: scale(1); }
+        to { transform: scale(1.08); }
+      }
+      .ee-retry-btn {
+        padding: 12px 32px;
+        border: none;
+        border-radius: 12px;
+        background: var(--green);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin-top: 4px;
+      }
+      .ee-retry-btn:active {
+        background: var(--green-dark);
+      }
