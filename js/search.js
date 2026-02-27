@@ -186,6 +186,11 @@ var ROHLIK_URL =
 var rohlikAbort = null;
 
 async function rohlikSearch(query) {
+  // Check cache first
+  const cacheKeyNorm = "rohlik_" + normalizeCacheKey(query);
+  const cached = getCached(state.searchCache, cacheKeyNorm);
+  if (cached !== null) return cached;
+
   if (rohlikAbort) rohlikAbort.abort();
   rohlikAbort = new AbortController();
 
@@ -205,7 +210,7 @@ async function rohlikSearch(query) {
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     const products = json.data?.productList || [];
-    return products
+    const results = products
       .filter((p) => p.composition?.nutritionalValues)
       .slice(0, 10)
       .map((p) => {
@@ -269,6 +274,8 @@ async function rohlikSearch(query) {
           source: "rohlik",
         };
       });
+    setCache(state.searchCache, cacheKeyNorm, results);
+    return results;
   } catch (e) {
     if (e.name === "AbortError") return null;
     console.warn("Rohlik search failed:", e);
