@@ -3269,7 +3269,6 @@
       .ee-memory-card.ee-matched {
         transform: rotateY(180deg);
         border-color: var(--green);
-        opacity: 0.7;
         pointer-events: none;
       }
       .ee-memory-card.ee-matched .ee-card-front {
