@@ -497,6 +497,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const p = parseInt(document.getElementById("wiz-sum-protein").textContent) || 0;
     const c = parseInt(document.getElementById("wiz-sum-carbs").textContent) || 0;
     const f = parseInt(document.getElementById("wiz-sum-fat").textContent) || 0;
+
+    // Save user profile for pre-filling next time
+    const age = parseFloat(document.getElementById("wizard-age").value) || 0;
+    const weight = parseFloat(document.getElementById("wizard-weight").value) || 0;
+    const height = parseFloat(document.getElementById("wizard-height").value) || 0;
+    if (age && weight && height) {
+      state.userProfile = { sex: wizState.sex, age: age, weight: weight, height: height };
+    }
+
     saveWizardGoals(kcal, p, c, f);
   });
 

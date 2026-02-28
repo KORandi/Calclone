@@ -53,6 +53,7 @@ var state = {
   weightRecalcLastUsed: null, // ISO date string of last recalculation
   weightRecalcLastWeight: null, // last recorded weight in kg
   weightHistory: [], // array of { date, weight, previousWeight, kcal, protein, carbs, fat }
+  userProfile: null, // { sex, age, weight, height } — saved from goals wizard for pre-filling
 };
 
 function escapeHtml(str) {
@@ -99,6 +100,7 @@ var SETTINGS_KEYS = [
   "weightRecalcLastUsed",
   "weightRecalcLastWeight",
   "weightHistory",
+  "userProfile",
 ];
 
 // ─── Data keys stored in IndexedDB (large, async) ───
@@ -170,6 +172,7 @@ function loadState() {
       state.weightRecalcLastUsed = parsed.weightRecalcLastUsed || null;
       state.weightRecalcLastWeight = parsed.weightRecalcLastWeight || null;
       state.weightHistory = parsed.weightHistory || [];
+      state.userProfile = parsed.userProfile || null;
     }
   } catch (e) {}
 }
@@ -579,6 +582,7 @@ function importData(file) {
       state.weightRecalcLastUsed = parsed.weightRecalcLastUsed || null;
       state.weightRecalcLastWeight = parsed.weightRecalcLastWeight || null;
       state.weightHistory = parsed.weightHistory || [];
+      state.userProfile = parsed.userProfile || null;
 
       // Data (stored in IndexedDB)
       state.log = parsed.log || {};

@@ -149,6 +149,25 @@ function openGoalsWizard() {
   document.getElementById("wizard-macro-fat").value = state.goals.fat;
   updateLiveKcal();
 
+  // Pre-fill user profile data if previously saved
+  if (state.userProfile) {
+    wizState.sex = state.userProfile.sex || "male";
+    document.querySelectorAll(".wizard-sex-btn").forEach(b => {
+      b.classList.toggle("selected", b.dataset.sex === wizState.sex);
+    });
+    if (state.userProfile.age) document.getElementById("wizard-age").value = state.userProfile.age;
+    if (state.userProfile.weight) document.getElementById("wizard-weight").value = state.userProfile.weight;
+    if (state.userProfile.height) document.getElementById("wizard-height").value = state.userProfile.height;
+  } else {
+    wizState.sex = "male";
+    document.querySelectorAll(".wizard-sex-btn").forEach(b => {
+      b.classList.toggle("selected", b.dataset.sex === "male");
+    });
+    document.getElementById("wizard-age").value = "";
+    document.getElementById("wizard-weight").value = "";
+    document.getElementById("wizard-height").value = "";
+  }
+
   // Reset selections
   document.querySelectorAll("#goals-wizard-modal .wizard-option.selected").forEach(el => el.classList.remove("selected"));
 
