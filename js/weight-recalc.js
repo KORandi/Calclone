@@ -194,6 +194,8 @@ function openWeightRecalcModal(dryRun) {
 
   if (state.weightRecalcLastWeight) {
     prevWeightInput.value = state.weightRecalcLastWeight;
+  } else if (state.userProfile && state.userProfile.weight) {
+    prevWeightInput.value = state.userProfile.weight;
   } else {
     prevWeightInput.value = "";
   }
