@@ -228,7 +228,10 @@ function updateAiSettingsUI() {
 
 function updateAiScanButton() {
   var btn = document.getElementById("ai-scan-btn");
-  btn.style.display = (state.aiEnabled && state.aiProvider && state.aiApiKey) ? "" : "none";
+  var searchWrap = document.querySelector(".search-wrap");
+  var aiActive = state.aiEnabled && state.aiProvider && state.aiApiKey;
+  btn.style.display = aiActive ? "flex" : "none";
+  searchWrap.classList.toggle("has-ai-btn", aiActive);
 }
 
 function parseAiJsonResponse(text) {
