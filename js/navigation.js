@@ -61,6 +61,7 @@ function setSearchLoading(loading) {
   const clear = document.getElementById("search-clear");
   const barcodeBtn = document.getElementById("barcode-btn");
   const aiScanBtn = document.getElementById("ai-scan-btn");
+  const searchWrap = document.querySelector(".search-wrap");
   const hasText =
     document.getElementById("search-input").value.length > 0;
   const aiActive = state.aiEnabled && state.aiProvider && state.aiApiKey;
@@ -69,11 +70,13 @@ function setSearchLoading(loading) {
     clear.classList.remove("active");
     barcodeBtn.style.display = "none";
     if (aiScanBtn) aiScanBtn.style.display = "none";
+    searchWrap.classList.remove("has-ai-btn");
   } else {
     spinner.classList.remove("active");
     clear.classList.toggle("active", hasText);
     barcodeBtn.style.display = "flex";
-    if (aiScanBtn) aiScanBtn.style.display = aiActive ? "" : "none";
+    if (aiScanBtn) aiScanBtn.style.display = aiActive ? "flex" : "none";
+    searchWrap.classList.toggle("has-ai-btn", aiActive);
   }
 }
 

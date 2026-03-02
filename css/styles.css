@@ -382,6 +382,12 @@
       .search-wrap input {
         padding-right: 72px;
       }
+      .search-wrap.has-ai-btn input {
+        padding-right: 110px;
+      }
+      .search-wrap.has-ai-btn .search-clear {
+        right: 72px;
+      }
 
       .search-wrap .search-spinner {
         position: absolute;
@@ -3278,7 +3284,8 @@
       /* ═══════════════════════════════════════════ */
 
       /* AI scan button in search bar */
-      .ai-scan-btn {
+      .search-wrap .ai-scan-btn {
+        right: 48px;
         background: var(--green) !important;
         color: white !important;
       }
