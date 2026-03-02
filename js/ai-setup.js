@@ -5,6 +5,8 @@ var AI_PROVIDERS = {
   gemini: {
     name: "Google Gemini",
     model: "gemini-2.0-flash",
+    pricing: "Zdarma (15 req/min)",
+    recommended: true,
     docsUrl: "https://ai.google.dev/gemini-api/docs/api-key",
     docsHtml: `<ol>
       <li>Přejděte na <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></li>
@@ -39,6 +41,7 @@ var AI_PROVIDERS = {
   claude: {
     name: "Anthropic Claude",
     model: "claude-sonnet-4-20250514",
+    pricing: "~0,80 Kč / snímek",
     docsUrl: "https://docs.anthropic.com/en/api/getting-started",
     docsHtml: `<ol>
       <li>Přejděte na <a href="https://console.anthropic.com/" target="_blank" rel="noopener">Anthropic Console</a></li>
@@ -81,6 +84,7 @@ var AI_PROVIDERS = {
   openai: {
     name: "OpenAI",
     model: "gpt-4o",
+    pricing: "~0,50 Kč / snímek",
     docsUrl: "https://platform.openai.com/docs/quickstart",
     docsHtml: `<ol>
       <li>Přejděte na <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI Platform</a></li>
