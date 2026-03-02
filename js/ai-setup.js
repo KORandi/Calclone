@@ -157,8 +157,12 @@ function showAiSetupStep(stepId) {
 }
 
 function selectAiProvider(provider) {
-  _aiSetupProvider = provider;
   var info = AI_PROVIDERS[provider];
+  if (!info) {
+    showToast("Neznámý AI provider");
+    return;
+  }
+  _aiSetupProvider = provider;
   document.getElementById("ai-selected-provider-name").textContent = info.name;
   document.querySelectorAll(".ai-provider-option").forEach(function (el) {
     el.classList.toggle("selected", el.dataset.provider === provider);
@@ -172,6 +176,10 @@ function showAiKeyEntry() {
 }
 
 function showAiDocs() {
+  if (!_aiSetupProvider || !AI_PROVIDERS[_aiSetupProvider]) {
+    showToast("Nejdříve vyberte AI provider");
+    return;
+  }
   var info = AI_PROVIDERS[_aiSetupProvider];
   document.getElementById("ai-docs-content").innerHTML = info.docsHtml;
   showAiSetupStep("ai-step-get-key");
@@ -181,6 +189,10 @@ function saveAiApiKey() {
   var key = document.getElementById("ai-api-key-input").value.trim();
   if (!key) {
     showToast("Zadejte API klíč");
+    return;
+  }
+  if (!_aiSetupProvider || !AI_PROVIDERS[_aiSetupProvider]) {
+    showToast("Nejdříve vyberte AI provider");
     return;
   }
   state.aiProvider = _aiSetupProvider;
@@ -216,6 +228,12 @@ function updateAiSettingsUI() {
 
   if (state.aiProvider && state.aiApiKey) {
     var info = AI_PROVIDERS[state.aiProvider];
+    if (!info) {
+      statusDot.className = "ai-status-dot inactive";
+      statusText.textContent = "Neplatný AI provider";
+      removeBtn.style.display = "block";
+      return;
+    }
     statusDot.className = "ai-status-dot active";
     statusText.textContent = info.name + " — aktivní";
     removeBtn.style.display = "block";
