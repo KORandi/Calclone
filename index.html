@@ -146,6 +146,23 @@
             <line x1="17" y1="8" x2="17" y2="16" />
           </svg>
         </button>
+        <button
+          class="barcode-btn ai-scan-btn"
+          id="ai-scan-btn"
+          title="AI rozpoznání jídla"
+          style="display: none"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+            <path d="M9.5 13l1.5 1.5 3-3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
         <div class="search-spinner" id="search-spinner"></div>
       </div>
       <div class="cat-pills" id="cat-pills"></div>
@@ -833,6 +850,49 @@
       </div>
 
       <div class="setting-group">
+        <h3>AI rozpoznání jídla</h3>
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
+            <label>AI skenování potravin</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-ai-enabled" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Vyfoťte jídlo a AI rozpozná ingredience a nutriční hodnoty.
+            Aplikace neposkytuje přímý přístup k AI modelům &mdash; zadáváte vlastní API klíč.
+          </p>
+        </div>
+        <div id="ai-settings-section" style="display: none; margin-top: 12px">
+          <div class="setting-card" style="padding: 14px">
+            <div class="ai-provider-status" id="ai-provider-status">
+              <span class="ai-status-dot inactive" id="ai-status-dot"></span>
+              <span id="ai-status-text">Žádný AI model není nastaven</span>
+            </div>
+            <button class="btn-add" id="btn-ai-setup" style="margin-top: 12px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93L12 22"/>
+                <path d="M8 6a4 4 0 0 1 8 0"/>
+                <path d="M17 12.5c1.77.78 3 2.53 3 4.5a5 5 0 0 1-10 0c0-1.97 1.23-3.72 3-4.5"/>
+                <path d="M7 12.5C5.23 13.28 4 15.03 4 17a5 5 0 0 0 10 0c0-1.97-1.23-3.72-3-4.5"/>
+              </svg>
+              Nastavit AI model
+            </button>
+            <button class="btn-add" id="btn-ai-remove" style="margin-top: 8px; background: var(--border); color: var(--text); display: none;">
+              Odebrat API klíč
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
         <h3>Mezipaměť</h3>
         <div class="setting-card" style="padding: 14px">
           <p style="font-size: 13px; color: var(--text-secondary)">
@@ -1466,6 +1526,138 @@
       </div>
     </div>
 
+    <!-- ===== MODAL: AI Setup Wizard ===== -->
+    <div class="modal-overlay" id="ai-setup-modal">
+      <div class="modal">
+        <h2 id="ai-setup-title">Nastavení AI</h2>
+
+        <!-- Step 1: Info + Provider selection -->
+        <div class="ai-setup-step active" id="ai-step-provider">
+          <div class="ai-info-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <p>Aplikace neposkytuje přímý přístup k AI modelům. Zadáváte vlastní API klíč, který slouží pouze pro komunikaci s vybraným poskytovatelem.</p>
+          </div>
+          <p class="ai-step-label">Vyberte AI model:</p>
+          <div class="ai-provider-list">
+            <button class="ai-provider-option" data-provider="gemini">
+              <span class="ai-provider-icon">&#9670;</span>
+              <div>
+                <div class="ai-provider-name">Google Gemini</div>
+                <div class="ai-provider-desc">Gemini 2.0 Flash &mdash; rychlý a přesný</div>
+              </div>
+            </button>
+            <button class="ai-provider-option" data-provider="claude">
+              <span class="ai-provider-icon">&#9679;</span>
+              <div>
+                <div class="ai-provider-name">Anthropic Claude</div>
+                <div class="ai-provider-desc">Claude Sonnet &mdash; detailní analýza</div>
+              </div>
+            </button>
+            <button class="ai-provider-option" data-provider="openai">
+              <span class="ai-provider-icon">&#9733;</span>
+              <div>
+                <div class="ai-provider-name">OpenAI</div>
+                <div class="ai-provider-desc">GPT-4o &mdash; univerzální model</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Has API key? -->
+        <div class="ai-setup-step" id="ai-step-haskey">
+          <p class="ai-step-label">Máte API klíč pro <strong id="ai-selected-provider-name"></strong>?</p>
+          <div class="ai-haskey-buttons">
+            <button class="btn-add ai-haskey-btn" id="ai-haskey-yes">Ano, mám klíč</button>
+            <button class="btn-add ai-haskey-btn" id="ai-haskey-no" style="background: var(--border); color: var(--text); margin-top: 8px;">Ne, nemám klíč</button>
+          </div>
+        </div>
+
+        <!-- Step 3a: Enter API key -->
+        <div class="ai-setup-step" id="ai-step-enter-key">
+          <p class="ai-step-label">Zadejte API klíč:</p>
+          <div class="ai-key-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <p>API klíč je uložen pouze lokálně ve vašem zařízení. Není sdílen ani odesílán na žádný server třetí strany.</p>
+          </div>
+          <input type="password" id="ai-api-key-input" class="ai-key-input" placeholder="Vložte API klíč..." autocomplete="off" />
+          <button class="btn-add" id="btn-ai-save-key" style="margin-top: 12px;">Uložit a aktivovat</button>
+          <button class="btn-add" id="btn-ai-back-to-provider" style="margin-top: 8px; background: var(--border); color: var(--text);">Zpět</button>
+        </div>
+
+        <!-- Step 3b: Get API key docs -->
+        <div class="ai-setup-step" id="ai-step-get-key">
+          <p class="ai-step-label">Jak získat API klíč:</p>
+          <div class="ai-docs-card" id="ai-docs-content">
+            <!-- Filled dynamically -->
+          </div>
+          <button class="btn-add" id="btn-ai-have-key-now" style="margin-top: 12px;">Už mám klíč</button>
+          <button class="btn-add" id="btn-ai-back-from-docs" style="margin-top: 8px; background: var(--border); color: var(--text);">Zpět</button>
+        </div>
+
+        <button class="btn-add ai-cancel-btn" id="btn-ai-cancel" style="background: var(--border); color: var(--text); margin-top: 12px;">Zrušit</button>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: AI Food Scan ===== -->
+    <div class="modal-overlay" id="ai-scan-modal">
+      <div class="modal">
+        <h2>AI rozpoznání jídla</h2>
+
+        <!-- Step 1: Camera capture -->
+        <div class="ai-scan-step active" id="ai-scan-step-capture">
+          <p class="modal-sub">Vyfoťte jídlo pro rozpoznání ingrediencí</p>
+          <div class="ai-scan-preview-wrap">
+            <video id="ai-scan-video" autoplay playsinline></video>
+            <canvas id="ai-scan-canvas" style="display:none"></canvas>
+            <img id="ai-scan-preview" style="display:none" alt="Náhled fotky" />
+          </div>
+          <div class="ai-scan-buttons">
+            <button class="btn-add ai-capture-btn" id="btn-ai-capture">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              Vyfotit
+            </button>
+            <button class="btn-add" id="btn-ai-retake" style="display:none; background: var(--border); color: var(--text);">Znovu</button>
+            <button class="btn-add" id="btn-ai-analyze" style="display:none;">Analyzovat</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Analysis progress -->
+        <div class="ai-scan-step" id="ai-scan-step-loading">
+          <div class="ai-scan-loading">
+            <div class="ai-scan-spinner"></div>
+            <p>AI analyzuje ingredience...</p>
+          </div>
+        </div>
+
+        <!-- Step 3: Results / ingredient approval -->
+        <div class="ai-scan-step" id="ai-scan-step-results">
+          <p class="ai-step-label">Rozpoznané ingredience:</p>
+          <p class="ai-results-hint">Odškrtněte ingredience, které chcete vyhledat</p>
+          <div class="ai-ingredients-list" id="ai-ingredients-list"></div>
+          <button class="btn-add" id="btn-ai-search-ingredients" style="margin-top: 12px;">Vyhledat vybrané</button>
+        </div>
+
+        <!-- Error state -->
+        <div class="ai-scan-step" id="ai-scan-step-error">
+          <div class="ai-scan-error">
+            <p id="ai-scan-error-text">Chyba při analýze</p>
+          </div>
+          <button class="btn-add" id="btn-ai-retry" style="margin-top: 12px;">Zkusit znovu</button>
+        </div>
+
+        <button class="btn-add" id="btn-ai-scan-cancel" style="background: var(--border); color: var(--text); margin-top: 12px;">Zavřít</button>
+      </div>
+    </div>
+
     <!-- ===== EASTER EGG: TAP CHALLENGE (tap daily ring 5×) ===== -->
     <div class="ee-fullscreen" id="ee-modal">
       <button class="ee-close-btn" id="ee-close">&times;</button>
@@ -1661,6 +1853,8 @@
     <script src="js/navigation.js"></script>
 
     <!-- Layer 5: Feature modules -->
+    <script src="js/ai-setup.js"></script>
+    <script src="js/ai-scan.js"></script>
     <script src="js/qr-share.js"></script>
     <script src="js/offline.js"></script>
     <script src="js/easter-egg.js"></script>

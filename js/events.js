@@ -665,6 +665,9 @@ document.addEventListener("DOMContentLoaded", () => {
         state.weightRecalcLastUsed = null;
         state.weightRecalcLastWeight = null;
         state.weightHistory = [];
+        state.aiEnabled = false;
+        state.aiProvider = null;
+        state.aiApiKey = null;
         state.theme = "default";
         applyTheme("default");
         saveState();
@@ -937,6 +940,127 @@ document.addEventListener("DOMContentLoaded", () => {
       saveState();
       renderQuickGramsChips();
     });
+
+  // ─── AI SETUP EVENTS ───
+  // AI toggle
+  document
+    .getElementById("toggle-ai-enabled")
+    .addEventListener("change", (e) => {
+      state.aiEnabled = e.target.checked;
+      document.getElementById("ai-settings-section").style.display =
+        e.target.checked ? "block" : "none";
+      if (!e.target.checked) {
+        // When disabling, hide scan button but keep key
+      }
+      saveState();
+      updateAiScanButton();
+    });
+
+  // AI setup modal
+  document
+    .getElementById("btn-ai-setup")
+    .addEventListener("click", openAiSetupModal);
+
+  // AI remove key
+  document
+    .getElementById("btn-ai-remove")
+    .addEventListener("click", removeAiApiKey);
+
+  // AI provider selection
+  document.querySelectorAll(".ai-provider-option").forEach((el) => {
+    el.addEventListener("click", () => selectAiProvider(el.dataset.provider));
+  });
+
+  // AI has key - yes
+  document
+    .getElementById("ai-haskey-yes")
+    .addEventListener("click", showAiKeyEntry);
+
+  // AI has key - no
+  document
+    .getElementById("ai-haskey-no")
+    .addEventListener("click", showAiDocs);
+
+  // AI save key
+  document
+    .getElementById("btn-ai-save-key")
+    .addEventListener("click", saveAiApiKey);
+
+  // AI back to provider from key entry
+  document
+    .getElementById("btn-ai-back-to-provider")
+    .addEventListener("click", () => showAiSetupStep("ai-step-provider"));
+
+  // AI have key now (from docs)
+  document
+    .getElementById("btn-ai-have-key-now")
+    .addEventListener("click", showAiKeyEntry);
+
+  // AI back from docs
+  document
+    .getElementById("btn-ai-back-from-docs")
+    .addEventListener("click", () => showAiSetupStep("ai-step-haskey"));
+
+  // AI cancel setup
+  document
+    .getElementById("btn-ai-cancel")
+    .addEventListener("click", closeAiSetupModal);
+
+  // AI setup modal overlay close
+  document
+    .getElementById("ai-setup-modal")
+    .addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeAiSetupModal();
+    });
+
+  // ─── AI SCAN EVENTS ───
+  // AI scan button
+  document
+    .getElementById("ai-scan-btn")
+    .addEventListener("click", openAiScanModal);
+
+  // AI capture photo
+  document
+    .getElementById("btn-ai-capture")
+    .addEventListener("click", captureAiPhoto);
+
+  // AI retake photo
+  document
+    .getElementById("btn-ai-retake")
+    .addEventListener("click", retakeAiPhoto);
+
+  // AI analyze photo
+  document
+    .getElementById("btn-ai-analyze")
+    .addEventListener("click", analyzeAiPhoto);
+
+  // AI search ingredients
+  document
+    .getElementById("btn-ai-search-ingredients")
+    .addEventListener("click", searchAiIngredients);
+
+  // AI retry
+  document
+    .getElementById("btn-ai-retry")
+    .addEventListener("click", () => {
+      showAiScanStep("ai-scan-step-capture");
+      retakeAiPhoto();
+    });
+
+  // AI scan cancel
+  document
+    .getElementById("btn-ai-scan-cancel")
+    .addEventListener("click", closeAiScanModal);
+
+  // AI scan modal overlay close
+  document
+    .getElementById("ai-scan-modal")
+    .addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeAiScanModal();
+    });
+
+  // Initialize AI scan button visibility on load
+  updateAiScanButton();
 });
 
 // Refresh today page when app becomes visible (handles overnight date change)
