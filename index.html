@@ -869,7 +869,9 @@
             Vyfoťte jídlo a AI rozpozná ingredience a nutriční hodnoty.
             Aplikace neposkytuje přímý přístup k AI modelům &mdash; zadáváte vlastní API klíč.
           </p>
-          <div class="ai-warning-banner" style="margin-top: 8px;">
+        </div>
+        <div id="ai-settings-section" style="display: none; margin-top: 12px">
+          <div class="ai-warning-banner" style="margin-bottom: 12px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="flex-shrink: 0;">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/>
@@ -877,8 +879,6 @@
             </svg>
             <p>AI odhady kalorií jsou <strong>velice nepřesné</strong>. Dle studií činí průměrná chyba 40–70 % u kalorií a až 110 % u makroživin. Používejte pouze pokud nemáte údaje z etikety, databáze nebo vlastní váhy.</p>
           </div>
-        </div>
-        <div id="ai-settings-section" style="display: none; margin-top: 12px">
           <div class="setting-card" style="padding: 14px">
             <div class="ai-provider-status" id="ai-provider-status">
               <span class="ai-status-dot inactive" id="ai-status-dot"></span>
@@ -1541,21 +1541,13 @@
 
         <!-- Step 1: Info + Provider selection -->
         <div class="ai-setup-step active" id="ai-step-provider">
-          <div class="ai-info-banner">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="16" x2="12" y2="12"/>
-              <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
-            <p>Aplikace neposkytuje přímý přístup k AI modelům. Zadáváte vlastní API klíč, který slouží pouze pro komunikaci s vybraným poskytovatelem.</p>
-          </div>
           <div class="ai-warning-banner">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="flex-shrink: 0;">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <p>AI odhady kalorií z fotek jsou <strong>velice nepřesné</strong>. Studie (Fridolfsson&nbsp;et&nbsp;al.,&nbsp;2025) ukázala průměrnou chybu <strong>40–70&nbsp;%</strong> u kalorií a <strong>42–110&nbsp;%</strong> u makroživin. Používejte pouze jako poslední možnost &mdash; když nemáte údaje z etikety, databáze ani vlastní váhy.</p>
+            <p>AI odhady kalorií z fotek jsou <strong>velice nepřesné</strong> (chyba 40–70&nbsp;% u kalorií, až 110&nbsp;% u makroživin). Používejte pouze jako poslední možnost. Zadáváte vlastní API klíč &mdash; není sdílen s třetími stranami.</p>
           </div>
           <p class="ai-step-label">Vyberte AI model:</p>
           <div class="ai-provider-list">
