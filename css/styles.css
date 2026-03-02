@@ -324,7 +324,7 @@
       }
       .search-wrap .search-clear {
         position: absolute;
-        right: 36px;
+        right: 48px;
         top: 50%;
         transform: translateY(-50%);
         width: 20px;
@@ -337,7 +337,6 @@
         display: none;
         align-items: center;
         justify-content: center;
-        margin-right: 16px;
       }
       .search-wrap .search-clear.active {
         display: flex;
@@ -386,7 +385,10 @@
         padding-right: 110px;
       }
       .search-wrap.has-ai-btn .search-clear {
-        right: 72px;
+        right: 84px;
+      }
+      .search-wrap.has-ai-btn .search-spinner {
+        right: 52px;
       }
 
       .search-wrap .search-spinner {
