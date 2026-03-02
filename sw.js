@@ -1,4 +1,4 @@
-const CACHE_NAME = "kaltab-v22";
+const CACHE_NAME = "kaltab-v23";
 const API_CACHE = "kaltab-api-v21";
 
 const ASSETS = [
@@ -27,6 +27,8 @@ const ASSETS = [
   "./js/custom-food.js",
   "./js/navigation.js",
   "./js/qr-share.js",
+  "./js/ai-setup.js",
+  "./js/ai-scan.js",
   "./js/offline.js",
   "./js/events.js",
 ];

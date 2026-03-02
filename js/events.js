@@ -947,12 +947,8 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("toggle-ai-enabled")
     .addEventListener("change", (e) => {
       state.aiEnabled = e.target.checked;
-      document.getElementById("ai-settings-section").style.display =
-        e.target.checked ? "block" : "none";
-      if (!e.target.checked) {
-        // When disabling, hide scan button but keep key
-      }
       saveState();
+      updateAiSettingsUI();
       updateAiScanButton();
     });
 
@@ -1059,7 +1055,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === e.currentTarget) closeAiScanModal();
     });
 
-  // Initialize AI scan button visibility on load
+  // Initialize AI UI on load
+  updateAiSettingsUI();
   updateAiScanButton();
 });
 
