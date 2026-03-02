@@ -869,6 +869,14 @@
             Vyfoťte jídlo a AI rozpozná ingredience a nutriční hodnoty.
             Aplikace neposkytuje přímý přístup k AI modelům &mdash; zadáváte vlastní API klíč.
           </p>
+          <div class="ai-warning-banner" style="margin-top: 8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="flex-shrink: 0;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <p>AI odhady kalorií jsou <strong>velice nepřesné</strong>. Dle studií činí průměrná chyba 40–70 % u kalorií a až 110 % u makroživin. Používejte pouze pokud nemáte údaje z etikety, databáze nebo vlastní váhy.</p>
+          </div>
         </div>
         <div id="ai-settings-section" style="display: none; margin-top: 12px">
           <div class="setting-card" style="padding: 14px">
@@ -1541,13 +1549,22 @@
             </svg>
             <p>Aplikace neposkytuje přímý přístup k AI modelům. Zadáváte vlastní API klíč, který slouží pouze pro komunikaci s vybraným poskytovatelem.</p>
           </div>
+          <div class="ai-warning-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="flex-shrink: 0;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <p>AI odhady kalorií z fotek jsou <strong>velice nepřesné</strong>. Studie (Fridolfsson&nbsp;et&nbsp;al.,&nbsp;2025) ukázala průměrnou chybu <strong>40–70&nbsp;%</strong> u kalorií a <strong>42–110&nbsp;%</strong> u makroživin. Používejte pouze jako poslední možnost &mdash; když nemáte údaje z etikety, databáze ani vlastní váhy.</p>
+          </div>
           <p class="ai-step-label">Vyberte AI model:</p>
           <div class="ai-provider-list">
             <button class="ai-provider-option" data-provider="gemini">
               <span class="ai-provider-icon">&#9670;</span>
               <div>
-                <div class="ai-provider-name">Google Gemini</div>
+                <div class="ai-provider-name">Google Gemini <span class="ai-badge-recommended">Doporučeno</span></div>
                 <div class="ai-provider-desc">Gemini 2.0 Flash &mdash; rychlý a přesný</div>
+                <div class="ai-provider-pricing ai-pricing-free">Zdarma (15 req/min, 1M tokenů/min)</div>
               </div>
             </button>
             <button class="ai-provider-option" data-provider="claude">
@@ -1555,6 +1572,7 @@
               <div>
                 <div class="ai-provider-name">Anthropic Claude</div>
                 <div class="ai-provider-desc">Claude Sonnet &mdash; detailní analýza</div>
+                <div class="ai-provider-pricing">~0,80 Kč / snímek</div>
               </div>
             </button>
             <button class="ai-provider-option" data-provider="openai">
@@ -1562,6 +1580,7 @@
               <div>
                 <div class="ai-provider-name">OpenAI</div>
                 <div class="ai-provider-desc">GPT-4o &mdash; univerzální model</div>
+                <div class="ai-provider-pricing">~0,50 Kč / snímek</div>
               </div>
             </button>
           </div>
