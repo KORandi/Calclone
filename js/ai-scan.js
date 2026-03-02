@@ -154,10 +154,10 @@ async function analyzeAiPhoto() {
       var errLower = errText.toLowerCase();
       if (resp.status === 401 || resp.status === 403) {
         showAiScanError("Neplatný API klíč. Zkontrolujte klíč v Nastavení.");
+      } else if (errLower.includes("resource") && errLower.includes("exhausted") || errLower.includes("quota") || errLower.includes("credit") || errLower.includes("balance") || errLower.includes("billing") || errLower.includes("insufficient_funds")) {
+        showAiScanError("Vyčerpaná kvóta nebo nedostatečný kredit. Zkontrolujte, zda máte API povolenou a aktivní na stránkách poskytovatele.");
       } else if (resp.status === 429) {
         showAiScanError("Příliš mnoho požadavků. Zkuste to za chvíli.");
-      } else if (errLower.includes("credit") || errLower.includes("balance") || errLower.includes("billing") || errLower.includes("quota") || errLower.includes("insufficient_funds")) {
-        showAiScanError("Nedostatečný kredit u AI providera. Dobijte si účet na stránkách poskytovatele.");
       } else if (resp.status >= 500) {
         showAiScanError("Server AI providera je nedostupný (" + resp.status + "). Zkuste to později.");
       } else {
