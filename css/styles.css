@@ -3272,3 +3272,335 @@
         border-width: 3px;
         pointer-events: none;
       }
+
+      /* ═══════════════════════════════════════════ */
+      /* AI SETUP & SCAN                            */
+      /* ═══════════════════════════════════════════ */
+
+      /* AI scan button in search bar */
+      .ai-scan-btn {
+        background: var(--green) !important;
+        color: white !important;
+      }
+      .ai-scan-btn svg {
+        stroke: white !important;
+      }
+
+      /* AI setup steps */
+      .ai-setup-step {
+        display: none;
+      }
+      .ai-setup-step.active {
+        display: block;
+      }
+
+      /* AI info banner */
+      .ai-info-banner {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        background: var(--blue-bg, rgba(59, 130, 246, 0.08));
+        border-radius: 10px;
+        margin-bottom: 16px;
+        border: 1px solid var(--blue, #3b82f6);
+      }
+      .ai-info-banner svg {
+        flex-shrink: 0;
+        color: var(--blue, #3b82f6);
+        margin-top: 1px;
+      }
+      .ai-info-banner p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      /* AI step label */
+      .ai-step-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 12px;
+      }
+
+      /* AI provider list */
+      .ai-provider-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .ai-provider-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        text-align: left;
+        font-family: inherit;
+        color: var(--text);
+      }
+      .ai-provider-option:hover,
+      .ai-provider-option:active {
+        border-color: var(--green);
+      }
+      .ai-provider-option.selected {
+        border-color: var(--green);
+        background: rgba(34, 197, 94, 0.06);
+      }
+      .ai-provider-icon {
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--border);
+        flex-shrink: 0;
+      }
+      .ai-provider-name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .ai-provider-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+      }
+
+      /* AI has-key buttons */
+      .ai-haskey-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .ai-haskey-btn {
+        width: 100%;
+      }
+
+      /* AI key entry */
+      .ai-key-info {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        padding: 10px 12px;
+        background: rgba(34, 197, 94, 0.06);
+        border: 1px solid var(--green);
+        border-radius: 10px;
+        margin-bottom: 14px;
+      }
+      .ai-key-info svg {
+        flex-shrink: 0;
+        color: var(--green);
+        margin-top: 1px;
+      }
+      .ai-key-info p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+        margin: 0;
+      }
+      .ai-key-input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        color: var(--text);
+        font-size: 14px;
+        font-family: monospace;
+        box-sizing: border-box;
+      }
+      .ai-key-input:focus {
+        outline: none;
+        border-color: var(--green);
+      }
+
+      /* AI docs card */
+      .ai-docs-card {
+        padding: 14px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .ai-docs-card ol {
+        padding-left: 20px;
+        margin: 0;
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.8;
+      }
+      .ai-docs-card a {
+        color: var(--blue, #3b82f6);
+        text-decoration: none;
+      }
+      .ai-docs-link {
+        display: inline-block;
+        margin-top: 12px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      /* AI cancel button hide when not on first step */
+      .ai-cancel-btn {
+        margin-top: 12px;
+      }
+
+      /* AI provider status in settings */
+      .ai-provider-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+      }
+      .ai-status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .ai-status-dot.active {
+        background: var(--green);
+        box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+      }
+      .ai-status-dot.inactive {
+        background: var(--text-secondary);
+        opacity: 0.5;
+      }
+      #ai-status-text {
+        font-size: 13px;
+        color: var(--text);
+      }
+
+      /* ─── AI SCAN MODAL ─── */
+      .ai-scan-step {
+        display: none;
+      }
+      .ai-scan-step.active {
+        display: block;
+      }
+      .ai-scan-preview-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4/3;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .ai-scan-preview-wrap video,
+      .ai-scan-preview-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+      }
+      .ai-scan-buttons {
+        display: flex;
+        gap: 8px;
+      }
+      .ai-scan-buttons .btn-add {
+        flex: 1;
+      }
+      .ai-capture-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .ai-capture-btn svg {
+        fill: white;
+        stroke: white;
+      }
+
+      /* AI scan loading */
+      .ai-scan-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 32px 0;
+      }
+      .ai-scan-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border);
+        border-top-color: var(--green);
+        border-radius: 50%;
+        animation: ai-spin 0.8s linear infinite;
+      }
+      @keyframes ai-spin {
+        to { transform: rotate(360deg); }
+      }
+      .ai-scan-loading p {
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      /* AI scan error */
+      .ai-scan-error {
+        text-align: center;
+        padding: 24px 0;
+      }
+      .ai-scan-error p {
+        font-size: 14px;
+        color: var(--red);
+      }
+
+      /* AI results hint */
+      .ai-results-hint {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+      }
+
+      /* AI ingredient list */
+      .ai-ingredients-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .ai-ingredient-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
+      .ai-ingredient-item:has(input:checked) {
+        border-color: var(--green);
+        background: rgba(34, 197, 94, 0.04);
+      }
+      .ai-ingredient-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--green);
+        flex-shrink: 0;
+      }
+      .ai-ingredient-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+      .ai-ingredient-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+      }
+      .ai-ingredient-grams {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }

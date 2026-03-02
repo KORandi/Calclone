@@ -60,16 +60,20 @@ function setSearchLoading(loading) {
   const spinner = document.getElementById("search-spinner");
   const clear = document.getElementById("search-clear");
   const barcodeBtn = document.getElementById("barcode-btn");
+  const aiScanBtn = document.getElementById("ai-scan-btn");
   const hasText =
     document.getElementById("search-input").value.length > 0;
+  const aiActive = state.aiEnabled && state.aiProvider && state.aiApiKey;
   if (loading) {
     spinner.classList.add("active");
     clear.classList.remove("active");
     barcodeBtn.style.display = "none";
+    if (aiScanBtn) aiScanBtn.style.display = "none";
   } else {
     spinner.classList.remove("active");
     clear.classList.toggle("active", hasText);
     barcodeBtn.style.display = "flex";
+    if (aiScanBtn) aiScanBtn.style.display = aiActive ? "" : "none";
   }
 }
 

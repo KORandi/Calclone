@@ -50,6 +50,9 @@ var state = {
   qrShareEnabled: false,
   logTargetDate: null, // null = today, or "YYYY-MM-DD" for specific date
   theme: "default",
+  aiEnabled: false,
+  aiProvider: null, // "gemini" | "claude" | "openai"
+  aiApiKey: null, // encrypted/stored locally only
   weightRecalcLastUsed: null, // ISO date string of last recalculation
   weightRecalcLastWeight: null, // last recorded weight in kg
   weightHistory: [], // array of { date, weight, previousWeight, kcal, protein, carbs, fat }
@@ -97,6 +100,9 @@ var SETTINGS_KEYS = [
   "copyDayEnabled",
   "qrShareEnabled",
   "theme",
+  "aiEnabled",
+  "aiProvider",
+  "aiApiKey",
   "weightRecalcLastUsed",
   "weightRecalcLastWeight",
   "weightHistory",
@@ -169,6 +175,9 @@ function loadState() {
           ? parsed.qrShareEnabled
           : false;
       state.theme = parsed.theme || "default";
+      state.aiEnabled = parsed.aiEnabled || false;
+      state.aiProvider = parsed.aiProvider || null;
+      state.aiApiKey = parsed.aiApiKey || null;
       state.weightRecalcLastUsed = parsed.weightRecalcLastUsed || null;
       state.weightRecalcLastWeight = parsed.weightRecalcLastWeight || null;
       state.weightHistory = parsed.weightHistory || [];
@@ -579,6 +588,9 @@ function importData(file) {
           ? parsed.qrShareEnabled
           : false;
       state.theme = parsed.theme || state.theme;
+      state.aiEnabled = parsed.aiEnabled || false;
+      state.aiProvider = parsed.aiProvider || null;
+      state.aiApiKey = parsed.aiApiKey || null;
       state.weightRecalcLastUsed = parsed.weightRecalcLastUsed || null;
       state.weightRecalcLastWeight = parsed.weightRecalcLastWeight || null;
       state.weightHistory = parsed.weightHistory || [];

@@ -67,6 +67,10 @@ function loadSettingsUI() {
   document.getElementById("toggle-qr-share").checked =
     state.qrShareEnabled;
 
+  // AI settings
+  updateAiSettingsUI();
+  updateAiScanButton();
+
   // Cache limit
   document.getElementById("cache-limit-input").value =
     state.cacheSizeLimitMB;
