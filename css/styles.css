@@ -3288,11 +3288,7 @@
       /* AI scan button in search bar */
       .search-wrap .ai-scan-btn {
         right: 48px;
-        background: var(--green) !important;
-        color: white !important;
       }
-      .ai-scan-btn svg {
-        stroke: white !important;
       }
 
       /* AI setup steps */
