@@ -68,27 +68,41 @@ function stopAiCamera() {
 }
 
 function captureAiPhoto() {
-  var video = document.getElementById("ai-scan-video");
-  var canvas = document.getElementById("ai-scan-canvas");
-  var preview = document.getElementById("ai-scan-preview");
+  try {
+    var video = document.getElementById("ai-scan-video");
+    var canvas = document.getElementById("ai-scan-canvas");
+    var preview = document.getElementById("ai-scan-preview");
 
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  var ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0);
+    if (!video.videoWidth || !video.videoHeight) {
+      showAiScanError("Kamera ještě není připravena. Zkuste to znovu.");
+      return;
+    }
 
-  var dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-  var base64 = dataUrl.split(",")[1];
-  _aiCapturedImage = { base64: base64, mimeType: "image/jpeg" };
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
 
-  preview.src = dataUrl;
-  preview.style.display = "block";
-  video.style.display = "none";
-  stopAiCamera();
+    var dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    var base64 = dataUrl.split(",")[1];
+    if (!base64) {
+      showAiScanError("Nepodařilo se zachytit snímek. Zkuste to znovu.");
+      return;
+    }
+    _aiCapturedImage = { base64: base64, mimeType: "image/jpeg" };
 
-  document.getElementById("btn-ai-capture").style.display = "none";
-  document.getElementById("btn-ai-retake").style.display = "";
-  document.getElementById("btn-ai-analyze").style.display = "";
+    preview.src = dataUrl;
+    preview.style.display = "block";
+    video.style.display = "none";
+    stopAiCamera();
+
+    document.getElementById("btn-ai-capture").style.display = "none";
+    document.getElementById("btn-ai-retake").style.display = "";
+    document.getElementById("btn-ai-analyze").style.display = "";
+  } catch (err) {
+    console.error("Capture photo error:", err);
+    showAiScanError("Chyba při zachycení fotky: " + err.message);
+  }
 }
 
 function retakeAiPhoto() {
@@ -108,14 +122,32 @@ async function analyzeAiPhoto() {
 
   var provider = AI_PROVIDERS[state.aiProvider];
   if (!provider) {
-    showAiScanError("Neznámý AI provider");
+    showAiScanError("Neznámý AI provider: " + (state.aiProvider || "žádný"));
     return;
   }
 
-  var req = provider.buildRequest(state.aiApiKey, _aiCapturedImage.base64, _aiCapturedImage.mimeType);
+  var req;
+  try {
+    req = provider.buildRequest(state.aiApiKey, _aiCapturedImage.base64, _aiCapturedImage.mimeType);
+  } catch (e) {
+    console.error("AI buildRequest error:", e);
+    showAiScanError("Chyba při sestavování požadavku: " + e.message);
+    return;
+  }
+
+  if (!req || !req.url || !req.options) {
+    showAiScanError("Neplatná konfigurace AI providera.");
+    return;
+  }
+
+  var controller = new AbortController();
+  var timeoutId = setTimeout(function () { controller.abort(); }, 30000);
 
   try {
-    var resp = await fetch(req.url, req.options);
+    var fetchOptions = Object.assign({}, req.options, { signal: controller.signal });
+    var resp = await fetch(req.url, fetchOptions);
+    clearTimeout(timeoutId);
+
     if (!resp.ok) {
       var errText = "";
       try { errText = await resp.text(); } catch (e) {}
@@ -123,14 +155,31 @@ async function analyzeAiPhoto() {
         showAiScanError("Neplatný API klíč. Zkontrolujte klíč v Nastavení.");
       } else if (resp.status === 429) {
         showAiScanError("Příliš mnoho požadavků. Zkuste to za chvíli.");
+      } else if (resp.status >= 500) {
+        showAiScanError("Server AI providera je nedostupný (" + resp.status + "). Zkuste to později.");
       } else {
         showAiScanError("Chyba API (" + resp.status + "): " + (errText.slice(0, 100) || "Neznámá chyba"));
       }
       return;
     }
 
-    var data = await resp.json();
-    var ingredients = req.parseResponse(data);
+    var data;
+    try {
+      data = await resp.json();
+    } catch (e) {
+      console.error("AI JSON decode error:", e);
+      showAiScanError("Neplatná odpověď z AI (nelze dekódovat JSON).");
+      return;
+    }
+
+    var ingredients;
+    try {
+      ingredients = req.parseResponse(data);
+    } catch (e) {
+      console.error("AI parseResponse error:", e);
+      showAiScanError("Chyba při zpracování odpovědi z AI.");
+      return;
+    }
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
       showAiScanError("AI nedokázala rozpoznat žádné ingredience. Zkuste lepší fotku.");
@@ -140,8 +189,15 @@ async function analyzeAiPhoto() {
     renderAiIngredients(ingredients);
     showAiScanStep("ai-scan-step-results");
   } catch (e) {
-    console.error("AI analysis error:", e);
-    showAiScanError("Chyba při komunikaci s AI: " + e.message);
+    clearTimeout(timeoutId);
+    if (e.name === "AbortError") {
+      showAiScanError("Požadavek vypršel (timeout 30s). Zkuste to znovu.");
+    } else if (!navigator.onLine) {
+      showAiScanError("Nejste připojeni k internetu.");
+    } else {
+      console.error("AI analysis error:", e);
+      showAiScanError("Chyba při komunikaci s AI: " + e.message);
+    }
   }
 }
 
@@ -186,46 +242,66 @@ async function searchAiIngredients() {
 
   closeAiScanModal();
 
-  // Search for the first ingredient to populate the food list
-  if (selected.length === 1) {
-    // Single ingredient: just search for it
-    var searchInput = document.getElementById("search-input");
-    searchInput.value = selected[0].name || selected[0].nameEn;
-    handleSearch(searchInput.value);
-  } else {
-    // Multiple ingredients: search for each and show combined results
-    var searchInput = document.getElementById("search-input");
-    var combinedNames = selected.map(function (s) { return s.name || s.nameEn; }).join(", ");
-    searchInput.value = combinedNames;
+  try {
+    // Search for the first ingredient to populate the food list
+    if (selected.length === 1) {
+      // Single ingredient: just search for it
+      var searchInput = document.getElementById("search-input");
+      var query = selected[0].name || selected[0].nameEn;
+      if (!query) {
+        showToast("Ingredience nemá název pro vyhledávání");
+        return;
+      }
+      searchInput.value = query;
+      handleSearch(searchInput.value);
+    } else {
+      // Multiple ingredients: search for each and show combined results
+      var searchInput = document.getElementById("search-input");
+      var combinedNames = selected.map(function (s) { return s.name || s.nameEn || "?"; }).join(", ");
+      searchInput.value = combinedNames;
 
-    // Run parallel searches for each ingredient
-    setSearchLoading(true);
-    var allResults = [];
+      // Run parallel searches for each ingredient
+      setSearchLoading(true);
+      var allResults = [];
 
-    var searchPromises = selected.map(function (item) {
-      var query = item.name || item.nameEn;
-      return apiSearch(query).then(function (results) {
-        if (results) {
-          var parsed = parseAutoResults(results);
-          // Tag with estimated grams
-          parsed.forEach(function (r) {
-            r.portionGrams = item.grams;
-          });
-          return parsed;
-        }
-        return [];
-      }).catch(function () { return []; });
-    });
+      var searchPromises = selected.map(function (item) {
+        var query = item.name || item.nameEn;
+        if (!query) return Promise.resolve([]);
+        return apiSearch(query).then(function (results) {
+          if (results) {
+            var parsed = parseAutoResults(results);
+            // Tag with estimated grams
+            parsed.forEach(function (r) {
+              r.portionGrams = item.grams;
+            });
+            return parsed;
+          }
+          return [];
+        }).catch(function (err) {
+          console.warn("AI ingredient search failed for:", query, err);
+          return [];
+        });
+      });
 
-    var results = await Promise.all(searchPromises);
-    results.forEach(function (r) {
-      allResults = allResults.concat(r);
-    });
+      var results = await Promise.all(searchPromises);
+      results.forEach(function (r) {
+        allResults = allResults.concat(r);
+      });
 
+      setSearchLoading(false);
+
+      if (allResults.length === 0) {
+        showToast("Nepodařilo se najít žádné výsledky pro rozpoznané ingredience");
+      }
+
+      state.searchQuery = combinedNames;
+      state.apiResults = allResults;
+      renderCategories();
+      renderFoodList();
+    }
+  } catch (err) {
+    console.error("searchAiIngredients error:", err);
     setSearchLoading(false);
-    state.searchQuery = combinedNames;
-    state.apiResults = allResults;
-    renderCategories();
-    renderFoodList();
+    showToast("Chyba při vyhledávání ingrediencí");
   }
 }
