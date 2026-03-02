@@ -3317,6 +3317,31 @@
         margin: 0;
       }
 
+      /* AI warning banner */
+      .ai-warning-banner {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 14px;
+        background: rgba(245, 158, 11, 0.08);
+        border-radius: 10px;
+        margin-bottom: 14px;
+        border: 1px solid #f59e0b;
+      }
+      .ai-warning-banner svg {
+        color: #f59e0b;
+        margin-top: 1px;
+      }
+      .ai-warning-banner p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0;
+      }
+      .ai-warning-banner strong {
+        color: #f59e0b;
+      }
+
       /* AI step label */
       .ai-step-label {
         font-size: 14px;
