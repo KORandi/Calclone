@@ -151,6 +151,15 @@ function openAiSetupModal() {
 
 function closeAiSetupModal() {
   document.getElementById("ai-setup-modal").classList.remove("active");
+  // Reset wizard to initial state
+  _aiSetupProvider = null;
+  showAiSetupStep("ai-step-provider");
+  document.querySelectorAll(".ai-provider-option").forEach(function (el) {
+    el.classList.remove("selected");
+  });
+  document.getElementById("ai-api-key-input").value = "";
+  document.getElementById("ai-selected-provider-name").textContent = "";
+  document.getElementById("ai-docs-content").innerHTML = "";
 }
 
 function showAiSetupStep(stepId) {
