@@ -152,16 +152,18 @@ async function analyzeAiPhoto() {
       var errText = "";
       try { errText = await resp.text(); } catch (e) {}
       var errLower = errText.toLowerCase();
+      var errDetail = " (HTTP " + resp.status + (errText ? ": " + errText.slice(0, 200) : "") + ")";
+      console.error("AI API error:", resp.status, errText);
       if (resp.status === 401 || resp.status === 403) {
-        showAiScanError("Neplatný API klíč. Zkontrolujte klíč v Nastavení.");
+        showAiScanError("Neplatný API klíč. Zkontrolujte klíč v Nastavení." + errDetail);
       } else if (errLower.includes("resource") && errLower.includes("exhausted") || errLower.includes("quota") || errLower.includes("credit") || errLower.includes("balance") || errLower.includes("billing") || errLower.includes("insufficient_funds")) {
-        showAiScanError("Vyčerpaná kvóta nebo nedostatečný kredit. Zkontrolujte, zda máte API povolenou a aktivní na stránkách poskytovatele.");
+        showAiScanError("Vyčerpaná kvóta nebo nedostatečný kredit. Zkontrolujte, zda máte API povolenou a aktivní na stránkách poskytovatele." + errDetail);
       } else if (resp.status === 429) {
-        showAiScanError("Příliš mnoho požadavků. Zkuste to za chvíli.");
+        showAiScanError("Příliš mnoho požadavků. Zkuste to za chvíli." + errDetail);
       } else if (resp.status >= 500) {
-        showAiScanError("Server AI providera je nedostupný (" + resp.status + "). Zkuste to později.");
+        showAiScanError("Server AI providera je nedostupný." + errDetail);
       } else {
-        showAiScanError("Chyba API (" + resp.status + "): " + (errText.slice(0, 100) || "Neznámá chyba"));
+        showAiScanError("Chyba API." + errDetail);
       }
       return;
     }
