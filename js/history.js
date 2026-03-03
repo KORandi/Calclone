@@ -142,6 +142,7 @@ function renderHistory() {
           </div>
           <div class="log-entry-kcal">${e.kcal} kcal</div>
           <div class="log-entry-actions">
+            <button class="move-btn" data-day="${day}" data-log-idx="${i}" title="Přesunout">⇄</button>
             <button class="edit-btn" data-day="${day}" data-log-idx="${i}">✎</button>
             <button class="delete-btn" data-day="${day}" data-log-idx="${i}">&times;</button>
           </div>
