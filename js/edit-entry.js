@@ -116,6 +116,63 @@ function saveEditEntry() {
   showToast("Změny uloženy");
 }
 
+// ─── Move entry to another day ───
+var movingFromDay = null;
+var movingIdx = null;
+
+function openMoveModal(dayKey, idx) {
+  const entry = state.log[dayKey]?.[idx];
+  if (!entry) return;
+
+  movingFromDay = dayKey;
+  movingIdx = idx;
+
+  document.getElementById("move-modal-name").textContent = entry.name;
+  document.getElementById("move-modal-sub").textContent =
+    `${entry.grams}${entry.liquid ? "ml" : "g"} · ${entry.kcal} kcal · ${formatDateLabel(dayKey)}`;
+  document.getElementById("move-date-picker").value = dayKey;
+  document.getElementById("move-modal").classList.add("active");
+}
+
+function closeMoveModal() {
+  document.getElementById("move-modal").classList.remove("active");
+  movingFromDay = null;
+  movingIdx = null;
+}
+
+function confirmMoveEntry() {
+  if (movingFromDay === null || movingIdx === null) return;
+
+  const targetDate = document.getElementById("move-date-picker").value;
+  if (!targetDate) {
+    showToast("Vyberte datum");
+    return;
+  }
+
+  if (targetDate === movingFromDay) {
+    showToast("Záznam je již v tomto dni");
+    closeMoveModal();
+    return;
+  }
+
+  const entry = state.log[movingFromDay]?.[movingIdx];
+  if (!entry) return;
+
+  // Add to target day
+  if (!state.log[targetDate]) state.log[targetDate] = [];
+  state.log[targetDate].push({ ...entry });
+
+  // Remove from source day
+  state.log[movingFromDay].splice(movingIdx, 1);
+  if (state.log[movingFromDay].length === 0) delete state.log[movingFromDay];
+
+  saveState();
+  closeMoveModal();
+  if (state.activePage === "page-today") renderToday();
+  if (state.activePage === "page-history") renderHistory();
+  showToast("Záznam přesunut");
+}
+
 function deleteLogEntryByKey(dayKey, idx) {
   const entry = state.log[dayKey]?.[idx];
   if (!entry) return;

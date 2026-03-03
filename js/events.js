@@ -189,6 +189,15 @@ document.addEventListener("DOMContentLoaded", () => {
           editBtn.dataset.day,
         );
       }
+      // Move button in history
+      const moveBtn = e.target.closest(".move-btn[data-day]");
+      if (moveBtn) {
+        e.stopPropagation();
+        return openMoveModal(
+          moveBtn.dataset.day,
+          parseInt(moveBtn.dataset.logIdx),
+        );
+      }
       // Delete button in history
       const delBtn = e.target.closest(".delete-btn[data-day]");
       if (delBtn) {
@@ -252,6 +261,20 @@ document.addEventListener("DOMContentLoaded", () => {
         .classList.remove("active");
       state.logTargetDate = val;
       navigate("page-database");
+    });
+
+  // Move modal overlay close
+  document
+    .getElementById("move-modal")
+    .addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeMoveModal();
+    });
+
+  // Confirm move entry
+  document
+    .getElementById("btn-confirm-move")
+    .addEventListener("click", () => {
+      confirmMoveEntry();
     });
 
   // Trends period pill click
