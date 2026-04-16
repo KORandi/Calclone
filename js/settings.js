@@ -56,6 +56,14 @@ function loadSettingsUI() {
     state.mealCategoriesEnabled ? "block" : "none";
   renderMealCategoriesChips();
 
+  // Meal notifications toggle
+  const notifToggle = document.getElementById("toggle-meal-notifications");
+  if (notifToggle) {
+    notifToggle.checked = state.mealNotificationsEnabled &&
+      "Notification" in window &&
+      Notification.permission === "granted";
+  }
+
   // Trends toggle
   document.getElementById("toggle-trends").checked = state.trendsEnabled;
 

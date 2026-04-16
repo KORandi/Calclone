@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (state.activePage === "page-history") renderHistory();
       updateCacheUsageUI();
       if (typeof updateWeightRecalcUI === "function") updateWeightRecalcUI();
+      // Schedule meal notifications if enabled
+      if (state.mealNotificationsEnabled) scheduleMealNotifications();
     })
     .catch((e) => {
       console.warn("IndexedDB init failed:", e);
@@ -810,6 +812,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       saveState();
       renderMealCategoriesChips();
+      if (state.mealNotificationsEnabled) scheduleMealNotifications();
     });
 
   // Reset meal categories to defaults
@@ -855,6 +858,25 @@ document.addEventListener("DOMContentLoaded", () => {
         state.qrShareEnabled && state.activePage === "page-history"
           ? "flex"
           : "none";
+    });
+
+  // Meal notifications toggle
+  document
+    .getElementById("toggle-meal-notifications")
+    .addEventListener("change", async (e) => {
+      if (e.target.checked) {
+        const granted = await requestAndEnableMealNotifications();
+        if (!granted) {
+          e.target.checked = false;
+          state.mealNotificationsEnabled = false;
+        } else {
+          state.mealNotificationsEnabled = true;
+        }
+      } else {
+        state.mealNotificationsEnabled = false;
+        cancelMealNotifications();
+      }
+      saveState();
     });
 
   // Cache limit input
