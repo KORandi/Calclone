@@ -789,6 +789,27 @@
       <div class="setting-group">
         <div class="setting-card" style="padding: 14px">
           <div class="toggle-row">
+            <label>Připomínky jídel</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-meal-notifications" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-top: 6px;
+            "
+          >
+            Odešle oznámení v čase každého jídla (vyžaduje Kategorie jídel a povolení notifikací)
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-card" style="padding: 14px">
+          <div class="toggle-row">
             <label>Týdenní/měsíční trendy</label>
             <label class="toggle-switch">
               <input type="checkbox" id="toggle-trends" />
@@ -1898,6 +1919,7 @@
     <script src="js/easter-egg.js"></script>
 
     <!-- Layer 6: Event wiring (must be last) -->
+    <script src="js/meal-notifications.js"></script>
     <script src="js/events.js"></script>
   </body>
 </html>

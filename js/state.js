@@ -44,6 +44,7 @@ var state = {
     Svačina: "14:00",
     Večeře: "17:00",
   },
+  mealNotificationsEnabled: false,
   trendsEnabled: false,
   trendsPeriod: 7,
   copyDayEnabled: false,
@@ -95,6 +96,7 @@ var SETTINGS_KEYS = [
   "mealCategoriesEnabled",
   "mealCategories",
   "mealCategoryTimes",
+  "mealNotificationsEnabled",
   "trendsEnabled",
   "trendsPeriod",
   "copyDayEnabled",
@@ -163,6 +165,10 @@ function loadState() {
         Svačina: "14:00",
         Večeře: "17:00",
       };
+      state.mealNotificationsEnabled =
+        parsed.mealNotificationsEnabled !== undefined
+          ? parsed.mealNotificationsEnabled
+          : false;
       state.trendsEnabled =
         parsed.trendsEnabled !== undefined ? parsed.trendsEnabled : false;
       state.trendsPeriod = parsed.trendsPeriod || 7;
@@ -576,6 +582,10 @@ function importData(file) {
         Svačina: "14:00",
         Večeře: "17:00",
       };
+      state.mealNotificationsEnabled =
+        parsed.mealNotificationsEnabled !== undefined
+          ? parsed.mealNotificationsEnabled
+          : false;
       state.trendsEnabled =
         parsed.trendsEnabled !== undefined ? parsed.trendsEnabled : false;
       state.trendsPeriod = parsed.trendsPeriod || 7;
