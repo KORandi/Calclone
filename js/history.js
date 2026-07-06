@@ -176,7 +176,13 @@ function copyDayToToday(dayKey) {
   const now = new Date();
   const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   entries.forEach((e) => {
-    const copy = { ...e, time };
+    // A copy is a brand-new logical record, not a move of the original.
+    const copy = {
+      ...e,
+      time,
+      uid: crypto.randomUUID(),
+      updatedAt: new Date().toISOString(),
+    };
     state.log[today].push(copy);
   });
   saveState();

@@ -245,8 +245,15 @@ function saveCfwMacros() {
     fat: parseFloat(document.getElementById("cfw-fat").value) || 0,
   };
   if (cfwState.editIdx !== null) {
+    // Replacing the object wholesale — carry the identity forward so this
+    // stays the same logical record for sync purposes, just updated.
+    const prev = state.customFoods[cfwState.editIdx];
+    food.uid = (prev && prev.uid) || crypto.randomUUID();
+    food.updatedAt = new Date().toISOString();
     state.customFoods[cfwState.editIdx] = food;
   } else {
+    food.uid = crypto.randomUUID();
+    food.updatedAt = new Date().toISOString();
     state.customFoods.push(food);
   }
   saveState();
@@ -350,8 +357,15 @@ function saveCfwRecipe() {
     },
   };
   if (cfwState.editIdx !== null) {
+    // Replacing the object wholesale — carry the identity forward so this
+    // stays the same logical record for sync purposes, just updated.
+    const prev = state.customFoods[cfwState.editIdx];
+    food.uid = (prev && prev.uid) || crypto.randomUUID();
+    food.updatedAt = new Date().toISOString();
     state.customFoods[cfwState.editIdx] = food;
   } else {
+    food.uid = crypto.randomUUID();
+    food.updatedAt = new Date().toISOString();
     state.customFoods.push(food);
   }
   saveState();

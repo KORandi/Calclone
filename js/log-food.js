@@ -25,6 +25,8 @@ function logFood() {
     meal: state.mealCategoriesEnabled
       ? document.getElementById("modal-meal-select").value
       : "",
+    uid: crypto.randomUUID(),
+    updatedAt: new Date().toISOString(),
   };
   if (f.guid) entry.guid = f.guid;
   if (f.source) entry.source = f.source;
@@ -64,6 +66,7 @@ function deleteLogEntry(idx) {
   const entry = state.log[key]?.[idx];
   if (!entry) return;
   if (!confirm(`Smazat "${entry.name}"?`)) return;
+  if (entry.uid) addSyncTombstone(entry.uid, "entry");
   state.log[key].splice(idx, 1);
   if (state.log[key].length === 0) delete state.log[key];
   saveState();

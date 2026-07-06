@@ -107,6 +107,9 @@ function saveEditEntry() {
   if (state.mealCategoriesEnabled) {
     entry.meal = document.getElementById("edit-meal-select").value;
   }
+  // Belt-and-suspenders: lazily assign identity if this record predates it.
+  if (!entry.uid) entry.uid = crypto.randomUUID();
+  entry.updatedAt = new Date().toISOString();
 
   state.portionMemory[entry.name] = g;
   saveState();
@@ -158,7 +161,11 @@ function confirmMoveEntry() {
   const entry = state.log[movingFromDay]?.[movingIdx];
   if (!entry) return;
 
-  // Add to target day
+  // Belt-and-suspenders: lazily assign identity if this record predates it.
+  if (!entry.uid) entry.uid = crypto.randomUUID();
+  entry.updatedAt = new Date().toISOString();
+
+  // Add to target day (same uid — this is a move, not a new record)
   if (!state.log[targetDate]) state.log[targetDate] = [];
   state.log[targetDate].push({ ...entry });
 
@@ -177,6 +184,7 @@ function deleteLogEntryByKey(dayKey, idx) {
   const entry = state.log[dayKey]?.[idx];
   if (!entry) return;
   if (!confirm(`Smazat "${entry.name}"?`)) return;
+  if (entry.uid) addSyncTombstone(entry.uid, "entry");
   state.log[dayKey].splice(idx, 1);
   if (state.log[dayKey].length === 0) delete state.log[dayKey];
   saveState();

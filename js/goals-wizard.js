@@ -226,6 +226,7 @@ function deleteCustomFood(idx) {
   if (!food) return;
   if (!confirm(`Opravdu smazat "${food.name}"?`)) return;
 
+  if (food.uid) addSyncTombstone(food.uid, "customFood");
   state.customFoods.splice(idx, 1);
   saveState();
   renderCategories();

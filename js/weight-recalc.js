@@ -370,6 +370,8 @@ function approveWeightRecalc() {
     protein: chosen.protein,
     carbs: chosen.carbs,
     fat: chosen.fat,
+    uid: crypto.randomUUID(),
+    updatedAt: new Date().toISOString(),
   });
 
   saveState();

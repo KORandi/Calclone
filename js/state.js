@@ -57,7 +57,20 @@ var state = {
   weightRecalcLastWeight: null, // last recorded weight in kg
   weightHistory: [], // array of { date, weight, previousWeight, kcal, protein, carbs, fat }
   userProfile: null, // { sex, age, weight, height } — saved from goals wizard for pre-filling
+  syncTombstones: [], // array of { uid, type, deletedAt } for deleted records awaiting sync push
 };
+
+// ─── Per-settings-key last-modified timestamps (for sync last-write-wins) ───
+// Persisted separately in localStorage under SETTINGS_UPDATED_KEY as a
+// { [settingsKey]: ISOString } map. Approach taken (see saveState() below):
+// on every saveState() call, compare JSON.stringify(old) vs JSON.stringify(new)
+// for each SETTINGS_KEYS entry and only bump that key's timestamp if the value
+// actually changed. This is precise (no false "changed" bumps) and low-risk
+// because saveState() is already the single choke point for all settings
+// writes, so no other call site needs to be touched.
+var SETTINGS_UPDATED_KEY = "kaltab_settings_updated";
+var settingsUpdatedAt = {}; // { [key]: ISOString }
+var _lastSettingsSnapshot = {}; // { [key]: JSON string } — baseline used to detect changes
 
 function escapeHtml(str) {
   if (!str) return "";
@@ -116,6 +129,7 @@ var USERDATA_KEYS = [
   "favorites",
   "foodUsage",
   "foodRelevance",
+  "syncTombstones",
 ];
 
 function loadState() {
@@ -184,6 +198,85 @@ function loadState() {
       state.userProfile = parsed.userProfile || null;
     }
   } catch (e) {}
+
+  // Load per-key settings timestamps (for sync last-write-wins)
+  try {
+    const savedUpdated = localStorage.getItem(SETTINGS_UPDATED_KEY);
+    settingsUpdatedAt = savedUpdated ? JSON.parse(savedUpdated) : {};
+  } catch (e) {
+    settingsUpdatedAt = {};
+  }
+
+  // Snapshot current settings values so the first saveState() call can
+  // detect real changes rather than treating "just loaded" as a change.
+  _lastSettingsSnapshot = {};
+  for (const key of SETTINGS_KEYS) {
+    try {
+      _lastSettingsSnapshot[key] = JSON.stringify(state[key]);
+    } catch (e) {
+      _lastSettingsSnapshot[key] = undefined;
+    }
+  }
+}
+
+// One-time lazy migration: assign uid/updatedAt to any pre-existing records
+// that predate the identity model (log entries, custom foods, weight-history
+// records). updatedAt is backfilled from the record's own date rather than
+// "now", so historical ordering isn't distorted once sync starts comparing
+// timestamps. Returns true if anything was changed (caller should persist).
+function _migrateIdentityFields() {
+  let changed = false;
+
+  // Log entries: keyed by day, so fall back to that day's midnight UTC.
+  for (const dateKey of Object.keys(state.log || {})) {
+    const entries = state.log[dateKey];
+    if (!Array.isArray(entries)) continue;
+    let fallbackTs;
+    try {
+      fallbackTs = new Date(dateKey + "T00:00:00.000Z").toISOString();
+    } catch (e) {
+      fallbackTs = new Date().toISOString();
+    }
+    for (const entry of entries) {
+      if (!entry.uid) {
+        entry.uid = crypto.randomUUID();
+        entry.updatedAt = entry.updatedAt || fallbackTs;
+        changed = true;
+      }
+    }
+  }
+
+  // Custom foods have no inherent date — no better fallback than "now".
+  if (Array.isArray(state.customFoods)) {
+    for (const food of state.customFoods) {
+      if (!food.uid) {
+        food.uid = crypto.randomUUID();
+        food.updatedAt = food.updatedAt || new Date().toISOString();
+        changed = true;
+      }
+    }
+  }
+
+  // Weight-history records already carry their own `date` field.
+  if (Array.isArray(state.weightHistory)) {
+    for (const rec of state.weightHistory) {
+      if (!rec.uid) {
+        rec.uid = crypto.randomUUID();
+        let fallbackTs;
+        try {
+          fallbackTs = rec.date
+            ? new Date(rec.date).toISOString()
+            : new Date().toISOString();
+        } catch (e) {
+          fallbackTs = new Date().toISOString();
+        }
+        rec.updatedAt = rec.updatedAt || fallbackTs;
+        changed = true;
+      }
+    }
+  }
+
+  return changed;
 }
 
 // 2) Load large data from IndexedDB (async — after initial render)
@@ -221,12 +314,20 @@ async function loadFromIndexedDB() {
       console.log("Cache version mismatch, clearing caches");
       await KaltabDB.put("cache", "apiCaches", { _v: CACHE_VERSION });
     }
+
+    // One-time lazy backfill of uid/updatedAt on pre-existing records.
+    if (_migrateIdentityFields()) {
+      saveState();
+    }
   } catch (e) {
     console.warn(
       "IndexedDB load failed, falling back to localStorage:",
       e,
     );
     _loadLegacyData();
+    if (_migrateIdentityFields()) {
+      saveState();
+    }
   }
 }
 
@@ -339,6 +440,11 @@ async function _migrateToIndexedDB() {
     localStorage.removeItem("kaltab_cache");
 
     console.log("Migration to IndexedDB complete");
+
+    // One-time lazy backfill of uid/updatedAt on pre-existing records.
+    if (_migrateIdentityFields()) {
+      saveState();
+    }
   } catch (e) {
     console.warn("Migration failed:", e);
     _loadLegacyData();
@@ -349,10 +455,27 @@ function saveState() {
   // Save settings to localStorage (synchronous, small)
   try {
     const settings = {};
+    const nowIso = new Date().toISOString();
     for (const key of SETTINGS_KEYS) {
       settings[key] = state[key];
+      // Bump this key's updatedAt only if its value actually changed
+      // since the last snapshot (see _lastSettingsSnapshot comment above).
+      let serialized;
+      try {
+        serialized = JSON.stringify(state[key]);
+      } catch (e) {
+        serialized = undefined;
+      }
+      if (serialized !== _lastSettingsSnapshot[key]) {
+        settingsUpdatedAt[key] = nowIso;
+        _lastSettingsSnapshot[key] = serialized;
+      }
     }
     localStorage.setItem("kaltab_state", JSON.stringify(settings));
+    localStorage.setItem(
+      SETTINGS_UPDATED_KEY,
+      JSON.stringify(settingsUpdatedAt),
+    );
   } catch (e) {}
 
   // Save large data to IndexedDB (async, fire-and-forget)
@@ -608,6 +731,9 @@ function importData(file) {
       state.detailCache = parsed.detailCache || {};
       state.barcodeCache = parsed.barcodeCache || {};
 
+      // Imported data (e.g. an older backup) may predate the identity model.
+      _migrateIdentityFields();
+
       saveState();
       saveCache();
       loadSettingsUI();
@@ -647,6 +773,18 @@ function formatDateLabel(dateKey) {
 
 function localFoods() {
   return [...LOCAL_FOODS, ...state.customFoods];
+}
+
+// Record a deletion so the (sibling) sync module can push it and clear it
+// after a successful push. `type` is "entry" | "customFood" | "weight".
+function addSyncTombstone(uid, type) {
+  if (!uid) return;
+  if (!Array.isArray(state.syncTombstones)) state.syncTombstones = [];
+  state.syncTombstones.push({
+    uid,
+    type,
+    deletedAt: new Date().toISOString(),
+  });
 }
 
 

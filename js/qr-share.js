@@ -587,6 +587,8 @@ function confirmQrImport() {
         fiber: e.fiber || 0,
         time: e.time,
         meal: e.meal || "",
+        uid: crypto.randomUUID(),
+        updatedAt: new Date().toISOString(),
       };
       if (e.guid) entry.guid = e.guid;
       if (e.source) entry.source = e.source;
