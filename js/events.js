@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (state.activePage === "page-history") renderHistory();
       updateCacheUsageUI();
       if (typeof updateWeightRecalcUI === "function") updateWeightRecalcUI();
+      // Kick off a startup sync if auto-sync is configured (after IndexedDB load).
+      if (typeof KaltabSync !== "undefined" && KaltabSync.onAppReady)
+        KaltabSync.onAppReady();
     })
     .catch((e) => {
       console.warn("IndexedDB init failed:", e);
