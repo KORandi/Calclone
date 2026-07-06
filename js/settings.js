@@ -83,6 +83,58 @@ function loadSettingsUI() {
 
   // Weight recalculation
   if (typeof updateWeightRecalcUI === "function") updateWeightRecalcUI();
+
+  // Server sync
+  loadSyncSettingsUI();
+}
+
+// ─── SERVER SYNC SETTINGS ───
+
+function loadSyncSettingsUI() {
+  if (typeof KaltabSync === "undefined") return;
+  const cfg = KaltabSync.getSyncConfig();
+
+  const urlInput = document.getElementById("sync-server-url");
+  const tokenInput = document.getElementById("sync-token");
+  const autoToggle = document.getElementById("toggle-auto-sync");
+  if (urlInput) urlInput.value = cfg.serverUrl || "";
+  if (tokenInput) tokenInput.value = cfg.token || "";
+  if (autoToggle) autoToggle.checked = !!cfg.autoSync;
+
+  updateSyncStatusUI(cfg);
+}
+
+// Refreshes the "last sync" status line, and optionally shows an inline
+// success/error message after a manual sync attempt (resultMsg/resultOk).
+function updateSyncStatusUI(cfg, resultMsg, resultOk) {
+  if (!cfg && typeof KaltabSync !== "undefined") cfg = KaltabSync.getSyncConfig();
+  cfg = cfg || {};
+
+  const dot = document.getElementById("sync-status-dot");
+  const text = document.getElementById("sync-status-text");
+  if (dot && text) {
+    if (cfg.lastSyncAt) {
+      dot.className = "ai-status-dot active";
+      let formatted = cfg.lastSyncAt;
+      try {
+        formatted = new Date(cfg.lastSyncAt).toLocaleString("cs-CZ");
+      } catch (e) {}
+      text.textContent = "Poslední synchronizace: " + formatted;
+    } else {
+      dot.className = "ai-status-dot inactive";
+      text.textContent = "Nikdy";
+    }
+  }
+
+  const msgEl = document.getElementById("sync-result-msg");
+  if (msgEl) {
+    if (resultMsg) {
+      msgEl.textContent = resultMsg;
+      msgEl.style.color = resultOk ? "var(--green)" : "var(--red)";
+    } else {
+      msgEl.textContent = "";
+    }
+  }
 }
 
 function renderMeasurementsList() {

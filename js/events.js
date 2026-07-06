@@ -967,6 +967,80 @@ document.addEventListener("DOMContentLoaded", () => {
       renderQuickGramsChips();
     });
 
+  // ─── SERVER SYNC EVENTS ───
+  document
+    .getElementById("sync-server-url")
+    .addEventListener("change", (e) => {
+      const url = e.target.value.trim();
+      e.target.value = url;
+      KaltabSync.setSyncConfig({ serverUrl: url });
+    });
+
+  document
+    .getElementById("sync-token")
+    .addEventListener("change", (e) => {
+      const token = e.target.value.trim();
+      e.target.value = token;
+      KaltabSync.setSyncConfig({ token: token });
+    });
+
+  document
+    .getElementById("toggle-auto-sync")
+    .addEventListener("change", (e) => {
+      KaltabSync.setSyncConfig({ autoSync: e.target.checked });
+      if (e.target.checked) KaltabSync.scheduleAutoSync();
+    });
+
+  document
+    .getElementById("btn-sync-now")
+    .addEventListener("click", async () => {
+      const btn = document.getElementById("btn-sync-now");
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Synchronizuji...";
+      try {
+        const result = await KaltabSync.syncNow();
+        if (result.ok) {
+          const pulled = result.pulled || {};
+          const total =
+            (pulled.entries || 0) +
+            (pulled.customFoods || 0) +
+            (pulled.weights || 0) +
+            (pulled.prefs || 0) +
+            (pulled.settings || 0);
+          const msg =
+            total > 0
+              ? "Synchronizace dokončena, staženo " + total + " změn"
+              : "Synchronizace dokončena";
+          showToast(msg);
+          updateSyncStatusUI(KaltabSync.getSyncConfig(), msg, true);
+        } else {
+          const reasons = {
+            not_configured: "Nejdříve vyplňte adresu serveru a token",
+            offline: "Zařízení je offline",
+            busy: "Synchronizace už probíhá",
+            auth_error: "Neplatný token nebo adresa serveru",
+            network_error: "Nepodařilo se připojit k serveru",
+            server_error: "Chyba serveru",
+          };
+          const msg = reasons[result.reason] || "Synchronizace selhala";
+          const detail = result.detail ? " (" + result.detail + ")" : "";
+          showToast(msg);
+          updateSyncStatusUI(KaltabSync.getSyncConfig(), msg + detail, false);
+        }
+      } catch (e) {
+        showToast("Synchronizace selhala");
+        updateSyncStatusUI(
+          KaltabSync.getSyncConfig(),
+          "Synchronizace selhala (" + String((e && e.message) || e) + ")",
+          false,
+        );
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+
   // ─── AI SETUP EVENTS ───
   // AI toggle
   document

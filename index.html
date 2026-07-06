@@ -952,6 +952,57 @@
       </div>
 
       <div class="setting-group">
+        <h3>Synchronizace</h3>
+        <div class="setting-card" style="padding: 14px">
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-secondary);
+              margin-bottom: 12px;
+            "
+          >
+            Synchronizujte svá data s vlastním gymson2.0 serverem. Zadejte
+            adresu serveru a přístupový token.
+          </p>
+          <div class="custom-form" style="margin-top: 0">
+            <div class="form-row">
+              <label>Adresa serveru</label>
+              <input
+                type="url"
+                id="sync-server-url"
+                placeholder="https://tvuj-gymson.example.com"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-row">
+              <label>Přístupový token</label>
+              <input
+                type="password"
+                id="sync-token"
+                placeholder="Token"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="toggle-row">
+            <label>Automatická synchronizace</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-auto-sync" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <button class="btn-add" id="btn-sync-now" style="margin-top: 12px">
+            Synchronizovat nyní
+          </button>
+          <div class="ai-provider-status" style="margin-top: 12px">
+            <span class="ai-status-dot inactive" id="sync-status-dot"></span>
+            <span id="sync-status-text">Nikdy</span>
+          </div>
+          <div class="cache-validation-msg" id="sync-result-msg"></div>
+        </div>
+      </div>
+
+      <div class="setting-group">
         <h3 style="color: var(--red)">Danger zone</h3>
         <button class="btn-danger" id="btn-clear-log">
           Smazat dnešní záznamy
