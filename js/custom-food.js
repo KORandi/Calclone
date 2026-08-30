@@ -156,6 +156,8 @@ async function cfwAddIngredient(food) {
     showToast("Načítám detaily...");
     const detail = await apiDetail(food);
     if (detail) {
+      if (detail.incomplete)
+        showToast("Nutriční hodnoty se nepodařilo načíst");
       food = { ...food, ...detail, name: food.name };
     }
   }

@@ -218,6 +218,7 @@ async function openFoodModal(food) {
   favBtn.textContent = fav ? "★" : "☆";
   favBtn.classList.toggle("active", fav);
 
+  document.getElementById("modal-detail-warning").style.display = "none";
   document.getElementById("food-modal").classList.add("active");
   updateModalTargetDate();
 
@@ -231,6 +232,10 @@ async function openFoodModal(food) {
       apiDetail(food),
       apiFormDetail(food.guid),
     ]);
+    // A failed lookup returns zeroed macros – say so instead of presenting
+    // them as real values.
+    document.getElementById("modal-detail-warning").style.display =
+      nutrition && nutrition.incomplete ? "block" : "none";
     if (nutrition) {
       state.selectedFood = {
         ...food,
@@ -271,6 +276,7 @@ async function openFoodModal(food) {
 function closeModal() {
   document.getElementById("food-modal").classList.remove("active");
   document.getElementById("modal-loading").style.display = "none";
+  document.getElementById("modal-detail-warning").style.display = "none";
   document.getElementById("modal-content").style.display = "block";
   state.selectedFood = null;
 }
