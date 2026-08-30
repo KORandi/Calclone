@@ -18,7 +18,7 @@ var AI_PROVIDERS = {
     endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
     buildRequest: function (apiKey, base64Image, mimeType) {
       return {
-        url: this.endpoint + "?key=" + apiKey,
+        url: CORS_PROXY + encodeURIComponent(this.endpoint + "?key=" + apiKey),
         options: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -96,7 +96,7 @@ var AI_PROVIDERS = {
     endpoint: "https://api.openai.com/v1/chat/completions",
     buildRequest: function (apiKey, base64Image, mimeType) {
       return {
-        url: this.endpoint,
+        url: CORS_PROXY + encodeURIComponent(this.endpoint),
         options: {
           method: "POST",
           headers: {
