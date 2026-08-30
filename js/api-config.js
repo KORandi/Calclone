@@ -5,6 +5,13 @@
 // tried in order and whichever answers is remembered, so a proxy going down —
 // or starting to demand an API key, as corsproxy.io now does — costs one slow
 // request instead of taking search down with it.
+//
+// A proxy really is required: fetching the source directly from the app's
+// origin fails, so it sends no CORS headers of its own. Worth re-checking
+// before adding a fourth proxy here — from the app, in the console:
+//   fetch(_h(_B) + "/foodstuff/filter-list?format=json&limit=1&query=tvaroh")
+//     .then((r) => r.json()).then(console.log).catch(console.log)
+// If that ever starts working, going direct beats every proxy below.
 var CORS_PROXIES = [
   "https://api.allorigins.win/raw?url=",
   "https://api.codetabs.com/v1/proxy?quest=",
