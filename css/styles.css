@@ -785,6 +785,17 @@
         color: var(--purple);
       }
 
+      .modal-warning {
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-secondary);
+      }
+
       .modal-loading {
         text-align: center;
         padding: 20px;

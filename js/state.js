@@ -653,7 +653,7 @@ function localFoods() {
 // ═══════════════════════════════════════════
 // API CACHE HELPERS
 // ═══════════════════════════════════════════
-var CACHE_VERSION = 2;
+var CACHE_VERSION = 3; // 3: drop detail entries poisoned with zeroed macros
 var CACHE_TTL = 1 * 24 * 60 * 60 * 1000; // 1 day
 
 function normalizeCacheKey(key) {
