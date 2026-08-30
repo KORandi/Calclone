@@ -222,14 +222,16 @@ async function openFoodModal(food) {
   document.getElementById("food-modal").classList.add("active");
   updateModalTargetDate();
 
-  // If API food, scrape the food page for full nutrition data
+  // If API food, fill in whatever the search result did not already carry
   if (food.source === "api" && food.guid) {
     document.getElementById("modal-loading").style.display = "block";
     document.getElementById("modal-content").style.display = "none";
     document.getElementById("btn-log-food").disabled = true;
 
+    // filter-list rows already carry the per-100 g macros, so the detail
+    // request is only worth making when the search result came without them.
     const [nutrition, apiPortions] = await Promise.all([
-      apiDetail(food),
+      food.protein == null ? apiDetail(food) : null,
       apiFormDetail(food.guid),
     ]);
     // A failed lookup returns zeroed macros. Never let those overwrite values
@@ -247,24 +249,24 @@ async function openFoodModal(food) {
         fiber: usable ? nutrition.fiber : (food.fiber ?? 0),
         liquid: (usable && nutrition.liquid) || food.liquid,
       };
-      // Update unit display if API returned baseUnit
-      const updatedUnit = state.selectedFood.liquid ? "ml" : "g";
-      document.getElementById("modal-food-portion").textContent =
-        `Hodnoty na 100 ${updatedUnit}`;
-      document.querySelector(".gram-input-wrap label").textContent =
-        `Množství (${updatedUnit})`;
-      document.getElementById("quick-grams").innerHTML =
-        buildQuickGramsHtml(updatedUnit);
-      document.getElementById("modal-measurement-select").innerHTML =
-        buildMeasurementSelectHtml(updatedUnit, apiPortions);
-      initMeasurementSelect(
-        "modal-measurement-select",
-        "modal-grams",
-        "quick-grams",
-        updateModalMacros,
-        apiPortions,
-      );
     }
+    // Portion options and the unit they are shown in apply either way
+    const updatedUnit = state.selectedFood.liquid ? "ml" : "g";
+    document.getElementById("modal-food-portion").textContent =
+      `Hodnoty na 100 ${updatedUnit}`;
+    document.querySelector(".gram-input-wrap label").textContent =
+      `Množství (${updatedUnit})`;
+    document.getElementById("quick-grams").innerHTML =
+      buildQuickGramsHtml(updatedUnit);
+    document.getElementById("modal-measurement-select").innerHTML =
+      buildMeasurementSelectHtml(updatedUnit, apiPortions);
+    initMeasurementSelect(
+      "modal-measurement-select",
+      "modal-grams",
+      "quick-grams",
+      updateModalMacros,
+      apiPortions,
+    );
 
     document.getElementById("modal-loading").style.display = "none";
     document.getElementById("modal-content").style.display = "block";

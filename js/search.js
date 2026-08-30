@@ -38,7 +38,8 @@ function foodId(item) {
 }
 
 function foodBrand(item) {
-  const b = item.brandName ?? item.brand ?? item.producer;
+  const b =
+    item.brandName ?? item.foodstuffBrandTitle ?? item.brand ?? item.producer;
   if (!b) return "";
   return typeof b === "string" ? b : b.name || b.title || "";
 }
@@ -295,11 +296,13 @@ function collectNutrients(root) {
       if (rawCanon) {
         const canon = energyTarget(
           rawCanon,
-          typeof val === "string"
-            ? val
-            : val && typeof val === "object"
-              ? (val.unit ?? val.units ?? "")
-              : "",
+          // filter-list puts the unit in a sibling field: energy + energyUnit
+          node[rawKey + "Unit"] ??
+            (typeof val === "string"
+              ? val
+              : val && typeof val === "object"
+                ? (val.unit ?? val.units ?? "")
+                : ""),
         );
         if (out[canon] == null) {
           const num = czFloat(val);
@@ -423,11 +426,11 @@ async function apiDetail(food) {
     apiUrl(_h(_P2) + food.guid, { format: "json" }),
     apiUrl(_h(_P2) + food.guid, {}),
   ];
-  if (food.url) {
+  // filter-list gives a bare slug ("tvaroh-odtucneny-tatra") whose public path
+  // is unknown, so only a full URL or a rooted path is worth requesting.
+  if (food.url && /^(https?:|\/)/i.test(food.url)) {
     attempts.push(
-      /^https?:/i.test(food.url)
-        ? food.url
-        : _h(_B) + (food.url[0] === "/" ? "" : "/") + food.url,
+      /^https?:/i.test(food.url) ? food.url : _h(_B) + food.url,
     );
   }
 
@@ -514,11 +517,14 @@ function parseAutoResults(data) {
         carbs: pick("carbs"),
         fat: pick("fat"),
         fiber: pick("fiber"),
-        liquid: inline._unit
-          ? inline._unit === "ml" || inline._unit === "l"
-          : cached
-            ? cached.liquid
-            : false,
+        liquid:
+          typeof item.isLiquid === "boolean"
+            ? item.isLiquid
+            : inline._unit
+              ? inline._unit === "ml" || inline._unit === "l"
+              : cached
+                ? cached.liquid
+                : false,
         source: "api",
       };
     });
