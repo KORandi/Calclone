@@ -4,6 +4,20 @@
 var searchAbort = null;
 var searchTimeout = null;
 
+// filter-list's fixed query parameters. page is 1 rather than the 3 of the
+// captured example (a search wants the first page), and limit matches the 30
+// results parseAutoResults keeps.
+var FILTER_LIST_PARAMS = {
+  format: "json",
+  page: "1",
+  limit: "30",
+  type: "",
+  brand: "",
+  min: "0",
+  max: "3800",
+  sliderType: "0",
+};
+
 function hashStr(s) {
   let h = 0;
   for (let i = 0; i < s.length; i++) {
@@ -12,8 +26,75 @@ function hashStr(s) {
   return (h >>> 0).toString(36);
 }
 
+// The filter-list and autocomplete endpoints name their fields differently,
+// and cache entries written by earlier builds are still in the autocomplete
+// shape, so every read of a raw search item goes through these.
+function foodTitle(item) {
+  return item.title || item.name || item.foodstuffName || "";
+}
+
+function foodId(item) {
+  return item.id || item.guid || item.foodstuffId || null;
+}
+
+function foodBrand(item) {
+  const b =
+    item.brandName ?? item.foodstuffBrandTitle ?? item.brand ?? item.producer;
+  if (!b) return "";
+  return typeof b === "string" ? b : b.name || b.title || "";
+}
+
+function foodItemUrl(item) {
+  return item.url || item.link || item.detailUrl || null;
+}
+
+function isFoodstuff(item) {
+  return !item.clazz || item.clazz === "foodstuff";
+}
+
+function looksLikeFood(item) {
+  return !!item && typeof item === "object" && !!foodTitle(item);
+}
+
+// filter-list wraps its results in an envelope. Find the array of foods
+// wherever it sits rather than betting on one key surviving.
+function extractFoodstuffList(data) {
+  if (Array.isArray(data)) return data.filter(looksLikeFood);
+  if (!data || typeof data !== "object") return [];
+  const PREFERRED = [
+    "foodstuffs",
+    "foodstuffList",
+    "items",
+    "results",
+    "list",
+    "rows",
+    "content",
+    "data",
+  ];
+  const queue = [];
+  const push = (node) => {
+    for (const k of PREFERRED) if (node[k] !== undefined) queue.push(node[k]);
+    for (const v of Object.values(node)) queue.push(v);
+  };
+  push(data);
+  const seen = new Set();
+  let steps = 0;
+  while (queue.length && steps++ < 500) {
+    const node = queue.shift();
+    if (!node || typeof node !== "object" || seen.has(node)) continue;
+    seen.add(node);
+    if (Array.isArray(node)) {
+      const foods = node.filter(looksLikeFood);
+      if (foods.length) return foods;
+      continue;
+    }
+    push(node);
+  }
+  return [];
+}
+
 function foodIndexKey(item) {
-  return item.id || ("t:" + hashStr(item.title || ""));
+  return foodId(item) || ("t:" + hashStr(foodTitle(item)));
 }
 
 function storeSearchResults(normKey, items) {
@@ -42,17 +123,26 @@ async function apiSearch(query) {
   if (searchAbort) searchAbort.abort();
   searchAbort = new AbortController();
 
+  const signal = searchAbort.signal;
+  const fetchList = async (url) => {
+    const resp = await proxyFetch(url, { signal });
+    return extractFoodstuffList(await resp.json());
+  };
+
   try {
-    const resp = await proxyFetch(apiUrl(_h(_P1), { query, format: "json" }), {
-      signal: searchAbort.signal,
-    });
-    const data = await resp.json();
+    let items = await fetchList(
+      apiUrl(_h(_P4), { ...FILTER_LIST_PARAMS, query }),
+    );
+    // The older autocomplete endpoint answers queries filter-list does not
+    // (barcodes, among others), so keep it as a second try.
+    if (!items.length)
+      items = await fetchList(apiUrl(_h(_P1), { query, format: "json" }));
     apiAvailable = true;
 
     // Store items in foodIndex, refs in searchCache
-    storeSearchResults(cacheKeyNorm, data);
+    storeSearchResults(cacheKeyNorm, items);
 
-    return data;
+    return items;
   } catch (e) {
     if (e.name === "AbortError") return null;
     console.warn("API search failed:", e);
@@ -66,15 +156,16 @@ async function apiSearch(query) {
     const seen = new Set();
     const offlineResults = [];
     for (const item of Object.values(state.foodIndex)) {
-      if (!item.title || (item.clazz && item.clazz !== "foodstuff"))
-        continue;
-      if (item.id && seen.has(item.id)) continue;
-      const title = item.title
+      const rawTitle = foodTitle(item);
+      if (!rawTitle || !isFoodstuff(item)) continue;
+      const id = foodId(item);
+      if (id && seen.has(id)) continue;
+      const title = rawTitle
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
       if (title.includes(q)) {
-        if (item.id) seen.add(item.id);
+        if (id) seen.add(id);
         offlineResults.push(item);
       }
     }
@@ -205,11 +296,13 @@ function collectNutrients(root) {
       if (rawCanon) {
         const canon = energyTarget(
           rawCanon,
-          typeof val === "string"
-            ? val
-            : val && typeof val === "object"
-              ? (val.unit ?? val.units ?? "")
-              : "",
+          // filter-list puts the unit in a sibling field: energy + energyUnit
+          node[rawKey + "Unit"] ??
+            (typeof val === "string"
+              ? val
+              : val && typeof val === "object"
+                ? (val.unit ?? val.units ?? "")
+                : ""),
         );
         if (out[canon] == null) {
           const num = czFloat(val);
@@ -333,11 +426,11 @@ async function apiDetail(food) {
     apiUrl(_h(_P2) + food.guid, { format: "json" }),
     apiUrl(_h(_P2) + food.guid, {}),
   ];
-  if (food.url) {
+  // filter-list gives a bare slug ("tvaroh-odtucneny-tatra") whose public path
+  // is unknown, so only a full URL or a rooted path is worth requesting.
+  if (food.url && /^(https?:|\/)/i.test(food.url)) {
     attempts.push(
-      /^https?:/i.test(food.url)
-        ? food.url
-        : _h(_B) + (food.url[0] === "/" ? "" : "/") + food.url,
+      /^https?:/i.test(food.url) ? food.url : _h(_B) + food.url,
     );
   }
 
@@ -393,29 +486,45 @@ async function apiFormDetail(guid) {
   }
 }
 
-// Parse autocomplete result into normalized food items
+// Parse a search result into normalized food items
 function parseAutoResults(data) {
   if (!data) return [];
-  const items = Array.isArray(data) ? data : [];
+  const items = Array.isArray(data)
+    ? data.filter(looksLikeFood)
+    : extractFoodstuffList(data);
 
   return items
-    .filter((item) => !item.clazz || item.clazz === "foodstuff")
+    .filter(isFoodstuff)
     .slice(0, 30)
     .map((item) => {
-      const cached = item.id
-        ? getCached(state.detailCache, item.id)
-        : null;
+      const guid = foodId(item);
+      const cached = guid ? getCached(state.detailCache, guid) : null;
+      // filter-list rows can carry the macros inline, which spares the detail
+      // request entirely; fall back to whatever a previous one cached.
+      const inline = collectNutrients(item);
+      const pick = (key) =>
+        inline[key] != null ? inline[key] : cached ? cached[key] : null;
+      let kcal = inline.kcal;
+      if (kcal == null && inline.kj != null) kcal = inline.kj / 4.184;
+      if (kcal == null) kcal = czFloat(item.value);
       return {
-        name: item.title || "",
-        guid: item.id || null,
-        url: item.url || null,
-        cat: item.brandName || "API",
-        kcal: parseFloat(item.value) || null,
-        protein: cached ? cached.protein : null,
-        carbs: cached ? cached.carbs : null,
-        fat: cached ? cached.fat : null,
-        fiber: cached ? cached.fiber : null,
-        liquid: cached ? cached.liquid : false,
+        name: foodTitle(item),
+        guid,
+        url: foodItemUrl(item),
+        cat: foodBrand(item) || "API",
+        kcal: kcal != null ? Math.round(kcal * 10) / 10 : null,
+        protein: pick("protein"),
+        carbs: pick("carbs"),
+        fat: pick("fat"),
+        fiber: pick("fiber"),
+        liquid:
+          typeof item.isLiquid === "boolean"
+            ? item.isLiquid
+            : inline._unit
+              ? inline._unit === "ml" || inline._unit === "l"
+              : cached
+                ? cached.liquid
+                : false,
         source: "api",
       };
     });

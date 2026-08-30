@@ -123,11 +123,10 @@ function renderFoodCards(el, foods) {
         f.kcal != null
           ? `${Math.round(f.kcal)} <span>kcal</span>`
           : "<span>...</span>";
-      const showMacros =
-        f.protein != null &&
-        (f.source === "local" ||
-          f.source === "barcode" ||
-          f.source === "rohlik");
+      // The source list this used to carry excluded "api", which never had
+      // macros before filter-list started returning them inline. Having them
+      // is the only thing that matters, whichever source they came from.
+      const showMacros = f.protein != null;
       const macroHtml = showMacros
         ? `<div class="macros">
     <span class="macro protein">B: <b>${f.protein}g</b></span>
