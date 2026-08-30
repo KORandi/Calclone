@@ -298,11 +298,35 @@ function finalizeDetail(n, food) {
   };
 }
 
+// Failures are never written to the detail cache (zeroes there would mask the
+// real values for a whole day), so remember them here instead: long enough to
+// stop reopening a food from re-firing the same doomed requests, short enough
+// that a recovered source is picked up straight away.
+var detailFailedAt = {};
+var DETAIL_RETRY_COOLDOWN = 60 * 1000;
+
+function detailFailure(food) {
+  return {
+    name: null,
+    kcal: (food && food.kcal) || 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+    sugar: 0,
+    liquid: !!(food && food.liquid),
+    incomplete: true,
+  };
+}
+
 async function apiDetail(food) {
   const cacheKey = food.guid;
   const cached = getCached(state.detailCache, cacheKey);
-  // an incomplete entry is a failure we refused to trust – retry it
-  if (cached && !cached.incomplete) return cached;
+  if (cached) return cached;
+
+  const failedAt = detailFailedAt[cacheKey];
+  if (failedAt && Date.now() - failedAt < DETAIL_RETRY_COOLDOWN)
+    return detailFailure(food);
 
   const attempts = [
     proxyUrl(_h(_P2) + food.guid + "/100/0000000000000001", {
@@ -326,8 +350,11 @@ async function apiDetail(food) {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       body = await resp.text();
     } catch (e) {
+      // The source or the CORS proxy is unreachable, not answering in an
+      // unexpected shape. Walking the remaining URLs would just multiply the
+      // load on whatever is already refusing us — give up after the first.
       lastError = e;
-      continue;
+      break;
     }
     let nutrients;
     try {
@@ -336,27 +363,17 @@ async function apiDetail(food) {
       nutrients = scrapeNutrientsFromHtml(body);
     }
     if (hasMacros(nutrients)) {
+      delete detailFailedAt[cacheKey];
       const result = finalizeDetail(nutrients, food);
       setCache(state.detailCache, cacheKey, result);
       return result;
     }
     lastError = new Error("no nutrition values in response");
   }
+  detailFailedAt[cacheKey] = Date.now();
 
   console.warn("API detail failed for", food.guid, lastError);
-  // Deliberately not cached: storing zeros would hide the real values for a
-  // whole day once the source answers properly again.
-  return {
-    name: null,
-    kcal: (food && food.kcal) || 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
-    fiber: 0,
-    sugar: 0,
-    liquid: !!(food && food.liquid),
-    incomplete: true,
-  };
+  return detailFailure(food);
 }
 
 async function apiFormDetail(guid) {
