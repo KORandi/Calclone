@@ -53,7 +53,7 @@ var AI_PROVIDERS = {
     endpoint: "https://api.anthropic.com/v1/messages",
     buildRequest: function (apiKey, base64Image, mimeType) {
       return {
-        url: CORS_PROXY_POST + encodeURIComponent(this.endpoint),
+        url: CORS_PROXY + encodeURIComponent(this.endpoint),
         options: {
           method: "POST",
           headers: {
