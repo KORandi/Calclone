@@ -1,5 +1,5 @@
-const CACHE_NAME = "kaltab-v24";
-const API_CACHE = "kaltab-api-v22";
+const CACHE_NAME = "kaltab-v25";
+const API_CACHE = "kaltab-api-v23";
 
 const ASSETS = [
   "./",
@@ -33,7 +33,11 @@ const ASSETS = [
   "./js/events.js",
 ];
 
-const API_HOST = "corsproxy.io";
+const API_HOSTS = [
+  "api.allorigins.win",
+  "api.codetabs.com",
+  "corsproxy.io",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -63,7 +67,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   // API requests: network-first, cache as fallback
-  if (url.hostname === API_HOST) {
+  if (API_HOSTS.includes(url.hostname)) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {

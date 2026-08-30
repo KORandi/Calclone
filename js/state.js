@@ -217,6 +217,7 @@ async function loadFromIndexedDB() {
       state.foodIndex = caches.foodIndex || {};
       state.detailCache = caches.detailCache || {};
       state.barcodeCache = caches.barcodeCache || {};
+      pruneZeroMacroDetails();
     } else if (caches) {
       console.log("Cache version mismatch, clearing caches");
       await KaltabDB.put("cache", "apiCaches", { _v: CACHE_VERSION });
@@ -252,6 +253,7 @@ function _loadLegacyData() {
       state.foodIndex = parsed.foodIndex || {};
       state.detailCache = parsed.detailCache || {};
       state.barcodeCache = parsed.barcodeCache || {};
+      pruneZeroMacroDetails();
     }
   } catch (e) {}
 }
@@ -322,6 +324,7 @@ async function _migrateToIndexedDB() {
     state.foodIndex = {};
     state.detailCache = detailCache;
     state.barcodeCache = barcodeCache;
+    pruneZeroMacroDetails();
     await KaltabDB.put("cache", "apiCaches", {
       _v: CACHE_VERSION,
       searchCache,
@@ -607,6 +610,7 @@ function importData(file) {
       state.foodIndex = parsed.foodIndex || {};
       state.detailCache = parsed.detailCache || {};
       state.barcodeCache = parsed.barcodeCache || {};
+      pruneZeroMacroDetails();
 
       saveState();
       saveCache();
@@ -653,7 +657,7 @@ function localFoods() {
 // ═══════════════════════════════════════════
 // API CACHE HELPERS
 // ═══════════════════════════════════════════
-var CACHE_VERSION = 3; // 3: drop detail entries poisoned with zeroed macros
+var CACHE_VERSION = 2;
 var CACHE_TTL = 1 * 24 * 60 * 60 * 1000; // 1 day
 
 function normalizeCacheKey(key) {
@@ -675,6 +679,28 @@ function getCached(cache, key) {
   // searchCache entries store refs → resolve from foodIndex
   if (entry.refs) return resolveSearchCache(entry);
   return entry.data;
+}
+
+// A cached detail with calories but not a single macro is a failed lookup an
+// earlier build stored as though it were real. Drop those so they refetch —
+// pruning beats bumping CACHE_VERSION, which would also throw away foodIndex
+// and searchCache, the offline fallback's only source of results.
+function pruneZeroMacroDetails() {
+  let dropped = 0;
+  for (const [key, entry] of Object.entries(state.detailCache)) {
+    const d = entry && entry.data;
+    if (!d) continue;
+    // A genuinely macro-free food has no calories either (water, black coffee)
+    if ((d.kcal || 0) > 0 && !d.protein && !d.carbs && !d.fat) {
+      delete state.detailCache[key];
+      dropped++;
+    }
+  }
+  if (dropped) {
+    console.log(`Dropped ${dropped} detail entries with no macros`);
+    _cachedSizeBytes = null;
+    saveCache();
+  }
 }
 
 function setCache(cache, key, data) {

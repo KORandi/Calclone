@@ -42,10 +42,10 @@ async function apiSearch(query) {
   if (searchAbort) searchAbort.abort();
   searchAbort = new AbortController();
 
-  const url = proxyUrl(_h(_P1), { query, format: "json" });
   try {
-    const resp = await fetch(url, { signal: searchAbort.signal });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await proxyFetch(apiUrl(_h(_P1), { query, format: "json" }), {
+      signal: searchAbort.signal,
+    });
     const data = await resp.json();
     apiAvailable = true;
 
@@ -298,54 +298,14 @@ function finalizeDetail(n, food) {
   };
 }
 
-async function apiDetail(food) {
-  const cacheKey = food.guid;
-  const cached = getCached(state.detailCache, cacheKey);
-  // an incomplete entry is a failure we refused to trust – retry it
-  if (cached && !cached.incomplete) return cached;
+// Failures are never written to the detail cache (zeroes there would mask the
+// real values for a whole day), so remember them here instead: long enough to
+// stop reopening a food from re-firing the same doomed requests, short enough
+// that a recovered source is picked up straight away.
+var detailFailedAt = {};
+var DETAIL_RETRY_COOLDOWN = 60 * 1000;
 
-  const attempts = [
-    proxyUrl(_h(_P2) + food.guid + "/100/0000000000000001", {
-      format: "json",
-    }),
-    proxyUrl(_h(_P2) + food.guid, { format: "json" }),
-    proxyUrl(_h(_P2) + food.guid, {}),
-  ];
-  if (food.url) {
-    const page = /^https?:/i.test(food.url)
-      ? food.url
-      : _h(_B) + (food.url[0] === "/" ? "" : "/") + food.url;
-    attempts.push(CORS_PROXY + encodeURIComponent(page));
-  }
-
-  let lastError = null;
-  for (const url of attempts) {
-    let body;
-    try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      body = await resp.text();
-    } catch (e) {
-      lastError = e;
-      continue;
-    }
-    let nutrients;
-    try {
-      nutrients = collectNutrients(JSON.parse(body));
-    } catch {
-      nutrients = scrapeNutrientsFromHtml(body);
-    }
-    if (hasMacros(nutrients)) {
-      const result = finalizeDetail(nutrients, food);
-      setCache(state.detailCache, cacheKey, result);
-      return result;
-    }
-    lastError = new Error("no nutrition values in response");
-  }
-
-  console.warn("API detail failed for", food.guid, lastError);
-  // Deliberately not cached: storing zeros would hide the real values for a
-  // whole day once the source answers properly again.
+function detailFailure(food) {
   return {
     name: null,
     kcal: (food && food.kcal) || 0,
@@ -359,18 +319,68 @@ async function apiDetail(food) {
   };
 }
 
+async function apiDetail(food) {
+  const cacheKey = food.guid;
+  const cached = getCached(state.detailCache, cacheKey);
+  if (cached) return cached;
+
+  const failedAt = detailFailedAt[cacheKey];
+  if (failedAt && Date.now() - failedAt < DETAIL_RETRY_COOLDOWN)
+    return detailFailure(food);
+
+  const attempts = [
+    apiUrl(_h(_P2) + food.guid + "/100/0000000000000001", { format: "json" }),
+    apiUrl(_h(_P2) + food.guid, { format: "json" }),
+    apiUrl(_h(_P2) + food.guid, {}),
+  ];
+  if (food.url) {
+    attempts.push(
+      /^https?:/i.test(food.url)
+        ? food.url
+        : _h(_B) + (food.url[0] === "/" ? "" : "/") + food.url,
+    );
+  }
+
+  let lastError = null;
+  for (const url of attempts) {
+    let body;
+    try {
+      body = await (await proxyFetch(url)).text();
+    } catch (e) {
+      // Every proxy already refused this one. Walking the remaining URLs
+      // would just multiply the load on whatever is failing — stop here.
+      lastError = e;
+      break;
+    }
+    let nutrients;
+    try {
+      nutrients = collectNutrients(JSON.parse(body));
+    } catch {
+      nutrients = scrapeNutrientsFromHtml(body);
+    }
+    if (hasMacros(nutrients)) {
+      delete detailFailedAt[cacheKey];
+      const result = finalizeDetail(nutrients, food);
+      setCache(state.detailCache, cacheKey, result);
+      return result;
+    }
+    lastError = new Error("no nutrition values in response");
+  }
+  detailFailedAt[cacheKey] = Date.now();
+
+  console.warn("API detail failed for", food.guid, lastError);
+  return detailFailure(food);
+}
+
 async function apiFormDetail(guid) {
   const cacheKey = "form_" + guid;
   const cached = getCached(state.detailCache, cacheKey);
   if (cached) return cached;
 
-  const url = proxyUrl(_h(_P3) + guid, {
-    format: "json",
-    default: "true",
-  });
   try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await proxyFetch(
+      apiUrl(_h(_P3) + guid, { format: "json", default: "true" }),
+    );
     const data = await resp.json();
     const opts = (data.unitOptions || [])
       .filter((o) => o.multiplier > 1)
@@ -433,14 +443,11 @@ async function rohlikSearch(query) {
     limit: "10",
     companyId: "1",
   });
-  const url =
-    CORS_PROXY + encodeURIComponent(ROHLIK_URL + "?" + params.toString());
   try {
-    const resp = await fetch(url, {
+    const resp = await proxyFetch(ROHLIK_URL + "?" + params.toString(), {
       signal: rohlikAbort.signal,
       headers: { "x-origin": "WEB" },
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     const products = json.data?.productList || [];
     const results = products
