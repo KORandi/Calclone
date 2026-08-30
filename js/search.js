@@ -42,10 +42,10 @@ async function apiSearch(query) {
   if (searchAbort) searchAbort.abort();
   searchAbort = new AbortController();
 
-  const url = proxyUrl(_h(_P1), { query, format: "json" });
   try {
-    const resp = await fetch(url, { signal: searchAbort.signal });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await proxyFetch(apiUrl(_h(_P1), { query, format: "json" }), {
+      signal: searchAbort.signal,
+    });
     const data = await resp.json();
     apiAvailable = true;
 
@@ -329,30 +329,26 @@ async function apiDetail(food) {
     return detailFailure(food);
 
   const attempts = [
-    proxyUrl(_h(_P2) + food.guid + "/100/0000000000000001", {
-      format: "json",
-    }),
-    proxyUrl(_h(_P2) + food.guid, { format: "json" }),
-    proxyUrl(_h(_P2) + food.guid, {}),
+    apiUrl(_h(_P2) + food.guid + "/100/0000000000000001", { format: "json" }),
+    apiUrl(_h(_P2) + food.guid, { format: "json" }),
+    apiUrl(_h(_P2) + food.guid, {}),
   ];
   if (food.url) {
-    const page = /^https?:/i.test(food.url)
-      ? food.url
-      : _h(_B) + (food.url[0] === "/" ? "" : "/") + food.url;
-    attempts.push(CORS_PROXY + encodeURIComponent(page));
+    attempts.push(
+      /^https?:/i.test(food.url)
+        ? food.url
+        : _h(_B) + (food.url[0] === "/" ? "" : "/") + food.url,
+    );
   }
 
   let lastError = null;
   for (const url of attempts) {
     let body;
     try {
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      body = await resp.text();
+      body = await (await proxyFetch(url)).text();
     } catch (e) {
-      // The source or the CORS proxy is unreachable, not answering in an
-      // unexpected shape. Walking the remaining URLs would just multiply the
-      // load on whatever is already refusing us — give up after the first.
+      // Every proxy already refused this one. Walking the remaining URLs
+      // would just multiply the load on whatever is failing — stop here.
       lastError = e;
       break;
     }
@@ -381,13 +377,10 @@ async function apiFormDetail(guid) {
   const cached = getCached(state.detailCache, cacheKey);
   if (cached) return cached;
 
-  const url = proxyUrl(_h(_P3) + guid, {
-    format: "json",
-    default: "true",
-  });
   try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await proxyFetch(
+      apiUrl(_h(_P3) + guid, { format: "json", default: "true" }),
+    );
     const data = await resp.json();
     const opts = (data.unitOptions || [])
       .filter((o) => o.multiplier > 1)
@@ -450,14 +443,11 @@ async function rohlikSearch(query) {
     limit: "10",
     companyId: "1",
   });
-  const url =
-    CORS_PROXY + encodeURIComponent(ROHLIK_URL + "?" + params.toString());
   try {
-    const resp = await fetch(url, {
+    const resp = await proxyFetch(ROHLIK_URL + "?" + params.toString(), {
       signal: rohlikAbort.signal,
       headers: { "x-origin": "WEB" },
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     const products = json.data?.productList || [];
     const results = products
